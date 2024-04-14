@@ -19,6 +19,7 @@
         <module>001-ipring-design-patterns</module>
         <module>002-ipring-mq</module>
         <module>000-ipring-common</module>
+        <module>010-ipring-validation</module>
     </modules>
 
     <properties>

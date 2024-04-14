@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.ipring.mapper.AccountMapper">
+    <select id="selectAccountDetailByAccountId" resultType="org.ipring.model.vo.account.AccountDetailVO">
+        select taa.name,
+               taa.lever,
+               taa.deposit_currency,
+               taa.margin_call marginCallRate,
+               tab.name        brokerName,
+               tab.logo        brokerLogo,
+               tas.name        tradingServerName,
+               taa.account_num
+        from t_ac_account taa
+                 inner join t_ac_broker tab on taa.broker = tab.id
+                 inner join t_ac_server tas on taa.trading_server = tas.id
+        where taa.account_num = #{accountId}
+    </select>
+
+    <update id="resetAccountPwd">
+        update t_ac_account
+        set trading_pwd = #{pwd}
+        where account_num = #{accountId}
+    </update>
+
+    <update id="updateTradingPwd">
+        update t_ac_account
+        set trading_pwd = #{newPwd}
+        where account_num = #{accountId}
+    </update>
+
+    <select id="selectAccountDetailByAccountIds" resultType="org.ipring.model.vo.account.AccountDetailVO">
+        select taa.name,
+        taa.id accountId,
+        taa.lever,
+        taa.deposit_currency,
+        taa.margin_call marginCallRate,
+        tab.name brokerName,
+        tab.logo brokerLogo,
+        tas.name tradingServerName,
+        taa.account_num
+        from t_ac_account taa
+        inner join t_ac_broker tab on taa.broker = tab.id
+        inner join t_ac_server tas on taa.trading_server = tas.id
+        where taa.account_num in
+        <foreach collection="accountIds" item="accountId" separator="," open="(" close=")">
+            #{accountId}
+        </foreach>
+    </select>
+
+    <update id="deleteAccount">
+        update t_ac_login
+        set del = 1
+        where account_id = #{accountId}
+    </update>
+
+    <update id="updateViewPwd">
+        update t_ac_account
+        set view_pwd = #{newPwd}
+        where account_num = #{accountId}
+    </update>
+</mapper>

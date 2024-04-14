@@ -7,9 +7,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="001-ipring-design-patterns" />
+        <module name="010-ipring-validation" />
         <module name="000-ipring-common" />
         <module name="002-ipring-mq" />
-        <module name="001-ipring-design-patterns" />
       </profile>
     </annotationProcessing>
   </component>
@@ -18,6 +19,7 @@
       <module name="000-ipring-common" options="-parameters" />
       <module name="001-ipring-design-patterns" options="-parameters" />
       <module name="002-ipring-mq" options="-parameters" />
+      <module name="010-ipring-validation" options="-parameters" />
     </option>
   </component>
 </project>

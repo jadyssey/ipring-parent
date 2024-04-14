@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.ipring.mapper.ServerMapper">
+
+
+    <select id="selectByIdList" resultType="org.ipring.model.dobj.server.ServerDO">
+
+        SELECT acs.id as server_id, acs.name as server_name, acs.addr, acb.id as broker_id, acb.name as broker_name, acb.logo
+        FROM t_ac_server acs
+        INNER JOIN t_ac_broker acb ON acs.broker = acb.id
+        WHERE acs.id IN
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">#{id}</foreach>
+        AND acs.del = 0 AND acb.del = 0
+    </select>
+    <select id="selectById" resultType="org.ipring.model.dobj.server.ServerDO">
+        SELECT acs.id as server_id, acs.name as server_name, acs.addr, acb.id as broker_id, acb.name as broker_name
+        FROM t_ac_server acs
+        INNER JOIN t_ac_broker acb ON acs.broker = acb.id
+        WHERE acs.id = #{id}
+        AND acs.del = 0 AND acb.del = 0
+    </select>
+</mapper>

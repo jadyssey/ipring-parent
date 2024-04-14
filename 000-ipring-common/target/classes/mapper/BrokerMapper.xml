@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.ipring.mapper.BrokerMapper">
+    <select id="selectBrokerInfoList" resultType="org.ipring.model.vo.broker.BrokerInfoVO">
+        select tab.name,
+               tab.logo,
+               tas.name tradingServerName,
+               tas.id serverId
+        from t_ac_broker tab
+                 inner join t_ac_server tas on tab.id = tas.broker
+    </select>
+</mapper>

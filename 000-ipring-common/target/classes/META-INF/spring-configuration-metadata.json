@@ -1,0 +1,132 @@
+{
+  "groups": [
+    {
+      "name": "ipring.swagger",
+      "type": "org.ipring.constant.properties.SwaggerProperties",
+      "sourceType": "org.ipring.constant.properties.SwaggerProperties"
+    },
+    {
+      "name": "stl.env",
+      "type": "org.ipring.constant.properties.EnvProperties",
+      "sourceType": "org.ipring.constant.properties.EnvProperties"
+    },
+    {
+      "name": "stl.env.bv",
+      "type": "org.ipring.constant.properties.EnvProperties$Config",
+      "sourceType": "org.ipring.constant.properties.EnvProperties"
+    },
+    {
+      "name": "stl.env.fb",
+      "type": "org.ipring.constant.properties.EnvProperties$Config",
+      "sourceType": "org.ipring.constant.properties.EnvProperties"
+    },
+    {
+      "name": "stl.netty",
+      "type": "org.ipring.constant.properties.NettyProperties",
+      "sourceType": "org.ipring.constant.properties.NettyProperties"
+    },
+    {
+      "name": "stl.task-pool",
+      "type": "org.ipring.constant.properties.TaskThreadPoolConfig",
+      "sourceType": "org.ipring.constant.properties.TaskThreadPoolConfig"
+    },
+    {
+      "name": "topic",
+      "type": "org.ipring.mq.TopicProperties",
+      "sourceType": "org.ipring.mq.TopicProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "ipring.swagger.enable",
+      "type": "java.lang.String",
+      "description": "开启状态",
+      "sourceType": "org.ipring.constant.properties.SwaggerProperties"
+    },
+    {
+      "name": "ipring.swagger.name",
+      "type": "java.lang.String",
+      "description": "模块名",
+      "sourceType": "org.ipring.constant.properties.SwaggerProperties"
+    },
+    {
+      "name": "ipring.swagger.version",
+      "type": "java.lang.String",
+      "description": "当前版本",
+      "sourceType": "org.ipring.constant.properties.SwaggerProperties"
+    },
+    {
+      "name": "stl.env.bv.official-email",
+      "type": "java.lang.String",
+      "description": "官方邮箱",
+      "sourceType": "org.ipring.constant.properties.EnvProperties$Config"
+    },
+    {
+      "name": "stl.env.bv.web",
+      "type": "java.lang.String",
+      "description": "站点域名",
+      "sourceType": "org.ipring.constant.properties.EnvProperties$Config"
+    },
+    {
+      "name": "stl.env.fb.official-email",
+      "type": "java.lang.String",
+      "description": "官方邮箱",
+      "sourceType": "org.ipring.constant.properties.EnvProperties$Config"
+    },
+    {
+      "name": "stl.env.fb.web",
+      "type": "java.lang.String",
+      "description": "站点域名",
+      "sourceType": "org.ipring.constant.properties.EnvProperties$Config"
+    },
+    {
+      "name": "stl.env.host",
+      "type": "java.lang.String",
+      "description": "当前环境访问的域名地址",
+      "sourceType": "org.ipring.constant.properties.EnvProperties"
+    },
+    {
+      "name": "stl.env.name",
+      "type": "java.lang.String",
+      "description": "环境名称",
+      "sourceType": "org.ipring.constant.properties.EnvProperties"
+    },
+    {
+      "name": "stl.netty.server",
+      "type": "java.lang.String",
+      "description": "服务端地址",
+      "sourceType": "org.ipring.constant.properties.NettyProperties"
+    },
+    {
+      "name": "stl.task-pool.core-size",
+      "type": "java.lang.Integer",
+      "sourceType": "org.ipring.constant.properties.TaskThreadPoolConfig"
+    },
+    {
+      "name": "stl.task-pool.keep-alive",
+      "type": "java.lang.Integer",
+      "sourceType": "org.ipring.constant.properties.TaskThreadPoolConfig"
+    },
+    {
+      "name": "stl.task-pool.max-size",
+      "type": "java.lang.Integer",
+      "sourceType": "org.ipring.constant.properties.TaskThreadPoolConfig"
+    },
+    {
+      "name": "stl.task-pool.queue-capacity",
+      "type": "java.lang.Integer",
+      "sourceType": "org.ipring.constant.properties.TaskThreadPoolConfig"
+    },
+    {
+      "name": "topic.account",
+      "type": "java.lang.String",
+      "sourceType": "org.ipring.mq.TopicProperties"
+    },
+    {
+      "name": "topic.order",
+      "type": "java.lang.String",
+      "sourceType": "org.ipring.mq.TopicProperties"
+    }
+  ],
+  "hints": []
+}
