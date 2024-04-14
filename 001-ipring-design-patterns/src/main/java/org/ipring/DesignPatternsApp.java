@@ -1,4 +1,4 @@
-package org.ipring.design.patterns;
+package org.ipring;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

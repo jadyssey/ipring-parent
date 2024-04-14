@@ -43,13 +43,13 @@
         <fastjson.version>1.2.83</fastjson.version>
         <netty.version>4.1.86.Final</netty.version>
         <jeromq.version>0.5.2</jeromq.version>
+        <validation-api>2.0.1.Final</validation-api>
 
         <rocketMQ.version>2.2.3</rocketMQ.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-
             <dependency>
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson-spring-boot-starter</artifactId>

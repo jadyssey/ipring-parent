@@ -2,9 +2,13 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/000-ipring-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/000-ipring-common/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/001-ipring-design-patterns/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/001-ipring-design-patterns/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/002-ipring-mq/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/002-ipring-mq/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/010-ipring-validation/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/010-ipring-validation/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>
