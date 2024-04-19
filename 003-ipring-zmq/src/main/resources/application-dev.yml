@@ -1,8 +1,6 @@
 server:
-  port: 8010
+  port: 8003
 spring:
-  profiles:
-    active: dev
   messages:
     basename: messages/messages
   jackson:
@@ -55,3 +53,8 @@ ipring:
   config:
     svc:
       base: http://192.168.7.41:30400
+
+
+zmq:
+  subscribe-address:
+    fb: tcp://192.168.7.41:31090
