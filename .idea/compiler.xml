@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="001-ipring-design-patterns" />
         <module name="010-ipring-validation" />
+        <module name="020-ipring-juc" />
         <module name="000-ipring-common" />
         <module name="002-ipring-mq" />
       </profile>
@@ -20,6 +21,7 @@
       <module name="001-ipring-design-patterns" options="-parameters" />
       <module name="002-ipring-mq" options="-parameters" />
       <module name="010-ipring-validation" options="-parameters" />
+      <module name="020-ipring-juc" options="-parameters" />
     </option>
   </component>
 </project>

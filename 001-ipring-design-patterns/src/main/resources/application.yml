@@ -9,11 +9,11 @@ spring:
     deserialization:
       # 未定义的key不序列化(允许对象忽略json中不存在的属性)
       fail_on_unknown_properties: false
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.136.200:3306/bh_im?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
-    username: root
-    password: Root@123
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://192.168.136.200:3306/bh_im?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+#    username: root
+#    password: Root@123
 
 #    禁用redis
   autoconfigure:
@@ -48,9 +48,6 @@ ipring:
     enable: true
     name: "校验服务"
     version: V1.0.0
-
-
-stl:
   env:
     name: dev
   netty:

@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "stl.env")
+@ConfigurationProperties(prefix = "ipring.env")
 public class EnvProperties {
 
     /**

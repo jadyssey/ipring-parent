@@ -19,7 +19,7 @@ import static springfox.documentation.swagger.common.SwaggerPluginSupport.plugin
  * @author lgj
  * @date 8/2/2023
  */
-@ConditionalOnProperty(value = "stl.swagger.enable", havingValue = "true")
+@ConditionalOnProperty(value = "ipring.swagger.enable", havingValue = "true")
 @Component
 @RequiredArgsConstructor
 public class SwaggerNotesModelsProvider extends OperateParent implements OperationModelsProviderPlugin {

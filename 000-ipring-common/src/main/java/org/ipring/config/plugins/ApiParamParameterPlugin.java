@@ -32,7 +32,7 @@ import static springfox.documentation.swagger.readers.parameter.Examples.example
  * @date 8/2/2023
  * @see ApiParam
  */
-@ConditionalOnProperty(value = "stl.swagger.enable", havingValue = "true")
+@ConditionalOnProperty(value = "ipring.swagger.enable", havingValue = "true")
 @Configuration
 @RequiredArgsConstructor
 public class ApiParamParameterPlugin implements ParameterBuilderPlugin {

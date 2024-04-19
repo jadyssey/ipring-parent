@@ -9,6 +9,7 @@
     <file url="file://$PROJECT_DIR$/002-ipring-mq/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/010-ipring-validation/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/010-ipring-validation/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/020-ipring-juc/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>
