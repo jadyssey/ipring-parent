@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @date 2024/4/3
  **/
 @Data
-@ConfigurationProperties(prefix = "stl.netty")
+@ConfigurationProperties(prefix = "ipring.netty")
 public class NettyProperties {
 
     /**

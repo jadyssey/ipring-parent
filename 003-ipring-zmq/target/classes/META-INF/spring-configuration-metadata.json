@@ -1,0 +1,22 @@
+{
+  "groups": [
+    {
+      "name": "zmq",
+      "type": "org.ipring.zmq.model.ZmqProperties",
+      "sourceType": "org.ipring.zmq.model.ZmqProperties"
+    },
+    {
+      "name": "zmq.subscribe-address",
+      "type": "org.ipring.zmq.model.ZmqProperties$SubAddress",
+      "sourceType": "org.ipring.zmq.model.ZmqProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "zmq.subscribe-address.fb",
+      "type": "java.lang.String",
+      "sourceType": "org.ipring.zmq.model.ZmqProperties$SubAddress"
+    }
+  ],
+  "hints": []
+}

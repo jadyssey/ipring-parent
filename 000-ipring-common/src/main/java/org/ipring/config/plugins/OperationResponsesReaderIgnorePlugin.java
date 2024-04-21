@@ -36,7 +36,7 @@ import static springfox.documentation.swagger.readers.operation.ResponseHeaders.
  * @author lgj
  * @date 8/2/2023
  */
-@ConditionalOnProperty(value = "stl.swagger.enable", havingValue = "true")
+@ConditionalOnProperty(value = "ipring.swagger.enable", havingValue = "true")
 @Component
 @RequiredArgsConstructor
 public class OperationResponsesReaderIgnorePlugin extends OperateParent implements OperationBuilderPlugin {

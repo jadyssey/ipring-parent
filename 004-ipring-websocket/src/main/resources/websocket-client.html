@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Client</title>
+</head>
+<body>
+<h1>WebSocket Client</h1>
+
+<div>
+    <input type="text" id="messageInput" placeholder="输入消息...">
+    <button id="sendButton">发送消息</button>
+</div>
+
+<div>
+    <h2>接收到的消息:</h2>
+    <div id="messages"></div>
+</div>
+
+<script>
+    // 创建 WebSocket 连接
+    // var socket = new WebSocket("wss://test-wss-ct-push.tostar.top/ws?token=e9f027939c3dbdb7cec8dc4b25c15783");
+    var socket = new WebSocket("ws://localhost:59762/ws?token=e9f027939c3dbdb7cec8dc4b25c15783");
+
+    // 连接打开时触发
+    socket.onopen = function (event) {
+        console.log("WebSocket 连接已打开");
+
+        // 开启一个定时器，每隔 10 秒发送心跳消息
+        setInterval(function () {
+            // 构建心跳消息
+            var heartbeatMessage = JSON.stringify({
+                cmd: 100,
+                data: "ping"
+            });
+
+            // 发送心跳消息
+            socket.send(heartbeatMessage);
+        }, 10000); // 10 秒
+    };
+
+    // 接收消息时触发
+    socket.onmessage = function (event) {
+        var receivedMessage = event.data;
+
+        try {
+            // 将接收到的 JSON 字符串解析为 JavaScript 对象
+            var jsonObject = JSON.parse(receivedMessage);
+
+            // 美化输出 JSON 对象
+            var formattedMessage = JSON.stringify(jsonObject, null, 2); // 2 表示缩进两个空格
+
+            console.log("接收到的消息:");
+            console.log(formattedMessage);
+
+            // 将美化后的消息显示在页面上
+            var messagesDiv = document.getElementById("messages");
+            var messageElement = document.createElement("pre");
+            messageElement.textContent = formattedMessage;
+            messagesDiv.appendChild(messageElement);
+        } catch (error) {
+            console.error("接收消息时发生错误:", error);
+        }
+    };
+
+    // 连接关闭时触发
+    socket.onclose = function (event) {
+        console.log("WebSocket 连接已关闭");
+    };
+
+    // 发送消息
+    document.getElementById("sendButton").addEventListener("click", function () {
+        var messageInput = document.getElementById("messageInput");
+        var inputText = messageInput.value;
+
+        // 检查输入是否为空
+        if (inputText.trim() === "") {
+            alert("请输入消息内容");
+            return;
+        }
+
+        // 将输入文本根据逗号进行分割，转化为数组
+        var dataArray = inputText.split(",").map(function (item) {
+            // 将每个元素转换为整数
+            var num = parseInt(item.trim(), 10);
+            if (isNaN(num)) {
+                throw new Error("输入包含无效的数字");
+            }
+            return num;
+        });
+
+        // 构建消息对象
+        var customMessage = {
+            cmd: 200,
+            data: dataArray // 这里将消息作为数组元素传递，你可以根据需要进行修改
+        };
+
+        // 将消息对象转换为 JSON 字符串
+        var jsonMessage = JSON.stringify(customMessage);
+
+        // 将消息发送到服务器
+        socket.send(jsonMessage);
+
+        // 清空输入框
+        messageInput.value = "";
+    });
+</script>
+</body>
+</html>

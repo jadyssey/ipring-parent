@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <!--<springProperty scope="context" name="LOGSTASH_HOST" source="stl.logstash.host"/>-->
-    <!--<springProperty scope="context" name="LOGSTASH_PORT" source="stl.logstash.port"/>-->
+    <!--<springProperty scope="context" name="LOGSTASH_PORT" source="ipring.logstash.port"/>-->
 
     <!-- 彩色日志依赖的渲染类 -->
     <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>

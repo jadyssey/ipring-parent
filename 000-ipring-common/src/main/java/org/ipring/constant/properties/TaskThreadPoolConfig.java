@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "stl.task-pool")
+@ConfigurationProperties(prefix = "ipring.task-pool")
 public class TaskThreadPoolConfig {
     private int coreSize;
 

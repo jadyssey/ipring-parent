@@ -20,6 +20,9 @@
         <module>002-ipring-mq</module>
         <module>000-ipring-common</module>
         <module>010-ipring-validation</module>
+        <module>020-ipring-juc</module>
+        <module>003-ipring-zmq</module>
+        <module>004-ipring-websocket</module>
     </modules>
 
     <properties>
@@ -44,12 +47,31 @@
         <netty.version>4.1.86.Final</netty.version>
         <jeromq.version>0.5.2</jeromq.version>
         <validation-api>2.0.1.Final</validation-api>
-
+        <jeromq.version>0.5.2</jeromq.version>
+        <netty.version>4.1.86.Final</netty.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <rocketMQ.version>2.2.3</rocketMQ.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.zeromq</groupId>
+                <artifactId>jeromq</artifactId>
+                <version>${jeromq.version}</version>
+            </dependency>
+
+
             <dependency>
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson-spring-boot-starter</artifactId>

@@ -8,7 +8,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 
-@RetrofitClient(baseUrl = "${stl.config.svc.base}")
+@RetrofitClient(baseUrl = "${ipring.config.svc.base}")
 public interface IBaseService {
     /**
      * 发送自定义模板邮件
