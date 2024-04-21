@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "责任链模式")
 public class ChainController {
     private final AbstractChainContext<Object> abstractChainContext;
-    // private final AbstractChainContext<OrderUpdateParam> updateAbstractChainContext;
 
     @PostMapping("order")
     @StlApiOperation(title = "测试责任链过滤方案")

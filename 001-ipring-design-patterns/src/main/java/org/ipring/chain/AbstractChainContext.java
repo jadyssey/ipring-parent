@@ -20,23 +20,14 @@ package org.ipring.chain;
 import com.google.common.collect.Maps;
 import org.ipring.chain.enums.OrderCreateEnum;
 import org.ipring.chain.enums.OrderUpdateEnum;
-import org.ipring.service.chain.Ordered;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 /**
  * 抽象责任链上下文
- *
- * @author chen.ma
- * @github <a href="https://github.com/opengoofy" />
- * @公众号 马丁玩编程，关注回复：资料，领取后端技术专家成长手册
  */
 @Component
 public final class AbstractChainContext<T> implements CommandLineRunner {
