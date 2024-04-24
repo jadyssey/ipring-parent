@@ -111,30 +111,6 @@
       "name": "ipring.task-pool.queue-capacity",
       "type": "java.lang.Integer",
       "sourceType": "org.ipring.constant.properties.TaskThreadPoolConfig"
-    },
-    {
-      "name": "stl.env.bv.official-email",
-      "type": "java.lang.String",
-      "description": "官方邮箱",
-      "sourceType": "org.ipring.constant.properties.EnvProperties$Config"
-    },
-    {
-      "name": "stl.env.bv.web",
-      "type": "java.lang.String",
-      "description": "站点域名",
-      "sourceType": "org.ipring.constant.properties.EnvProperties$Config"
-    },
-    {
-      "name": "stl.env.fb.official-email",
-      "type": "java.lang.String",
-      "description": "官方邮箱",
-      "sourceType": "org.ipring.constant.properties.EnvProperties$Config"
-    },
-    {
-      "name": "stl.env.fb.web",
-      "type": "java.lang.String",
-      "description": "站点域名",
-      "sourceType": "org.ipring.constant.properties.EnvProperties$Config"
     }
   ],
   "hints": []

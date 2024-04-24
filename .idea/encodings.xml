@@ -5,11 +5,14 @@
     <file url="file://$PROJECT_DIR$/000-ipring-common/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/001-ipring-design-patterns/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/001-ipring-design-patterns/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/002-ipring-mq/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/003-ipring-zmq/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/004-ipring-websocket/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/010-ipring-validation/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/010-ipring-validation/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/020-ipring-juc/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
     <file url="PROJECT" charset="UTF-8" />
   </component>
 </project>
