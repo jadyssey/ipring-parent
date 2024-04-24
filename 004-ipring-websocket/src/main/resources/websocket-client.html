@@ -19,7 +19,7 @@
 <script>
     // 创建 WebSocket 连接
     // var socket = new WebSocket("wss://test-wss-ct-push.tostar.top/ws?token=e9f027939c3dbdb7cec8dc4b25c15783");
-    var socket = new WebSocket("ws://localhost:59762/ws?token=e9f027939c3dbdb7cec8dc4b25c15783");
+    var socket = new WebSocket("ws://localhost:56799/ws?token=e9f027939c3dbdb7cec8dc4b25c15783");
 
     // 连接打开时触发
     socket.onopen = function (event) {
@@ -66,6 +66,9 @@
     socket.onclose = function (event) {
         console.log("WebSocket 连接已关闭");
     };
+    socket.onerror = function (event) {
+        console.log("WebSocket 连接异常")
+    }
 
     // 发送消息
     document.getElementById("sendButton").addEventListener("click", function () {

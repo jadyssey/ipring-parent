@@ -37,6 +37,9 @@ public class LocalTickSaver implements TickSender<String> {
             COUNT_MAP.put(now, longAdder.sum());
 
             String symbolUniq = data.split(",")[0];
+            if (symbolUniq.equalsIgnoreCase("6100_BTC-USDT")) {
+                System.out.println("symbolUniq = " + data);
+            }
             COUNT_SYMBOL.add(symbolUniq);
             LongAdder longAdder = GROUP_SYMBOL.computeIfAbsent(symbolUniq, key -> new LongAdder());
             longAdder.increment();
@@ -57,6 +60,6 @@ public class LocalTickSaver implements TickSender<String> {
         List<Long> list = entries.stream().map(entry -> entry.getValue().sum()).sorted(Comparator.reverseOrder()).collect(Collectors.toList());
         long sum = list.stream().mapToLong(Long::longValue).sum();
         GROUP_SYMBOL.clear();
-        log.info("QPS 报价次数={}, 总报价量={}, 品种数量={}, 品种次数排行 = {}", prev - prev2, prev, size + "_" + sum, list);
+        //log.info("QPS 报价次数={}, 总报价量={}, 品种数量={}, 品种次数排行 = {}", prev - prev2, prev, size + "_" + sum, list);
     }
 }
