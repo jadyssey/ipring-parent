@@ -19,7 +19,7 @@
 <script>
     // 创建 WebSocket 连接
     // var socket = new WebSocket("wss://test-wss-ct-push.tostar.top/ws?token=e9f027939c3dbdb7cec8dc4b25c15783");
-    var socket = new WebSocket("ws://localhost:56799/ws?token=e9f027939c3dbdb7cec8dc4b25c15783");
+    var socket = new WebSocket("ws://localhost:55036/ws?ct4Token=e9f027939c3dbdb7cec8dc4b25c15783");
 
     // 连接打开时触发
     socket.onopen = function (event) {
@@ -56,7 +56,7 @@
             var messagesDiv = document.getElementById("messages");
             var messageElement = document.createElement("pre");
             messageElement.textContent = formattedMessage;
-            messagesDiv.appendChild(messageElement);
+            messagesDiv.prepend(messageElement);
         } catch (error) {
             console.error("接收消息时发生错误:", error);
         }

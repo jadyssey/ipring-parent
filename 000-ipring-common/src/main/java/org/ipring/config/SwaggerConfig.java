@@ -116,7 +116,7 @@ public class SwaggerConfig {
                         )
                 )
                 .required(false).build());
-        pars.add(new ParameterBuilder().name(AuthConstant.HEADER_UID).description("用户Id")
+        pars.add(new ParameterBuilder().name(AuthConstant.UID).description("用户Id")
                 .order(Ordered.LOWEST_PRECEDENCE)
                 .defaultValue("0")
                 .modelRef(new ModelRef(INTEGER_NAME)).parameterType(HEADER_NAME)

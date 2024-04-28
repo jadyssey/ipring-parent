@@ -26,7 +26,6 @@ public class LogEntity {
 
     public static LogEntity init() {
         LogEntity entity = new LogEntity();
-        entity.setDeviceId(HttpUtils.getDeviceId());
         entity.setClient(ClientTypeInt.getByType(HttpUtils.getClientType()).getDescription());
         ;
         entity.setIp(HttpUtils.getReqIp());

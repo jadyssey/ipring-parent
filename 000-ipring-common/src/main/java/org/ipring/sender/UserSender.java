@@ -15,7 +15,6 @@ public interface UserSender<T> {
     void send(T t);
 
     default void send(T t, List<CallBack> callBacks) {
-        // todo
     }
 
     /**
@@ -24,12 +23,10 @@ public interface UserSender<T> {
     void send2Account(Long accountId, T t);
 
     default void send2Account(Long accountId, T t, List<CallBack> callBacks) {
-        // todo
     }
 
-    void send2UserId(Long userId, T t);
+    void send2UserId(String token, T t);
 
-    default void send2UserId(Long userId, T t, List<CallBack> callBacks) {
-        // todo
+    default void send2UserId(String token, T t, List<CallBack> callBacks) {
     }
 }

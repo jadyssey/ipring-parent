@@ -7,7 +7,6 @@ import org.ipring.zmq.model.ZmqConstant;
 import org.ipring.zmq.model.ZmqProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.env.Environment;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -30,8 +29,13 @@ public class FbZmqClient extends ZmqClientAbs {
         this.tickSenders = tickSenders;
     }
 
+    private static volatile long lastTime = 0;
+
     @Override
     protected void handlerTick(String recvStr) {
-        tickSenders.forEach(sender -> sender.send(recvStr));
+        long now = System.currentTimeMillis();
+        System.out.println("报价间隔 = " + (now - lastTime));
+        lastTime = now;
+        //tickSenders.forEach(sender -> sender.send(recvStr));
     }
 }

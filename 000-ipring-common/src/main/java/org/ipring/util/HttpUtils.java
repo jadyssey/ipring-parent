@@ -45,7 +45,7 @@ public class HttpUtils {
      */
     public static Long getUserId() {
         try {
-            String uidStr = getHeader(AuthConstant.HEADER_UID);
+            String uidStr = getHeader(AuthConstant.UID);
             return StringUtils.isNotBlank(uidStr) ? Long.parseLong(uidStr) : 0L;
         } catch (NumberFormatException e) {
             return 0L;
@@ -136,9 +136,5 @@ public class HttpUtils {
      */
     public static Integer getClientType() {
         return Optional.ofNullable(getHeader(AuthConstant.CLIENT_TYPE_HEADER)).map(Integer::parseInt).orElse(ClientTypeInt.OTHER.getType());
-    }
-
-    public static String getDeviceId() {
-        return getHeader(AuthConstant.DEVICE_ID_HEADER);
     }
 }

@@ -1,5 +1,9 @@
 package org.ipring.constant;
 
+import io.netty.util.AttributeKey;
+
+import java.util.Set;
+
 /**
  * @author lgj
  * @date 9/2/2023
@@ -10,8 +14,6 @@ public class CommonConstants {
     public static final String TEST = "test";
     public static final String DEV = "dev";
     public static final String STAGE = "stage";
-
-    public static final String URI = "URI";
 
     public static final String NONE = "none";
 
@@ -47,4 +49,9 @@ public class CommonConstants {
      * 组成品种唯一键的链接符号
      */
     public static String SYMBOL_SPLIT = "_";
+
+    public static String ORDER_UNIQ_SPLIT = "_";
+
+    public final static AttributeKey<String> TOKEN_KEY = AttributeKey.valueOf(AuthConstant.TOKEN);
+    public final static AttributeKey<Set<Long>> ACC_KEY = AttributeKey.valueOf(AuthConstant.ACC_ID);
 }
