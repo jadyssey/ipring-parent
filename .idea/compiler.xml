@@ -8,12 +8,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="002-ipring-mq" />
-        <module name="004-ipring-websocket" />
         <module name="001-ipring-design-patterns" />
         <module name="010-ipring-validation" />
         <module name="020-ipring-juc" />
         <module name="003-ipring-zmq" />
         <module name="000-ipring-common" />
+        <module name="004-ipring-socket" />
       </profile>
     </annotationProcessing>
   </component>
@@ -23,7 +23,7 @@
       <module name="001-ipring-design-patterns" options="-parameters" />
       <module name="002-ipring-mq" options="-parameters" />
       <module name="003-ipring-zmq" options="-parameters" />
-      <module name="004-ipring-websocket" options="-parameters" />
+      <module name="004-ipring-socket" options="-parameters" />
       <module name="010-ipring-validation" options="-parameters" />
       <module name="020-ipring-juc" options="-parameters" />
     </option>

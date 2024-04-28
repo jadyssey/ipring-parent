@@ -22,7 +22,7 @@
         <module>010-ipring-validation</module>
         <module>020-ipring-juc</module>
         <module>003-ipring-zmq</module>
-        <module>004-ipring-websocket</module>
+        <module>004-ipring-socket</module>
     </modules>
 
     <properties>

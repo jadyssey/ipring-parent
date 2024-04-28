@@ -1,9 +1,12 @@
 server:
   port: 8004
 websocket:
-  port: ${random.int[50000,59999]}
+  #  port: ${random.int[50000,59999]}
+  port: 50041
   heart-beat-gap: 10000 # 调长一点 省的本地测试的时候全是心跳
   heart-beat-check: 0 # 本地测试的客户端不需要检查
+tcp:
+  port: 50042
 spring:
   messages:
     basename: messages/messages
@@ -11,13 +14,13 @@ spring:
     deserialization:
       # 未定义的key不序列化(允许对象忽略json中不存在的属性)
       fail_on_unknown_properties: false
-#  datasource:
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://192.168.136.200:3306/bh_im?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
-#    username: root
-#    password: Root@123
+  #  datasource:
+  #    driver-class-name: com.mysql.cj.jdbc.Driver
+  #    url: jdbc:mysql://192.168.136.200:3306/bh_im?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+  #    username: root
+  #    password: Root@123
 
-#    禁用redis
+  #    禁用redis
   autoconfigure:
     exclude:
       - org.redisson.spring.starter.RedissonAutoConfiguration
@@ -53,7 +56,7 @@ ipring:
   env:
     name: dev
   netty:
-    server: 192.168.7.41:31265
+    server: localhost:50042
   config:
     svc:
       base: http://192.168.7.41:30400
@@ -61,5 +64,5 @@ ipring:
 
 zmq:
   subscribe-address:
-#    fb: tcp://192.168.7.41:31090
+    #    fb: tcp://192.168.7.41:31090
     fb: tcp://quotespush.fastbull.com:5500

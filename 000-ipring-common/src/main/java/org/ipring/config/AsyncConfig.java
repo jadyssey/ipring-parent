@@ -31,10 +31,10 @@ public class AsyncConfig implements AsyncConfigurer {
      */
     @Bean("commonThreadPool")
     public ThreadPoolTaskExecutor commonThreadPool() {
-        return executor("common-threadpool-");
+        return executor("common-threadpool-", false);
     }
 
-    public ThreadPoolTaskExecutor executor(String threadNamePrefix) {
+    public ThreadPoolTaskExecutor executor(String threadNamePrefix, boolean shotdownDelay) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         //配置核心线程数
         executor.setCorePoolSize(taskThreadPoolConfig.getCoreSize());
@@ -47,7 +47,7 @@ public class AsyncConfig implements AsyncConfigurer {
         //配置线程池中的线程的名称前缀
         executor.setThreadNamePrefix(threadNamePrefix);
         //设置线程池关闭的时候等待所有任务都完成再继续销毁其他的Bean
-        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setWaitForTasksToCompleteOnShutdown(shotdownDelay);
         //设置线程池中任务的等待时间，如果超过这个时候还没有销毁就强制销毁，以确保应用最后能够被关闭，而不是阻塞住
         executor.setAwaitTerminationSeconds(30);
         // 增加 CustomTaskDecorator 属性的配置

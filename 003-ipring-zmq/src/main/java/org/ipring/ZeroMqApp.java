@@ -10,8 +10,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * @date 2024/4/19
  **/
 
-@EnableAsync
-@EnableScheduling
 @SpringBootApplication
 public class ZeroMqApp {
 

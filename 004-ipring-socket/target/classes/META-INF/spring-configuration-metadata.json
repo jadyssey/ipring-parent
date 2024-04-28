@@ -1,12 +1,33 @@
 {
   "groups": [
     {
+      "name": "ipring.netty",
+      "type": "org.ipring.tcp.NettyProperties",
+      "sourceType": "org.ipring.tcp.NettyProperties"
+    },
+    {
+      "name": "tcp",
+      "type": "org.ipring.tcp.server.TcpServerProperties",
+      "sourceType": "org.ipring.tcp.server.TcpServerProperties"
+    },
+    {
       "name": "websocket",
       "type": "org.ipring.websocket.config.WebsocketProperties",
       "sourceType": "org.ipring.websocket.config.WebsocketProperties"
     }
   ],
   "properties": [
+    {
+      "name": "ipring.netty.server",
+      "type": "java.lang.String",
+      "description": "服务端地址",
+      "sourceType": "org.ipring.tcp.NettyProperties"
+    },
+    {
+      "name": "tcp.port",
+      "type": "java.lang.Integer",
+      "sourceType": "org.ipring.tcp.server.TcpServerProperties"
+    },
     {
       "name": "websocket.heart-beat-check",
       "type": "java.lang.Integer",
