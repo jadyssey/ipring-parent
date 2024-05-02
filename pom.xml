@@ -27,6 +27,7 @@
         <module>100-ipring-mysql</module>
         <module>099-ipring-redis</module>
         <module>021-ipring-jvm</module>
+        <module>888-ipring-markdown</module>
     </modules>
 
     <properties>

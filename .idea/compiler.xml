@@ -11,6 +11,7 @@
         <module name="021-ipring-jvm" />
         <module name="050-ipring-odyssey" />
         <module name="002-ipring-mq" />
+        <module name="888-ipring-markdown" />
         <module name="001-ipring-design-patterns" />
         <module name="010-ipring-validation" />
         <module name="020-ipring-juc" />
@@ -34,6 +35,7 @@
       <module name="050-ipring-odyssey" options="-parameters" />
       <module name="099-ipring-redis" options="-parameters" />
       <module name="100-ipring-mysql" options="-parameters" />
+      <module name="888-ipring-markdown" options="-parameters" />
     </option>
   </component>
 </project>

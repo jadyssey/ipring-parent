@@ -10,7 +10,7 @@ public interface Question {
 
     // todo Redis的大key问题，什么影响
     // todo Redis怎么实现分布式锁，怎么利用数据结构实现限流
-    
+
     // todo GeoHash如何实现搜索附近商户？ redis好像有这个结构吧？
 
     /*
