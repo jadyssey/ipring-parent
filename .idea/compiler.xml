@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="099-ipring-redis" />
+        <module name="021-ipring-jvm" />
         <module name="050-ipring-odyssey" />
         <module name="002-ipring-mq" />
         <module name="001-ipring-design-patterns" />
@@ -29,6 +30,7 @@
       <module name="004-ipring-socket" options="-parameters" />
       <module name="010-ipring-validation" options="-parameters" />
       <module name="020-ipring-juc" options="-parameters" />
+      <module name="021-ipring-jvm" options="-parameters" />
       <module name="050-ipring-odyssey" options="-parameters" />
       <module name="099-ipring-redis" options="-parameters" />
       <module name="100-ipring-mysql" options="-parameters" />

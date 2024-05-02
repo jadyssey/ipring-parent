@@ -26,6 +26,7 @@
         <module>050-ipring-odyssey</module>
         <module>100-ipring-mysql</module>
         <module>099-ipring-redis</module>
+        <module>021-ipring-jvm</module>
     </modules>
 
     <properties>
