@@ -1,4 +1,4 @@
-package org.ipring.zmq.model;
+package org.ipring.model;
 
 /**
  * @author: lgj

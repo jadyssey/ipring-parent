@@ -3,36 +3,7 @@ server:
 spring:
   profiles:
     active: dev
-  messages:
-    basename: messages/messages
-  jackson:
-    deserialization:
-      # 未定义的key不序列化(允许对象忽略json中不存在的属性)
-      fail_on_unknown_properties: false
-#  datasource:
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://192.168.136.200:3306/bh_im?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
-#    username: root
-#    password: Root@123
 
-#    禁用redis
-  autoconfigure:
-    exclude:
-      - org.redisson.spring.starter.RedissonAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-#      database:
-#      host:
-#      port:
-#      password:
-#      timeout:
-#      lettuce:
-#        pool:
-#          enabled: true
-#          max-active: 8
-#          max-idle: 8
-#          min-idle: 0
-#          max-wait: 5000
-#      address: redis://192.168.136.202:6379
 
 mybatis-plus:
   configuration:

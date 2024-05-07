@@ -1,7 +1,6 @@
-package org.ipring.zmq;
+package org.ipring.client;
 
 import lombok.RequiredArgsConstructor;
-import org.ipring.zmq.model.ZmqClient;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Configuration;

@@ -12,18 +12,17 @@ import org.springframework.core.annotation.Order;
  * @description:
  */
 @Configuration
-@ConditionalOnProperty(value = "netty.mode", havingValue = "CLIENT")
 public class ZmqInitializer {
 
     @Bean
     @Order(-1)
-    public ZmqPubAbs zmqPubUser(ZmqProperties properties) {
+    public ZmqPubAbs zmqPubOne(ZmqProperties properties) {
         return new ZmqPubOne(properties);
     }
 
     @Bean
     @Order(-1)
-    public ZmqPubAbs zmqPubVip(ZmqProperties properties) {
+    public ZmqPubAbs zmqPubTwo(ZmqProperties properties) {
         return new ZmqPubTwo(properties);
     }
 }

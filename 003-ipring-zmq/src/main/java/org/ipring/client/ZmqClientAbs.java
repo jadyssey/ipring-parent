@@ -1,11 +1,10 @@
-package org.ipring.zmq;
+package org.ipring.client;
 
 import io.netty.util.concurrent.DefaultThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.ipring.sender.NoticeService;
-import org.ipring.zmq.model.ClientInfo;
-import org.ipring.zmq.model.ZmqClient;
-import org.ipring.zmq.model.ZmqConstant;
+import org.ipring.model.ClientInfo;
+import org.ipring.model.ZmqConstant;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.zeromq.SocketType;

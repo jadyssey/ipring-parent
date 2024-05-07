@@ -1,4 +1,4 @@
-package org.ipring.sender;
+package org.ipring.tcp.server.sender;
 
 /**
  * @author: lgj

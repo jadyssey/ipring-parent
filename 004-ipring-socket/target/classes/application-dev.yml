@@ -2,11 +2,11 @@ server:
   port: 8004
 websocket:
   #  port: ${random.int[50000,59999]}
-  port: 50041
+  port: 58041
   heart-beat-gap: 10000 # 调长一点 省的本地测试的时候全是心跳
   heart-beat-check: 0 # 本地测试的客户端不需要检查
 tcp:
-  port: 50042
+  port: 58042
 spring:
   messages:
     basename: messages/messages

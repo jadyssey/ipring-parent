@@ -10,6 +10,7 @@ import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import lombok.RequiredArgsConstructor;
+import org.ipring.tcp.server.sender.TickSenderHandler;
 
 import java.util.concurrent.TimeUnit;
 

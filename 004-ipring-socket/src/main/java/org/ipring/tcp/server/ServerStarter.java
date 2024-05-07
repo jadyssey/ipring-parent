@@ -1,6 +1,7 @@
 package org.ipring.tcp.server;
 
 import lombok.RequiredArgsConstructor;
+import org.ipring.tcp.server.sender.TickSenderHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
