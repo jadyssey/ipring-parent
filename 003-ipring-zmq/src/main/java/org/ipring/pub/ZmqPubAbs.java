@@ -27,7 +27,7 @@ public abstract class ZmqPubAbs {
         log.info("端口地址:{} ZMQ启动", bindAddr);
     }
 
-    public void send(String msg) {
+    public synchronized void send(String msg) {
         socket.send(msg);
     }
 
