@@ -1,7 +1,7 @@
 package org.ipring.sender;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/04/03 15:33
  * @description:
  */

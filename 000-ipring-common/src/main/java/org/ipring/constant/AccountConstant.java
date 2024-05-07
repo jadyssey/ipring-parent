@@ -3,7 +3,7 @@ package org.ipring.constant;
 import java.math.BigDecimal;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/04/02 14:56
  * @description:
  */

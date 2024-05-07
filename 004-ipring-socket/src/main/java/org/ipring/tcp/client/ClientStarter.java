@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/03/20 10:33
  * @description:
  */

@@ -6,7 +6,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/04/02 9:35
  * @description:
  */

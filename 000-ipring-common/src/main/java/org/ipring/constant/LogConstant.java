@@ -1,7 +1,7 @@
 package org.ipring.constant;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/04/01 20:22
  * @description:
  */

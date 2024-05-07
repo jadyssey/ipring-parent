@@ -13,7 +13,7 @@ import org.ipring.websocket.config.WebsocketProperties;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/04/03 15:27
  * @description:
  */

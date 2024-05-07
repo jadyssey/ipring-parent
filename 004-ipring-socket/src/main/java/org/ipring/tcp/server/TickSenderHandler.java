@@ -8,10 +8,9 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.ipring.sender.TickSender;
-import org.springframework.scheduling.annotation.Scheduled;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/03/20 11:04
  * @description:
  */

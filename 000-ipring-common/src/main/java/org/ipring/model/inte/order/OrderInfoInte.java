@@ -3,7 +3,7 @@ package org.ipring.model.inte.order;
 import java.math.BigDecimal;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/04/13 10:17
  * @description:
  */

@@ -1,7 +1,7 @@
 package org.ipring.zmq.model;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/04/07 10:25
  * @description:
  */

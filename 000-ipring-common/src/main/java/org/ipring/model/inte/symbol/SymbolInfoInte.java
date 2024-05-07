@@ -1,7 +1,7 @@
 package org.ipring.model.inte.symbol;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/04/11 20:52
  * @description:
  */

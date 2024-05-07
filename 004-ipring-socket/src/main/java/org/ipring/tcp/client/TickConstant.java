@@ -1,7 +1,7 @@
 package org.ipring.tcp.client;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/03/19 12:48
  * @description:
  */

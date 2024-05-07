@@ -3,7 +3,7 @@ package org.ipring.websocket.model;
 import lombok.Data;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/04/03 16:35
  * @description:
  */

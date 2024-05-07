@@ -1,10 +1,10 @@
 server:
   port: 8004
 websocket:
-  port: 50041
+  port: 58041
   path: /ws
 tcp:
-  port: 50042
+  port: 58042
 spring:
   profiles:
     active: dev

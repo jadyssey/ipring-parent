@@ -19,7 +19,10 @@
 <script>
     // 创建 WebSocket 连接
     // var socket = new WebSocket("wss://test-wss-ct-push.tostar.top/ws?token=e9f027939c3dbdb7cec8dc4b25c15783");
-    var socket = new WebSocket("ws://localhost:55036/ws?ct4Token=e9f027939c3dbdb7cec8dc4b25c15783");
+    // 本地直连
+    // var socket = new WebSocket("ws://localhost:50041/ws?ct4Token=e9f027939c3dbdb7cec8dc4b25c15783");
+    // nginx代理 实验证明：当前client所有通信需要走代理，代理停掉，通信断掉
+    var socket = new WebSocket("ws://192.168.56.101:80/ws?ct4Token=bdb7cec8dc");
 
     // 连接打开时触发
     socket.onopen = function (event) {

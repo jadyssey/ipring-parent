@@ -3,7 +3,7 @@ package org.ipring.sender;
 import java.util.List;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/04/13 11:08
  * @description:
  */

@@ -20,7 +20,7 @@ import static org.ipring.constant.LogConstant.REQ_IP;
 import static org.ipring.constant.LogConstant.TRACE_ID;
 
 /**
- * @author: Rainful
+ * @author: lgj
  * @date: 2023/05/11 17:52
  * @description:
  */

@@ -20,7 +20,7 @@ import java.util.Optional;
  * 这个Sender目的是为了给客户端发送数据用的
  * 比如K线的实时数据, 账户多地登录时发送同步数据等
  *
- * @author: Rainful
+ * @author: lgj
  * @date: 2024/04/03 15:45
  * @description:
  */
