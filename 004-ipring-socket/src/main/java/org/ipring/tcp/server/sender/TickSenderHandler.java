@@ -7,6 +7,7 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 
 /**
  * @author: lgj
@@ -30,9 +31,9 @@ public class TickSenderHandler extends ChannelInboundHandlerAdapter implements T
         CHANNELS.writeAndFlush(data);
     }
 
-    // @Scheduled(initialDelay = 2 * 1000, fixedRate = 10 * 1000)
-    // public void sendData() {
-    //     String msg = "tcp的方式实现长连接， 当前时间：" + System.currentTimeMillis();
-    //     this.send(msg);
-    // }
+    /*@Scheduled(initialDelay = 2 * 1000, fixedRate = 10 * 1000)
+    public void sendData() {
+        String msg = "tcp的方式实现长连接， 当前时间：" + System.currentTimeMillis();
+        this.send(msg);
+    }*/
 }

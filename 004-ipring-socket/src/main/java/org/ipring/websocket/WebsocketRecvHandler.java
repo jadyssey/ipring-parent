@@ -77,6 +77,11 @@ public class WebsocketRecvHandler extends SimpleChannelInboundHandler<TextWebSoc
     }
 
     @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+    }
+
+    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         String token = Optional.ofNullable(ctx.channel().attr(CommonConstants.TOKEN_KEY)).map(Attribute::get).orElse("token is null");
         log.error("Socket|异常发生: token={}", token, cause);
