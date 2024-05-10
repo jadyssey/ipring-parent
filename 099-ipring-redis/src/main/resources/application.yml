@@ -1,0 +1,33 @@
+server:
+  port: 8099
+spring:
+  profiles:
+    active: dev
+  jackson:
+    deserialization:
+      fail_on_unknown_properties: false # 未定义的key不序列化(允许对象忽略json中不存在的属性)
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://192.168.136.200:3306/bh_im?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+#    username: root
+#    password: Root@123
+
+  autoconfigure:  #禁用redis
+    exclude:
+      - org.redisson.spring.starter.RedissonAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+ipring:
+  swagger:
+    enable: true
+    name: "校验服务"
+    version: V1.0.0
+  env:
+    name: dev
+  task-pool:
+    core-size: 4
+    max-size: 5
+    keep-alive: 60
+    queue-capacity: 200
+  config:
+    svc:
+      base: http://192.168.7.41:30400

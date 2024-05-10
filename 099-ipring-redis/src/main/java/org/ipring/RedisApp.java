@@ -5,13 +5,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * @author lgj
- * @date 2024/4/19
+ * @date 2024/5/10
  **/
-
 @SpringBootApplication
-public class ZeroMqApp {
-
+public class RedisApp {
     public static void main(String[] args) {
-        SpringApplication.run(ZeroMqApp.class, args);
+        SpringApplication.run(RedisApp.class, args);
     }
 }
