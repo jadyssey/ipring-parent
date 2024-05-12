@@ -7,10 +7,14 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.ipring.constant.CommonConstants;
 import org.ipring.util.JsonUtils;
+import org.ipring.util.RedisKeyUtil;
 import org.ipring.websocket.config.WebsocketProperties;
 import org.ipring.websocket.model.WebSocketCmd;
 import org.springframework.util.StringUtils;
+
+import java.util.Objects;
 
 /**
  * @author: lgj
@@ -53,7 +57,14 @@ public class WebSocketKeepAliveHandler extends SimpleChannelInboundHandler<TextW
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.info("Socket|关闭链接：ip={}", ctx.channel().remoteAddress());
-        ctx.close();
+        log.info("Socket|关闭链接：ip:{}, ex:{}", ctx.channel().remoteAddress(), cause.getMessage());
+        ctx.channel().close();
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        // 处理离线
+        log.info("channel:{} 断开连接", ctx.channel().remoteAddress());
+        super.channelInactive(ctx);
     }
 }
