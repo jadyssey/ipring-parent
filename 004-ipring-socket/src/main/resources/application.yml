@@ -5,6 +5,7 @@ websocket:
   path: /ws
 tcp:
   port: 58042
+  enable: false
 spring:
   profiles:
     active: dev

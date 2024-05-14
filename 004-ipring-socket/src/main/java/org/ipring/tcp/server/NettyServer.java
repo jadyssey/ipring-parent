@@ -27,7 +27,6 @@ import org.springframework.core.annotation.Order;
 public class NettyServer implements ApplicationRunner {
 
     private final TickSenderHandler sender;
-    // private final NoticeService noticeService;
     private final TcpServerProperties properties;
 
     @Override

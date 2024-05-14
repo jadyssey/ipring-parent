@@ -35,6 +35,13 @@ public class ServerKeepAliveHandler extends ChannelDuplexHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.info("Socket|关闭链接：ip={}", ctx.channel().remoteAddress());
-        ctx.close();
+        ctx.channel().close();
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        // 处理离线
+        log.info("channel:{} 断开连接", ctx.channel().remoteAddress());
+        super.channelInactive(ctx);
     }
 }

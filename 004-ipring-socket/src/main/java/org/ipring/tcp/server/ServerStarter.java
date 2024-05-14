@@ -2,6 +2,7 @@ package org.ipring.tcp.server;
 
 import lombok.RequiredArgsConstructor;
 import org.ipring.tcp.server.sender.TickSenderHandler;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -13,6 +14,6 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @RequiredArgsConstructor
 @Import({NettyServer.class, TcpServerProperties.class, TickSenderHandler.class})
+@ConditionalOnProperty(value = "tcp.enable", havingValue = "true")
 public class ServerStarter {
-
 }

@@ -12,5 +12,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "tcp")
 public class TcpServerProperties {
 
-    private Integer port = 50042;
+    private Integer port;
 }
