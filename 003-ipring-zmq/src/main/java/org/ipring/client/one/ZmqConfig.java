@@ -1,4 +1,4 @@
-package org.ipring.client;
+package org.ipring.client.one;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;

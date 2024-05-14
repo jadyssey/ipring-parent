@@ -1,7 +1,7 @@
-package org.ipring.client;
+package org.ipring.client.one;
 
+import org.ipring.client.one.sender.TickSender;
 import org.ipring.sender.NoticeService;
-import org.ipring.client.sender.TickSender;
 import org.ipring.model.ClientInfo;
 import org.ipring.model.ZmqConstant;
 import org.ipring.model.ZmqProperties;
