@@ -7,7 +7,6 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import org.zeromq.ZThread;
 
-
 public abstract class MyZmqClient implements Runnable {
     private final String connectUri;
 

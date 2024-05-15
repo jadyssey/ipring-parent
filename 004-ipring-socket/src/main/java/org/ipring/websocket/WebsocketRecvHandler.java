@@ -72,11 +72,6 @@ public class WebsocketRecvHandler extends SimpleChannelInboundHandler<TextWebSoc
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        WebsocketPushHandler.CHANNELS.add(ctx.channel());
-    }
-
-    @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
     }

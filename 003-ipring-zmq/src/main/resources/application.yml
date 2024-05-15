@@ -35,12 +35,12 @@ ipring:
 zmq:
   subscribe-address:
     fb: tcp://quotespush.fastbull.com:5500
-    local-one: #tcp://localhost:58031
-    local-two: #tcp://localhost:58032
+    local-one: tcp://localhost:58031
+    local-two: tcp://localhost:58032
   publish-one: tcp://*:58031
   publish-two: tcp://*:58032
 
 my:
   zmq:
-    subOne: tcp://localhost:58031
-    subTwo: tcp://localhost:58032
+    one: tcp://quotespush.fastbull.com:5500
+    two: tcp://localhost:58032

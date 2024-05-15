@@ -48,6 +48,7 @@ public class WebsocketSecurityHandler extends SimpleChannelInboundHandler<HttpRe
         }
         ctx.channel().attr(CommonConstants.ACC_KEY).set(Collections.emptySet());
         ctx.channel().attr(CommonConstants.TOKEN_KEY).set(token);
+        WebsocketPushHandler.CHANNELS.add(ctx.channel());
         ctx.channel().pipeline().remove(this);
         ctx.fireChannelRead(msg);
     }

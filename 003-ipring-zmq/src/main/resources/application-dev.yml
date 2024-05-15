@@ -27,4 +27,4 @@ ipring:
 
 zmq:
   subscribe-address:
-#    fb: tcp://192.168.7.41:31090
+    fb: tcp://192.168.7.41:31090

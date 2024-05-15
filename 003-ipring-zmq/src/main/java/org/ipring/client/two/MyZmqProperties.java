@@ -13,6 +13,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "my.zmq")
 @Data
 public class MyZmqProperties {
-    private String subOne;
-    private String subTwo;
+    private String one;
+    private String two;
 }

@@ -11,7 +11,6 @@ import java.util.List;
 
 @Slf4j
 @Configuration
-@Import({MyZmqClientOne.class, MyZmqClientTwo.class})
 @RequiredArgsConstructor
 public class MyZmqConfig implements ApplicationRunner {
     private final List<MyZmqClient> clients;
