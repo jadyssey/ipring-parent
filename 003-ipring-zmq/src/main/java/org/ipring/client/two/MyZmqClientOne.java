@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -23,9 +24,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class MyZmqClientOne extends MyZmqClient {
-    private ConcurrentHashMap<Long, Long> COUNT_MAP = new ConcurrentHashMap<>();
-    private ConcurrentSkipListSet<String> COUNT_SYMBOL = new ConcurrentSkipListSet<>();
-    private ConcurrentHashMap<String, LongAdder> GROUP_SYMBOL = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Long> COUNT_MAP = new ConcurrentHashMap<>();
+    private final ConcurrentSkipListSet<String> COUNT_SYMBOL = new ConcurrentSkipListSet<>();
+    private final ConcurrentHashMap<String, LongAdder> GROUP_SYMBOL = new ConcurrentHashMap<>();
     private final LongAdder longAdder = new LongAdder();
     private final AtomicLong atomicLong = new AtomicLong();
 
@@ -38,6 +39,7 @@ public class MyZmqClientOne extends MyZmqClient {
 
     @Override
     public void dealWith(String data) {
+        if (true) return;
         // System.out.println(Thread.currentThread().getName() + " One 收到消息 = " + data);
         long now = System.currentTimeMillis() / 1000;
         long curr = atomicLong.incrementAndGet();
@@ -57,6 +59,8 @@ public class MyZmqClientOne extends MyZmqClient {
         long now = System.currentTimeMillis() / 1000;
         Long prev = COUNT_MAP.get(now - 1);
         Long prev2 = COUNT_MAP.get(now - 2);
+        if (Objects.isNull(prev2)) return;
+
         int size = COUNT_SYMBOL.size();
         COUNT_SYMBOL.clear();
         Set<Map.Entry<String, LongAdder>> entries = GROUP_SYMBOL.entrySet();

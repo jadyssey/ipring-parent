@@ -26,6 +26,8 @@ ipring:
   config:
     svc:
       base: http://192.168.7.41:30400
+      ct4: https://test-ct-trader.tostar.top
+#      ct4: http://localhost:8083
   task-pool:
     core-size: 4
     max-size: 5
@@ -43,4 +45,4 @@ zmq:
 my:
   zmq:
     one: tcp://quotespush.fastbull.com:5500
-    two: tcp://localhost:58032
+    two: tcp://quotespush.fastbull.com:5500

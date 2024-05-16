@@ -1,17 +1,17 @@
 package org.ipring.client.impl;
 
 
-import org.ipring.client.IBaseService;
-import org.ipring.client.dto.CommonDTO;
+import lombok.RequiredArgsConstructor;
 import org.ipring.client.BaseServiceManager;
+import org.ipring.client.IBaseService;
 import org.ipring.client.baseservice.SendEmailSubmit;
-import org.ipring.client.response.BaseServiceResponse;
+import org.ipring.client.dto.CommonDTO;
+import org.ipring.client.response.base.BaseServiceResponse;
 import org.ipring.enums.subcode.SystemServiceCode;
 import org.ipring.model.common.Return;
 import org.ipring.model.common.ReturnFactory;
 import org.ipring.util.JsonUtils;
 import org.ipring.util.MessageUtils;
-import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -20,7 +20,7 @@ import org.springframework.util.StringUtils;
 import java.util.Optional;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class BaseServiceManagerImpl implements BaseServiceManager {
 
     private final IBaseService baseService;

@@ -19,6 +19,8 @@ public class ChannelReadHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+        Long a = null;
+        log.info("test null {}", a);
         symbolMsgThreadPool.execute(() -> {
             // log.info("client 收到消息， msg = “{}” ", msg);
         });

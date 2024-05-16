@@ -1,4 +1,4 @@
-package org.ipring.client.response;
+package org.ipring.client.response.base;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
