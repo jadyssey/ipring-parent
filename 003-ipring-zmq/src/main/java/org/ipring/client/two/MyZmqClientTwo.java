@@ -49,6 +49,7 @@ public class MyZmqClientTwo extends MyZmqClient {
 
     @Override
     public void dealWith(String data) {
+        if (true) return;
         commonThreadPool.execute(() -> {
             long val = atomicLong.get();
             if (val > 1) return; // todo

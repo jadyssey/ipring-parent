@@ -1,11 +1,15 @@
 package org.ipring.client.two;
 
 import lombok.extern.slf4j.Slf4j;
+import org.ipring.model.SymbolMsgDTO;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +43,14 @@ public class MyZmqClientOne extends MyZmqClient {
 
     @Override
     public void dealWith(String data) {
+        if (data.startsWith("8100_EURUSD")) {
+            SymbolMsgDTO newMsgDto = SymbolMsgDTO.of(data.split(","));
+            Instant instant = Instant.ofEpochSecond(newMsgDto.getTime());
+            // 将 Instant 转换为 LocalDateTime（默认时区）
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+            log.info("8100_EURUSD 报价 {}, data = {}", localDateTime, data);
+        }
         if (true) return;
-        // System.out.println(Thread.currentThread().getName() + " One 收到消息 = " + data);
         long now = System.currentTimeMillis() / 1000;
         long curr = atomicLong.incrementAndGet();
         commonThreadPool.execute(() -> {

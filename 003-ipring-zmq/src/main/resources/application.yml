@@ -44,5 +44,5 @@ zmq:
 
 my:
   zmq:
-    one: tcp://quotespush.fastbull.com:5500
+    one: tcp://192.168.7.200:5600
     two: tcp://quotespush.fastbull.com:5500

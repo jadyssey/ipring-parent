@@ -16,19 +16,25 @@
     <div id="messages"></div>
 </div>
 
+</body>
 <script>
-    // 创建 WebSocket 连接
-    // var socket = new WebSocket("wss://test-wss-ct-push.tostar.top/ws?token=e9f027939c3dbdb7cec8dc4b25c15783");
-    // 本地直连
-    var socket = new WebSocket("ws://192.168.1.121:58082/ws?ct4Token=1788807622092464168");
-    // var socket = new WebSocket("ws://localhost:58041/ws?ct4Token=e9f027939c3dbdb7cec8dc4b25c15783");
+    let messageCount = 0;
+
+    // TEST
+    // var socket = new WebSocket("wss://test-wss-ct-push.tostar.top/ws?ct4Token=S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
+
+    // local
+    var socket = new WebSocket("ws://localhost:58082/ws?ct4Token=S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
+
     // nginx代理 实验证明：当前client所有通信需要走代理，代理停掉，通信断掉
     // var socket = new WebSocket("ws://192.168.56.101:80/ws?ct4Token=bdb7cec8dc");
 
     // 连接打开时触发
     socket.onopen = function (event) {
-        console.log("WebSocket 连接已打开");
-
+        const start = Date.now();
+        countPrimes(500000);
+        console.log("WebSocket 连接已打开 ", Date.now() - start);
+        startCounting();
         // 开启一个定时器，每隔 10 秒发送心跳消息
         setInterval(function () {
             // 构建心跳消息
@@ -41,30 +47,56 @@
             socket.send(heartbeatMessage);
         }, 10000); // 10 秒
     };
-
     // 接收消息时触发
     socket.onmessage = function (event) {
-        var receivedMessage = event.data;
-
+        const start = Date.now();
+        let receivedMessage = event.data;
         try {
+            // const primeCount = countPrimes(500000);
             // 将接收到的 JSON 字符串解析为 JavaScript 对象
-            var jsonObject = JSON.parse(receivedMessage);
-
-            // 美化输出 JSON 对象
-            var formattedMessage = JSON.stringify(jsonObject, null, 2); // 2 表示缩进两个空格
-
-            console.log("接收到的消息:");
-            console.log(formattedMessage);
-
-            // 将美化后的消息显示在页面上
             var messagesDiv = document.getElementById("messages");
             var messageElement = document.createElement("pre");
-            messageElement.textContent = formattedMessage;
+            messageElement.textContent = receivedMessage.substring(0, 100);
             messagesDiv.prepend(messageElement);
+
+            /*var jsonObject = JSON.parse(receivedMessage);
+            var formattedMessage = JSON.stringify(jsonObject, null, 2); // 2 表示缩进两个空格
+            var messageElement = document.createElement("pre");
+            messageElement.textContent = formattedMessage;
+            var messagesDiv = document.getElementById("messages");
+            messagesDiv.prepend(messageElement);*/
         } catch (error) {
             console.error("接收消息时发生错误:", error);
         }
+        console.log("WebSocket 连接已打开 ", Date.now() - start);
     };
+
+    function isPrime(num) {
+        if (num <= 1) return false;
+        if (num <= 3) return true;
+
+        // 排除偶数
+        if (num % 2 === 0 || num % 3 === 0) return false;
+
+        // 对于其他情况，只需要检查到sqrt(num)即可
+        for (let i = 5; i * i <= num; i += 6) {
+            if (num % i === 0 || num % (i + 2) === 0) return false;
+        }
+
+        return true;
+    }
+
+    function countPrimes(limit) {
+        let count = 0;
+
+        for (let i = 2; i < limit; i++) {
+            if (isPrime(i)) {
+                count++;
+            }
+        }
+
+        return count;
+    }
 
     // 连接关闭时触发
     socket.onclose = function (event) {
@@ -111,5 +143,4 @@
         messageInput.value = "";
     });
 </script>
-</body>
 </html>
