@@ -2,4 +2,5 @@
 * [面试官：海量数据时 Redis 存储优化和解决方案！！ (qq.com)](https://mp.weixin.qq.com/s/05n3AtrykOfAEYkOJPzuqQ)
 * [腾讯二面：Redis 内存淘汰策略有哪些？过期数据如何删除？ (qq.com)](https://mp.weixin.qq.com/s/A4mGgq9bYT7mn4T4_SoXsg)
 * [1.2万字盘点Redis的15个坑，你踩过几个？ (qq.com)](https://mp.weixin.qq.com/s/vB8l2HFim6WvxcyYrpBPqA)
-* 
+* [单线程 Redis 如此快的 4 个原因 (qq.com)](https://mp.weixin.qq.com/s/MZb8cGRld5TP1s3xJvTJMA)
+

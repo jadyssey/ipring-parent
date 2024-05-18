@@ -5,8 +5,11 @@
 
 * [SpringBoot + 事务钩子函数，打造高效支付系统！ (qq.com)](https://mp.weixin.qq.com/s/F5EJlqwQX663dL8cBMur5w) a
 * [SpringBoot + 事务钩子函数，打造高效支付系统！ (qq.com)](https://mp.weixin.qq.com/s/Go1b3XWe3g8ev_UIx0i-9Q) b
-
 * [支撑瞬间百万QPS的热点文章服务的设计 (qq.com)](https://mp.weixin.qq.com/s/UlXV2X-jLqmazcsAT9D4bw)
+
+
+
+* [使用 查询分离 后 从20s优化到500ms (qq.com)](https://mp.weixin.qq.com/s/wqJrTlS6ePqPcFB4i0NIOQ)
 
 ## SpringBoot
 
@@ -15,6 +18,7 @@
 * [三万字盘点Spring最最核心的9大核心功能 (qq.com)](https://mp.weixin.qq.com/s/jgxQCIUnG7PhKfv7PxQYKg)
 * [京东一面：Spring 为何需要三级缓存解决循环依赖，而不是二级缓存？我懵了。。 (qq.com)](https://mp.weixin.qq.com/s/nVkX9RDB3_unRxxVIYwntA)
 * [SpringBoot 项目 Jar 包加密，防止反编译 (qq.com)](https://mp.weixin.qq.com/s/XFTDcLe8RiRWBFZEgV5j9A)
+* [Spring 中 @Qualifier 注解还能这么用？ (qq.com)](https://mp.weixin.qq.com/s/gY7tetEEBe4A9ElHanr2qg)
 
 ## DDD
 
