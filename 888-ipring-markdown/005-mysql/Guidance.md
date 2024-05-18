@@ -7,3 +7,4 @@
 
 
 * [核心面试题：MVCC、间隙锁、Undo Log链、表级锁、行级锁、页级锁、共享锁、排它锁、记录锁等等 (qq.com)](https://mp.weixin.qq.com/s/QSdvjhqsFwoAB2PEwIW9dQ)
+* [拒绝空谈：实例演示MySQL事务隔离级别 (qq.com)](https://mp.weixin.qq.com/s/SfFj65hR5bibRQi2lg6Z5w)

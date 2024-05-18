@@ -14,6 +14,7 @@
 * [把 Spring Boot 项目从 18.18M 瘦身到 0.18M，部署超级快！ (qq.com)](https://mp.weixin.qq.com/s/opPe3CWMkgUIyMh9fWn-Kg)
 * [三万字盘点Spring最最核心的9大核心功能 (qq.com)](https://mp.weixin.qq.com/s/jgxQCIUnG7PhKfv7PxQYKg)
 * [京东一面：Spring 为何需要三级缓存解决循环依赖，而不是二级缓存？我懵了。。 (qq.com)](https://mp.weixin.qq.com/s/nVkX9RDB3_unRxxVIYwntA)
+* [SpringBoot 项目 Jar 包加密，防止反编译 (qq.com)](https://mp.weixin.qq.com/s/XFTDcLe8RiRWBFZEgV5j9A)
 
 ## DDD
 

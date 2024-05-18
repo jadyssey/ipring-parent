@@ -1,3 +1,5 @@
 * [BigDecimal 为什么可以保证精度不丢失？ (qq.com)](https://mp.weixin.qq.com/s/ZVDP_weGRXVeRSuLLYx-IA)
 * [0.1+0.2 不等于 0.3 ？这是为什么？一篇讲清楚！！！ (qq.com)](https://mp.weixin.qq.com/s/gJ13GOKviKmLy2--WaD50w)
 * [逃逸分析：分离对象、标量替换、同步锁消除 (qq.com)](https://mp.weixin.qq.com/s/CQJTEjFhMhHC9DYhs6CClA)
+* [程序员进阶架构师必看的面试重灾区：JVM整体架构、内存模型与调优实战 (qq.com)](https://mp.weixin.qq.com/s/8-t2EzLkvWsiHmw9EoCTUA)
+* [JVM 内存大对象监控和优化实践 (qq.com)](https://mp.weixin.qq.com/s/xYKbkTsseiXSHk1Dxo4uDw)
