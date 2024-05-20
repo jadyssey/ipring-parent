@@ -1,4 +1,4 @@
-package org.ipring.client.dto;
+package org.ipring.model.httpclient.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

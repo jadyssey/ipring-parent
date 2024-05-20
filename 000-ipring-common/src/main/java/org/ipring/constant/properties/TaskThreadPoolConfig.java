@@ -15,11 +15,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "ipring.task-pool")
 public class TaskThreadPoolConfig {
-    private int coreSize;
+    private int coreSize = 4;
 
-    private int maxSize;
+    private int maxSize = 5;
 
-    private int keepAlive;
+    private int keepAlive = 60;
 
-    private int queueCapacity;
+    private int queueCapacity = 500;
 }

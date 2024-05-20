@@ -28,6 +28,7 @@
         <module>099-ipring-redis</module>
         <module>021-ipring-jvm</module>
         <module>888-ipring-markdown</module>
+        <module>011-ipring-framework</module>
     </modules>
 
     <properties>
@@ -56,6 +57,9 @@
         <netty.version>4.1.86.Final</netty.version>
         <fastjson.version>1.2.83</fastjson.version>
         <rocketMQ.version>2.2.3</rocketMQ.version>
+
+        <mapstruct>1.5.5.Final</mapstruct>
+        <mapstruct.binding>0.2.0</mapstruct.binding>
     </properties>
 
     <dependencyManagement>
@@ -162,6 +166,26 @@
                 <artifactId>rocketmq-spring-boot-starter</artifactId>
                 <version>${rocketMQ.version}</version>
             </dependency>
+
+            <!--#region 对象转换工具-->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-mapstruct-binding</artifactId>
+                <version>${mapstruct.binding}</version>
+                <scope>provided</scope>
+            </dependency>
+            <!--#endregion 对象转换工具-->
         </dependencies>
 
     </dependencyManagement>

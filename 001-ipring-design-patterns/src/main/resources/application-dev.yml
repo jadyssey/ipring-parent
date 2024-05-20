@@ -1,0 +1,7 @@
+ipring:
+  swagger:
+    enable: true
+    name: "校验服务"
+    version: V1.0.0
+  env:
+    name: dev

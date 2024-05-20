@@ -1,4 +1,4 @@
-package org.ipring.client.response.ct4;
+package org.ipring.model.httpclient.response.ct4;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

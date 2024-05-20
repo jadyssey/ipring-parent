@@ -1,4 +1,4 @@
-package org.ipring.client.response.ct4;
+package org.ipring.model.httpclient.response.ct4;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.ipring.anno.EnumValue;
 import org.ipring.enums.order.OrderStatusEnum;
-import org.springframework.beans.BeanUtils;
 
 import java.math.BigDecimal;
 

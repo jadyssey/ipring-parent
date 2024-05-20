@@ -1,8 +1,8 @@
 package org.ipring.client.two;
 
-import org.ipring.client.Ct4ServiceManager;
-import org.ipring.client.dto.OrderAddDTO;
-import org.ipring.client.response.ct4.ModifyOrderVO;
+import org.ipring.httpclient.Ct4ServiceManager;
+import org.ipring.model.httpclient.dto.OrderAddDTO;
+import org.ipring.model.httpclient.response.ct4.ModifyOrderVO;
 import org.ipring.enums.order.OrderTypeEnum;
 import org.ipring.model.SymbolMsgDTO;
 import org.ipring.model.common.Return;

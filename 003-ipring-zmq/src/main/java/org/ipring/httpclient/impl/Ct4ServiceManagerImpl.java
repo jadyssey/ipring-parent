@@ -1,12 +1,12 @@
-package org.ipring.client.impl;
+package org.ipring.httpclient.impl;
 
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.ipring.client.Ct4ServiceManager;
-import org.ipring.client.ICt4Service;
-import org.ipring.client.dto.OrderAddDTO;
-import org.ipring.client.response.ct4.ModifyOrderVO;
+import org.ipring.httpclient.Ct4ServiceManager;
+import org.ipring.httpclient.ICt4Service;
+import org.ipring.model.httpclient.dto.OrderAddDTO;
+import org.ipring.model.httpclient.response.ct4.ModifyOrderVO;
 import org.ipring.model.common.Return;
 import org.ipring.util.JsonUtils;
 import org.springframework.stereotype.Component;
