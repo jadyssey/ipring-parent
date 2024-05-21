@@ -1,5 +1,14 @@
+
 * [一文读懂Cache一致性原理 (qq.com)](https://mp.weixin.qq.com/s/2xrz4JbWkbRnR5geGM0CgA)
-* 
+* Jmeter压测
+
+## 面试常问
+* 项目遇到的问题
+
+## 分布式
+
+* 分布式事物
+* 分布式链路追踪
 
 ## 设计
 
@@ -12,6 +21,7 @@
 * [使用 查询分离 后 从20s优化到500ms (qq.com)](https://mp.weixin.qq.com/s/wqJrTlS6ePqPcFB4i0NIOQ)
 
 ## SpringBoot
+* spring 源码
 
 * [SpringBoot 动态加载 jar 包，动态配置方案 (qq.com)](https://mp.weixin.qq.com/s/X5EoIreBIfIzeV5RD9Ti7w)
 * [把 Spring Boot 项目从 18.18M 瘦身到 0.18M，部署超级快！ (qq.com)](https://mp.weixin.qq.com/s/opPe3CWMkgUIyMh9fWn-Kg)
@@ -35,3 +45,6 @@
 
 * [如何画好一张架构图？ (qq.com)](https://mp.weixin.qq.com/s/44VdJNNvvFemTwFTm5eK-w)
 
+
+
+## K8s & docker
