@@ -3,17 +3,6 @@ server:
 spring:
   profiles:
     active: dev
-
-
-mybatis-plus:
-  configuration:
-    # 是否开启自动驼峰命名规则（camel case）映射，即从经典数据库列名 A_COLUMN（下划线命名） 到经典 Java 属性名 aColumn（驼峰命名） 的类似映射
-    map-underscore-to-camel-case: true
-    #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    # mapper
-  mapper-locations:
-    # *.xml的具体路径
-    - classpath*:mapper/*.xml
 ipring:
   swagger:
     enable: true
@@ -24,9 +13,7 @@ ipring:
   netty:
     server: 192.168.7.41:31265
   config:
-    svc:
-      base: http://192.168.7.41:30400
-      ct4: https://test-ct-trader.tostar.top
+    ct4: https://test-ct-trader.tostar.top
 #      ct4: http://localhost:8083
   task-pool:
     core-size: 4

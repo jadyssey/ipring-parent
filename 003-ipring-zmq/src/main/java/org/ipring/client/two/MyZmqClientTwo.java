@@ -1,11 +1,11 @@
 package org.ipring.client.two;
 
-import org.ipring.httpclient.Ct4ServiceManager;
-import org.ipring.model.httpclient.dto.OrderAddDTO;
-import org.ipring.model.httpclient.response.ct4.ModifyOrderVO;
 import org.ipring.enums.order.OrderTypeEnum;
+import org.ipring.httpclient.Ct4ServiceManager;
 import org.ipring.model.SymbolMsgDTO;
 import org.ipring.model.common.Return;
+import org.ipring.model.httpclient.dto.OrderAddDTO;
+import org.ipring.model.httpclient.response.ct4.ModifyOrderVO;
 import org.ipring.util.CalcUtil;
 import org.ipring.util.SymbolMsgUtil;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -33,8 +33,10 @@ public class MyZmqClientTwo extends MyZmqClient {
     static {
         //ACC_TOKEN_MAP.put(296, "S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
         //ACC_TOKEN_MAP.put(297, "S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
-        ACC_TOKEN_MAP.put(288, "0b0f54a4c74a5909024afbeec3de20c4");
-        ACC_TOKEN_MAP.put(582, "0b0f54a4c74a5909024afbeec3de20c4");
+        ACC_TOKEN_MAP.put(618, "S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
+        ACC_TOKEN_MAP.put(633, "S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
+        //ACC_TOKEN_MAP.put(288, "0b0f54a4c74a5909024afbeec3de20c4");
+        //ACC_TOKEN_MAP.put(582, "0b0f54a4c74a5909024afbeec3de20c4");
     }
 
     private final Ct4ServiceManager ct4ServiceManager;
@@ -49,15 +51,19 @@ public class MyZmqClientTwo extends MyZmqClient {
 
     @Override
     public void dealWith(String data) {
+        if (!data.startsWith("8")) {
+            return;
+        }
         if (true) return;
         commonThreadPool.execute(() -> {
             long val = atomicLong.get();
-            if (val > 1) return; // todo
+            if (val > 1000) return; // todo
 
             String[] msgArr = data.split(",");
             SymbolMsgDTO newMsgDto = SymbolMsgDTO.of(msgArr);
             OrderAddDTO req = new OrderAddDTO();
             List<Integer> acc = new ArrayList<>(ACC_TOKEN_MAP.keySet());
+            if (acc.size() == 0) return;
             req.setAccountId(acc.get(ThreadLocalRandom.current().nextInt(acc.size())).longValue());
             req.setComment("压测下单: " + LocalDateTime.now());
             req.setOperation(ThreadLocalRandom.current().nextInt(6));

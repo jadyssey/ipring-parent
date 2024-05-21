@@ -29,6 +29,7 @@
         <module>021-ipring-jvm</module>
         <module>888-ipring-markdown</module>
         <module>011-ipring-framework</module>
+        <module>012-ipring-docker</module>
     </modules>
 
     <properties>

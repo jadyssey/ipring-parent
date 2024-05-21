@@ -43,7 +43,7 @@ public class MyZmqClientOne extends MyZmqClient {
 
     @Override
     public void dealWith(String data) {
-        if (data.startsWith("8100_EURUSD")) {
+        if (data.startsWith("8")) {
             SymbolMsgDTO newMsgDto = SymbolMsgDTO.of(data.split(","));
             Instant instant = Instant.ofEpochSecond(newMsgDto.getTime());
             // 将 Instant 转换为 LocalDateTime（默认时区）

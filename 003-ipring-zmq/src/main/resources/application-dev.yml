@@ -6,25 +6,9 @@ spring:
   jackson:
     deserialization:
       fail_on_unknown_properties: false
-
-  autoconfigure:
-    exclude:
-      - org.redisson.spring.starter.RedissonAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-mybatis-plus:
-  configuration:
-    # 是否开启自动驼峰命名规则（camel case）映射，即从经典数据库列名 A_COLUMN（下划线命名） 到经典 Java 属性名 aColumn（驼峰命名） 的类似映射
-    map-underscore-to-camel-case: true
-    #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    # mapper
-  mapper-locations:
-    # *.xml的具体路径
-    - classpath*:mapper/*.xml
 ipring:
   env:
     name: dev
-
-
 zmq:
   subscribe-address:
     fb: tcp://192.168.7.41:31090
