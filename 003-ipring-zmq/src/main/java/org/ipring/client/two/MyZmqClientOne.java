@@ -31,7 +31,6 @@ public class MyZmqClientOne extends MyZmqClient {
     private final ConcurrentHashMap<Long, Long> COUNT_MAP = new ConcurrentHashMap<>();
     private final ConcurrentSkipListSet<String> COUNT_SYMBOL = new ConcurrentSkipListSet<>();
     private final ConcurrentHashMap<String, LongAdder> GROUP_SYMBOL = new ConcurrentHashMap<>();
-    private final LongAdder longAdder = new LongAdder();
     private final AtomicLong atomicLong = new AtomicLong();
 
     @Resource

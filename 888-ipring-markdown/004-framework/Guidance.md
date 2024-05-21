@@ -22,13 +22,16 @@
 
 ## SpringBoot
 * spring 源码
-
 * [SpringBoot 动态加载 jar 包，动态配置方案 (qq.com)](https://mp.weixin.qq.com/s/X5EoIreBIfIzeV5RD9Ti7w)
 * [把 Spring Boot 项目从 18.18M 瘦身到 0.18M，部署超级快！ (qq.com)](https://mp.weixin.qq.com/s/opPe3CWMkgUIyMh9fWn-Kg)
 * [三万字盘点Spring最最核心的9大核心功能 (qq.com)](https://mp.weixin.qq.com/s/jgxQCIUnG7PhKfv7PxQYKg)
 * [京东一面：Spring 为何需要三级缓存解决循环依赖，而不是二级缓存？我懵了。。 (qq.com)](https://mp.weixin.qq.com/s/nVkX9RDB3_unRxxVIYwntA)
 * [SpringBoot 项目 Jar 包加密，防止反编译 (qq.com)](https://mp.weixin.qq.com/s/XFTDcLe8RiRWBFZEgV5j9A)
 * [Spring 中 @Qualifier 注解还能这么用？ (qq.com)](https://mp.weixin.qq.com/s/gY7tetEEBe4A9ElHanr2qg)
+
+## Mybatis
+
+* ~~[聊聊MyBatis缓存机制 - 美团技术团队 (meituan.com)](https://tech.meituan.com/2018/01/19/mybatis-cache.html)~~
 
 ## DDD
 
