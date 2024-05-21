@@ -11,6 +11,7 @@
         <module name="002-ipring-mq" />
         <module name="011-ipring-framework" />
         <module name="020-ipring-juc" />
+        <module name="012-ipring-docker" />
         <module name="100-ipring-mysql" />
         <module name="099-ipring-redis" />
         <module name="021-ipring-jvm" />
@@ -32,6 +33,7 @@
       <module name="004-ipring-socket" options="-parameters" />
       <module name="010-ipring-validation" options="-parameters" />
       <module name="011-ipring-framework" options="-parameters" />
+      <module name="012-ipring-docker" options="-parameters" />
       <module name="020-ipring-juc" options="-parameters" />
       <module name="021-ipring-jvm" options="-parameters" />
       <module name="050-ipring-odyssey" options="-parameters" />
