@@ -7,8 +7,10 @@
 <h1>WebSocket Client</h1>
 
 <div>
-    <input type="text" id="messageInput" placeholder="输入消息...">
-    <button id="sendButton">发送消息</button>
+    <tr>
+        <td><input type="text" id="messageInput" placeholder="输入消息..."><button id="sendButton">发送消息</button></td>
+        <td><p>订阅用户：</p><p id="subAccount" ></p></td>
+    </tr>
 </div>
 
 <div>
@@ -16,15 +18,14 @@
     <div id="messages"></div>
 </div>
 
-</body>
 <script>
     let messageCount = 0;
 
     // TEST
     // var socket = new WebSocket("wss://test-wss-ct-push.tostar.top/ws?ct4Token=S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
-
     // local
     var socket = new WebSocket("ws://localhost:58082/ws?ct4Token=S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
+    let lastHearbeat = Date.now();
 
     // nginx代理 实验证明：当前client所有通信需要走代理，代理停掉，通信断掉
     // var socket = new WebSocket("ws://192.168.56.101:80/ws?ct4Token=bdb7cec8dc");
@@ -34,24 +35,28 @@
         const start = Date.now();
         countPrimes(500000);
         console.log("WebSocket 连接已打开 ", Date.now() - start);
-        startCounting();
         // 开启一个定时器，每隔 10 秒发送心跳消息
         setInterval(function () {
+            console.log("心跳 ", Date.now())
             // 构建心跳消息
             var heartbeatMessage = JSON.stringify({
                 cmd: 100,
                 data: "ping"
             });
 
-            // 发送心跳消息
             socket.send(heartbeatMessage);
+            if (Date.now() - lastHearbeat > 20 * 1000) {
+                console.log("socket 断开 重新连接");
+                socket.
+                lastHearbeat = Date.now();
+            }
         }, 10000); // 10 秒
     };
     // 接收消息时触发
     socket.onmessage = function (event) {
-        const start = Date.now();
         let receivedMessage = event.data;
         try {
+            lastHearbeat = Date.now();
             // const primeCount = countPrimes(500000);
             // 将接收到的 JSON 字符串解析为 JavaScript 对象
             var messagesDiv = document.getElementById("messages");
@@ -68,35 +73,7 @@
         } catch (error) {
             console.error("接收消息时发生错误:", error);
         }
-        console.log("WebSocket 连接已打开 ", Date.now() - start);
     };
-
-    function isPrime(num) {
-        if (num <= 1) return false;
-        if (num <= 3) return true;
-
-        // 排除偶数
-        if (num % 2 === 0 || num % 3 === 0) return false;
-
-        // 对于其他情况，只需要检查到sqrt(num)即可
-        for (let i = 5; i * i <= num; i += 6) {
-            if (num % i === 0 || num % (i + 2) === 0) return false;
-        }
-
-        return true;
-    }
-
-    function countPrimes(limit) {
-        let count = 0;
-
-        for (let i = 2; i < limit; i++) {
-            if (isPrime(i)) {
-                count++;
-            }
-        }
-
-        return count;
-    }
 
     // 连接关闭时触发
     socket.onclose = function (event) {
@@ -116,6 +93,8 @@
             alert("请输入消息内容");
             return;
         }
+        let subAccount = document.getElementById("subAccount");
+        subAccount.textContent = inputText
 
         // 将输入文本根据逗号进行分割，转化为数组
         var dataArray = inputText.split(",").map(function (item) {
@@ -142,5 +121,27 @@
         // 清空输入框
         messageInput.value = "";
     });
+
+    function isPrime(num) {
+        if (num <= 1) return false;
+        if (num <= 3) return true;
+        // 排除偶数
+        if (num % 2 === 0 || num % 3 === 0) return false;
+        // 对于其他情况，只需要检查到sqrt(num)即可
+        for (let i = 5; i * i <= num; i += 6) {
+            if (num % i === 0 || num % (i + 2) === 0) return false;
+        }
+        return true;
+    }
+    function countPrimes(limit) {
+        let count = 0;
+        for (let i = 2; i < limit; i++) {
+            if (isPrime(i)) {
+                count++;
+            }
+        }
+        return count;
+    }
 </script>
+</body>
 </html>

@@ -22,7 +22,7 @@ import java.util.Objects;
  */
 @Slf4j
 @Component
-@RocketMQMessageListener(topic = "${topic.order}", consumerGroup = "niu_group", selectorExpression = "niu",
+@RocketMQMessageListener(topic = "${topic.order}", consumerGroup = "${group.order}", selectorExpression = "niu",
         messageModel = MessageModel.BROADCASTING)
 public class NiuOrderRocketMqListener implements RocketMQListener<String> {
 

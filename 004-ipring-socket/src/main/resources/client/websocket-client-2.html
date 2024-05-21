@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Client</title>
+</head>
+<body>
+<h1>WebSocket Client</h1>
+
+<div>
+    <tr>
+        <td>
+            <input type="text" id="messageInput" placeholder="输入消息...">
+            <button id="sendButton">发送消息</button>
+        </td>
+        <td>
+            <p>订阅用户：</p>
+            <p id="subAccount"></p>
+        </td>
+    </tr>
+</div>
+
+<div>
+    <h2>接收到的消息:</h2>
+    <div id="messages"></div>
+</div>
+
+<script>
+    let connectUrl = "ws://localhost:58082/ws?ct4Token=";
+    // let connectUrl = "wss://test-wss-ct-push.tostar.top/ws?ct4Token=";
+    let ct4Token = "S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=";
+
+    let socket;
+    let lastHearbeat = Date.now();
+    const heartbeatInterval = 10000; // 10 秒
+    const reconnectInterval = heartbeatInterval * 1.5; // 5 秒
+    let heartbeatTimer;
+    let reconnectTimer;
+
+    const customMessage = {
+        cmd: 200,
+        data: null
+    };
+
+    function parseAndSendInput(inputText) {
+        if (!inputText || inputText === "") {
+            return;
+        }
+        customMessage.data = inputText.split(",").map(item => {
+            const num = parseInt(item.trim(), 10);
+            if (isNaN(num)) {
+                throw new Error("输入包含无效的数字");
+            }
+            return num;
+        });
+        socket.send(JSON.stringify(customMessage));
+        customMessage.data = null;
+    }
+
+    function startWebSocket() {
+        if (socket) {
+            socket.close();
+        }
+
+        socket = new WebSocket(connectUrl + ct4Token);
+        socket.onopen = function () {
+            console.log("WebSocket 连接已打开");
+            lastHearbeat = Date.now();
+            sendHeartbeat();
+
+            // 获取订阅用户的内容，并发送消息
+            const subAccount = document.getElementById("subAccount").textContent;
+            parseAndSendInput(subAccount);
+        };
+
+        socket.onmessage = function (event) {
+            lastHearbeat = Date.now();
+
+            let receivedMessage = event.data;
+            var messagesDiv = document.getElementById("messages");
+            var messageElement = document.createElement("pre");
+            messageElement.textContent = receivedMessage.substring(0, 1000);
+            messagesDiv.prepend(messageElement);
+            // 模拟执行业务
+            countPrimes(100000);
+        };
+
+        socket.onclose = function () {
+            console.log("WebSocket 连接已关闭");
+            scheduleReconnect();
+        };
+
+        socket.onerror = function () {
+            console.log("WebSocket 连接异常");
+            scheduleReconnect();
+        };
+    }
+
+    function sendHeartbeat() {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = setInterval(function () {
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                clearInterval(heartbeatTimer);
+                return;
+            }
+
+            var heartbeatMessage = JSON.stringify({
+                cmd: 100,
+                data: "ping"
+            });
+            socket.send(heartbeatMessage);
+
+            if (Date.now() - lastHearbeat > 2 * heartbeatInterval) {
+                console.log("心跳超时，重新连接");
+                scheduleReconnect();
+            }
+        }, heartbeatInterval);
+    }
+
+    function scheduleReconnect() {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(function () {
+            console.log("尝试重新连接...");
+            startWebSocket();
+        }, reconnectInterval);
+    }
+
+    startWebSocket();
+
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const sendButton = document.getElementById("sendButton");
+        const messageInput = document.getElementById("messageInput");
+        const subAccount = document.getElementById("subAccount");
+
+        sendButton.addEventListener("click", function () {
+            const inputText = messageInput.value.trim();
+
+            if (inputText === "") {
+                alert("请输入消息内容");
+                return;
+            }
+
+            subAccount.textContent = inputText;
+
+            try {
+                parseAndSendInput(inputText);
+                messageInput.value = "";
+            } catch (error) {
+                console.error("Error processing input:", error.message);
+                alert("输入包含无效的数字");
+            }
+        });
+    });
+
+    function isPrime(num) {
+        if (num <= 1) return false;
+        if (num <= 3) return true;
+        if (num % 2 === 0 || num % 3 === 0) return false;
+        for (let i = 5; i * i <= num; i += 6) {
+            if (num % i === 0 || num % (i + 2) === 0) return false;
+        }
+        return true;
+    }
+
+    function countPrimes(limit) {
+        let count = 0;
+        for (let i = 2; i < limit; i++) {
+            if (isPrime(i)) {
+                count++;
+            }
+        }
+        return count;
+    }
+</script>
+</body>
+</html>
