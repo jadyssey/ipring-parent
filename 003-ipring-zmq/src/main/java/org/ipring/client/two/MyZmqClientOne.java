@@ -42,6 +42,7 @@ public class MyZmqClientOne extends MyZmqClient {
 
     @Override
     public void dealWith(String data) {
+        if (true) return;
         if (data.startsWith("8")) {
             SymbolMsgDTO newMsgDto = SymbolMsgDTO.of(data.split(","));
             Instant instant = Instant.ofEpochSecond(newMsgDto.getTime());
@@ -49,7 +50,6 @@ public class MyZmqClientOne extends MyZmqClient {
             LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
             log.info("8100_EURUSD 报价 {}, data = {}", localDateTime, data);
         }
-        if (true) return;
         long now = System.currentTimeMillis() / 1000;
         long curr = atomicLong.incrementAndGet();
         commonThreadPool.execute(() -> {

@@ -11,10 +11,10 @@ public interface Question {
      * 1 多线程中暂停线程的方式有哪些？ wait() join() interrupt(),
      */
     static void main(String[] args) throws InterruptedException {
-        new Object().wait(); // 1
-        Thread.currentThread().interrupt(); // 2
-        TimeUnit.SECONDS.sleep(5); // 3
-        Thread.yield();// 4 让出CPU时间片
+        new Object().wait(); // 1 释放锁
+        Thread.currentThread().interrupt(); // 2 中断
+        TimeUnit.SECONDS.sleep(5); // 3 没有释放锁
+        Thread.yield();// 4 让出CPU时间片 没有释放锁
         /*
         5 join()
         join()的作用是：“等待该线程终止” 这里需要理解的就是该线程是指的主线程等待子线程的终止。
