@@ -15,6 +15,7 @@
 * [SpringBoot + 事务钩子函数，打造高效支付系统！ (qq.com)](https://mp.weixin.qq.com/s/F5EJlqwQX663dL8cBMur5w) a
 * [SpringBoot + 事务钩子函数，打造高效支付系统！ (qq.com)](https://mp.weixin.qq.com/s/Go1b3XWe3g8ev_UIx0i-9Q) b
 * [支撑瞬间百万QPS的热点文章服务的设计 (qq.com)](https://mp.weixin.qq.com/s/UlXV2X-jLqmazcsAT9D4bw)
+* 
 
 
 
@@ -37,6 +38,8 @@
 
 * [DDD面试题：DDD聚合和表的对应关系是什么 ？（来自蚂蚁面试） (qq.com)](https://mp.weixin.qq.com/s/n_0NaMLTALYYrm8HIzDT5Q)
 * [DDD在大众点评交易系统演进中的应用 (qq.com)](https://mp.weixin.qq.com/s/_VehzjU22Z1AUAPrEoswHQ)
+* [领域驱动设计DDD在B端营销系统的实践 (qq.com)](https://mp.weixin.qq.com/s/Iyk48w8vbzofIrzKBwLCAQ)
+* [万字聊一聊DDD领域驱动设计理论 (qq.com)](https://mp.weixin.qq.com/s/yiCpy3RoZNGX04Yawvca_A)
 
 ## 微服务
 

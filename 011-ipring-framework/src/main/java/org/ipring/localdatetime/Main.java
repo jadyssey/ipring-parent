@@ -1,12 +1,16 @@
 package org.ipring.localdatetime;
 
+import java.lang.management.ManagementFactory;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.ZoneId;
 
 public class Main {
     public static void main(String[] args) {
+        String name = ManagementFactory.getRuntimeMXBean().getName();
+        System.out.println("name = " + name);
+
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
 
 
