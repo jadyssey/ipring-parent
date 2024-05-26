@@ -29,6 +29,7 @@
 * [京东一面：Spring 为何需要三级缓存解决循环依赖，而不是二级缓存？我懵了。。 (qq.com)](https://mp.weixin.qq.com/s/nVkX9RDB3_unRxxVIYwntA)
 * [SpringBoot 项目 Jar 包加密，防止反编译 (qq.com)](https://mp.weixin.qq.com/s/XFTDcLe8RiRWBFZEgV5j9A)
 * [Spring 中 @Qualifier 注解还能这么用？ (qq.com)](https://mp.weixin.qq.com/s/gY7tetEEBe4A9ElHanr2qg)
+* [@Transactional 中使用线程锁导致了锁失效，震惊了... (qq.com)](https://mp.weixin.qq.com/s/nZuWekQY6j1OMNU5ZdLeeQ)
 
 ## Mybatis
 
