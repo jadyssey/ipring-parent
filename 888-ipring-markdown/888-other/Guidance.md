@@ -5,3 +5,6 @@
 * [恭喜星球又一名小伙伴上岸大厂（附面试真题） (qq.com)](https://mp.weixin.qq.com/s/b1l2wDUIQDRkMwU830wYWA)
 * 
 
+
+
+* [智牛股 (gitee.com)](https://gitee.com/itxinfei/bulls-stock) 有提到技术选型，可以学习选型思想

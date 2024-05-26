@@ -123,6 +123,7 @@ public class RedisUtil {
             return this.getResult(str, type);
         }
         //从数据库查询数据
+
         R r = dbFallback.apply(id);
         if (Objects.isNull(r)) return null;
         //缓存数据
