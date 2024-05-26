@@ -147,10 +147,15 @@ public class RedisUtil {
     public <R, ID> R query(String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallback, Duration duration) {
         //获取存储到Redis中的数据key
         String key = RedisKeyUtil.getKey(keyPrefix, id);
-        R str = getRedis(type, key);
-
+        //从Redis查询缓存数据
+        String str = template.opsForValue().get(key);
+        //缓存存在数据，直接返回
+        if (StringUtils.hasText(str)) {
+            //返回数据
+            return this.getResult(str, type);
+        }
         //缓存中存储的是空字符串
-        if (str == null || EMPTY_VALUE.equals(str)) {
+        if (EMPTY_VALUE.equals(str)) {
             return null;
         }
         //从数据库查询数据
@@ -167,17 +172,6 @@ public class RedisUtil {
             return query(keyPrefix, id, type, dbFallback, duration);
         }
         return r;
-    }
-
-    private <R> R getRedis(Class<R> type, String key) {
-        //从Redis查询缓存数据
-        String str = template.opsForValue().get(key);
-        //缓存存在数据，直接返回
-        if (StringUtils.hasText(str)) {
-            //返回数据
-            return this.getResult(str, type);
-        }
-        return null;
     }
 
     /**
