@@ -30,6 +30,7 @@
         <module>888-ipring-markdown</module>
         <module>011-ipring-framework</module>
         <module>012-ipring-docker</module>
+        <module>800-ipring-htmlcss</module>
     </modules>
 
     <properties>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transform Example</title>
+    <style>
+        .box {
+            width: 100px;
+            height: 100px;
+            background-color: lightblue;
+            margin: 20px;
+            display: inline-block;
+        }
+
+        .translate {
+            transform: translate(50px, 50px);
+        }
+        .scale {
+            transform: scale(1.5);
+        }
+        .rotate {
+            transform: rotate(45deg);
+        }
+
+        .skew {
+            transform: skew(30deg, 20deg);
+        }
+    </style>
+</head>
+<body>
+    <!-- room也可以，但是兼容性不如translate   -->
+<div class="box translate">Translate</div>
+<div class="box scale">Scale</div>
+<div class="box rotate">Rotate</div>
+<div class="box skew">Skew</div>
+</body>
+</html>
