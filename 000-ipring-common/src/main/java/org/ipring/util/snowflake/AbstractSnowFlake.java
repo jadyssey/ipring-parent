@@ -1,6 +1,5 @@
 package org.ipring.util.snowflake;
 
-import org.ipring.enums.subcode.SystemServiceCode;
 import org.ipring.exception.ServiceException;
 
 /**
@@ -9,14 +8,14 @@ import org.ipring.exception.ServiceException;
  **/
 public abstract class AbstractSnowFlake {
 
-
     /**
      * 序列号和机器标识的位数由子类实现
      */
     protected abstract long getSequenceBit();
+
     protected abstract long getMachineBit();
-    protected abstract long getNewTime();
-    protected abstract long getStartStmp();
+
+    protected abstract long getTimeUnit();
 
     protected long maxSequence() {
         return ~(-1L << getSequenceBit());
@@ -34,9 +33,14 @@ public abstract class AbstractSnowFlake {
         return getSequenceBit() + getMachineBit();
     }
 
-    private long machineId;     //机器标识
+    private final long machineId;     //机器标识
     private long sequence = 0L; //序列号
     private long lastStmp = -1L;//上一次时间戳
+
+    /**
+     * 起始的时间戳:2024-04-01 00:00:00，使用时此值不可修改
+     */
+    private final static long START_STMP = 1711900800000L;
 
     public AbstractSnowFlake(long machineId) {
         if (machineId > maxMachineNum() || machineId < 0) {
@@ -51,11 +55,17 @@ public abstract class AbstractSnowFlake {
      */
     public synchronized long nextId() {
         long currStmp = getNewTime();
+        // 回拨超过3秒
         if (currStmp < lastStmp) {
-            throw new RuntimeException("Clock moved backwards.  Refusing to generate id");
+            if (lastStmp - currStmp > 3 * 1000) throw new ServiceException("雪花算法异常");
+            while ((currStmp = getNewTime()) < lastStmp) {
+            }
         }
 
-        if (currStmp == lastStmp) {
+        long lastTimeUnit = lastStmp / getTimeUnit();
+        long currStmpUnit = currStmp / getTimeUnit();
+
+        if (currStmpUnit == lastTimeUnit) {
             //相同秒内，序列号自增
             sequence = (sequence + 1) & maxSequence();
             //同一秒的序列数已经达到最大
@@ -68,17 +78,19 @@ public abstract class AbstractSnowFlake {
         }
         lastStmp = currStmp;
 
-        return (currStmp - getStartStmp()) << timestampLeft() //时间戳部分
+        return ((currStmp - START_STMP) / getTimeUnit()) << timestampLeft() //时间戳部分
                 | machineId << machineLeft()             //机器标识部分
                 | sequence;                             //序列号部分
     }
 
+    public long getNewTime() {
+        return System.currentTimeMillis();
+    }
+
     private long getNextMill() {
         long mill = getNewTime();
-        // 时钟回拨超过3秒
-        if (lastStmp - mill > 3) throw new ServiceException(SystemServiceCode.SystemApi.SNOW_FLAKE);
-
-        while (mill <= lastStmp) {
+        long jugeTime = lastStmp / getTimeUnit();
+        while (mill / getTimeUnit() <= jugeTime) {
             mill = getNewTime();
         }
         return mill;

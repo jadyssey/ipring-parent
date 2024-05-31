@@ -1,22 +1,22 @@
 package org.ipring.client.two;
 
+import lombok.extern.slf4j.Slf4j;
 import org.ipring.enums.order.OrderTypeEnum;
-import org.ipring.httpclient.Ct4ServiceManager;
+import org.ipring.httpclient.ICt4TraderManager;
 import org.ipring.model.SymbolMsgDTO;
 import org.ipring.model.common.Return;
 import org.ipring.model.httpclient.dto.OrderAddDTO;
 import org.ipring.model.httpclient.response.ct4.ModifyOrderVO;
 import org.ipring.util.CalcUtil;
 import org.ipring.util.SymbolMsgUtil;
+import org.ipring.util.TokenGenUtil;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author lgj
  * @date 2024/5/14
  **/
+@Slf4j
 @Component
 public class MyZmqClientTwo extends MyZmqClient {
 
@@ -34,7 +35,7 @@ public class MyZmqClientTwo extends MyZmqClient {
         //ACC_TOKEN_MAP.put(296, "S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
         //ACC_TOKEN_MAP.put(297, "S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
         //ACC_TOKEN_MAP.put(618, "S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
-        //ACC_TOKEN_MAP.put(633, "S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
+        ACC_TOKEN_MAP.put(633, "S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
         //ACC_TOKEN_MAP.put(659, "S3Js2MzilqRxmDEuHGsyknzI79yUb6QNOZRLuMIk2HA=");
         /*ACC_TOKEN_MAP.put(446, "S3Js2MzilqRxmDEuHGsykupacesWbQac2/7gGRCmlI0=");
         ACC_TOKEN_MAP.put(448, "S3Js2MzilqRxmDEuHGsykum4henViWG6M+J/Pb0bsh8=");
@@ -107,27 +108,30 @@ public class MyZmqClientTwo extends MyZmqClient {
         ACC_TOKEN_MAP.put(651, "S3Js2MzilqRxmDEuHGsyktrLKdyS3k24dSSErauEUoo=");*/
         //ACC_TOKEN_MAP.put(288, "0b0f54a4c74a5909024afbeec3de20c4");
         //ACC_TOKEN_MAP.put(582, "0b0f54a4c74a5909024afbeec3de20c4");
+
     }
 
-    private final Ct4ServiceManager ct4ServiceManager;
+    private final ICt4TraderManager ct4TraderManager;
     private final ThreadPoolTaskExecutor commonThreadPool;
     private final AtomicLong atomicLong = new AtomicLong();
 
-    public MyZmqClientTwo(MyZmqProperties myZmqProperties, Ct4ServiceManager ct4ServiceManager, ThreadPoolTaskExecutor commonThreadPool) {
+    public MyZmqClientTwo(MyZmqProperties myZmqProperties, ICt4TraderManager ct4TraderManager, ThreadPoolTaskExecutor commonThreadPool) {
         super(myZmqProperties.getTwo());
-        this.ct4ServiceManager = ct4ServiceManager;
+        this.ct4TraderManager = ct4TraderManager;
         this.commonThreadPool = commonThreadPool;
     }
 
     @Override
     public void dealWith(String data) {
+        if ("MARKET_".startsWith(data)) return;
+        String[] msgArr = data.split(",");
+        SymbolMsgDTO newMsgDto = SymbolMsgDTO.of(msgArr);
+        if (true) return;
+        if (newMsgDto == null) return;
+
         commonThreadPool.execute(() -> {
-            String[] msgArr = data.split(",");
-            SymbolMsgDTO newMsgDto = SymbolMsgDTO.of(msgArr);
             OrderAddDTO req = new OrderAddDTO();
-            List<Integer> acc = new ArrayList<>(ACC_TOKEN_MAP.keySet());
-            if (acc.size() == 0) return;
-            req.setAccountId(acc.get(ThreadLocalRandom.current().nextInt(acc.size())).longValue());
+            req.setAccountId(ThreadLocalRandom.current().nextLong(20, 221));
             req.setComment("压测单:" + LocalTime.now());
             req.setOperation(ThreadLocalRandom.current().nextInt(3)); // 市价单
             req.setSymbol(newMsgDto.getSymbol().getSymbolUniq());
@@ -145,11 +149,15 @@ public class MyZmqClientTwo extends MyZmqClient {
                 // 需要在在市价上方指定位置
                 req.setPrice(CalcUtil.add(marketPrice, multiply));
             } else {
-                req.setPrice(BigDecimal.ZERO);
+                req.setPrice(marketPrice);
             }
-            Return<ModifyOrderVO> res = ct4ServiceManager.makeOrder(ACC_TOKEN_MAP.get(req.getAccountId().intValue()), req);
+            int offset = req.getAccountId() % 20 == 0 ? 1 : 2;
+            String token = TokenGenUtil.getTokenByEle(req.getAccountId() / 20 + offset);
+            Return<ModifyOrderVO> res = ct4TraderManager.makeOrder(token, req);
             if (res.success()) {
                 atomicLong.incrementAndGet();
+            } else {
+                log.error("toekn {}, req={}", token, req);
             }
         });
     }

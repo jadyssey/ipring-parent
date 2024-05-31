@@ -45,6 +45,7 @@ public class MyZmqClientOne extends MyZmqClient {
         if (true) return;
         if (data.startsWith("8")) {
             SymbolMsgDTO newMsgDto = SymbolMsgDTO.of(data.split(","));
+            if (newMsgDto == null) return;
             Instant instant = Instant.ofEpochSecond(newMsgDto.getTime());
             // 将 Instant 转换为 LocalDateTime（默认时区）
             LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());

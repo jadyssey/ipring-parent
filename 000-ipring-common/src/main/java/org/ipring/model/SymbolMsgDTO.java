@@ -5,6 +5,7 @@ import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static org.ipring.constant.CommonConstants.SYMBOL_SPLIT;
@@ -130,10 +131,17 @@ public class SymbolMsgDTO {
     public static SymbolMsgDTO of(String[] msgArr) {
         SymbolMsgDTO symbolMsg = new SymbolMsgDTO();
         String[] symbol = msgArr[0].split(SYMBOL_SPLIT);
-        SymbolDTO of = SymbolDTO.of(null, symbol[1]);
-        Optional.ofNullable(symbol[0]).filter(StringUtils::isNumeric)
-                .map(Integer::parseInt).ifPresent(of::setMarketType);
-        symbolMsg.setSymbol(of);
+        if (symbol.length < 2) return null;
+        try {
+            SymbolDTO of = SymbolDTO.of(null, symbol[1]);
+            Optional.ofNullable(symbol[0]).filter(StringUtils::isNumeric)
+                    .map(Integer::parseInt).ifPresent(of::setMarketType);
+            symbolMsg.setSymbol(of);
+        } catch (Exception e) {
+            System.out.println("msgArr = " + Arrays.toString(msgArr));
+            e.printStackTrace();
+            return null;
+        }
         symbolMsg.setPrePrice(new BigDecimal(msgArr[1]));
         symbolMsg.setAskPrice(new BigDecimal(msgArr[2]));
         symbolMsg.setBidPrice(new BigDecimal(msgArr[3]));

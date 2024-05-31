@@ -2,28 +2,26 @@ server:
   port: 8003
 spring:
   profiles:
-    active: dev
+    active: prod
+  messages:
+    basename: messages/messages
+  jackson:
+    deserialization:
+      fail_on_unknown_properties: false
 ipring:
-  swagger:
-    enable: true
-    name: "校验服务"
-    version: V1.0.0
-  env:
-    name: dev
-  netty:
-    server: 192.168.7.41:31265
-  config:
-    ct4: https://test-ct-trader.tostar.top
-#      ct4: http://localhost:8083
   task-pool:
-    core-size: 4
-    max-size: 5
+    core-size: 20
+    max-size: 20
     keep-alive: 60
     queue-capacity: 200
-
+  swagger:
+    enable: true
+    name: "zmq"
+    version: V1.0.0
+  env:
+    name: ${spring.profiles.active}
 zmq:
   subscribe-address:
-    fb: tcp://quotespush.fastbull.com:5500
     local-one: tcp://localhost:58031
     local-two: tcp://localhost:58032
   publish-one: tcp://*:58031

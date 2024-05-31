@@ -26,7 +26,7 @@ public class SnowFlakeFactory {
     /**
      * 缓存SnowFlake对象
      */
-    private static ConcurrentMap<String, AbstractSnowFlake> snowFlakeCache = new ConcurrentHashMap<>(2);
+    private static final ConcurrentMap<String, AbstractSnowFlake> snowFlakeCache = new ConcurrentHashMap<>(2);
 
     /**
      * 获取订单雪花算法对象
@@ -94,9 +94,15 @@ public class SnowFlakeFactory {
     }
 
     public static void main(String[] args) {
-        for (int i = 0; i < 10; i++) {
-            System.out.println("orderId = " + getOrderCache().nextId());
-            System.out.println("accountId = " + getAccountCache().nextId());
+        ConcurrentHashMap<Long, Integer> map = new ConcurrentHashMap<>();
+        for (int i = 0; i < 10000; i++) {
+            long l = getOrderCache().nextId();
+            Integer put = map.put(l, 1);
+            if (put != null) {
+                System.out.println("orderId = " + l);
+            }
+
+            //System.out.println("accountId = " + getAccountCache().nextId());
         }
     }
 }

@@ -8,26 +8,15 @@ package org.ipring.util.snowflake;
  **/
 public class AccountSnowFlake extends AbstractSnowFlake {
 
-    /**
-     * 起始的时间戳:2024-04-01 00:00:00，使用时此值不可修改
-     */
-    private final static long START_STMP = 1711900800L / 60;
-
-    @Override
-    protected long getStartStmp() {
-        return START_STMP;
-    }
-
     public AccountSnowFlake(long machineId) {
         super(machineId);
     }
 
     private static final long ONE_MINUTES = 60 * 1000;
-
     @Override
-    protected long getNewTime() {
+    protected long getTimeUnit() {
         // 每分钟
-        return System.currentTimeMillis() / ONE_MINUTES;
+        return ONE_MINUTES;
     }
 
     @Override

@@ -1,14 +1,12 @@
-server:
-  port: 8003
-spring:
-  messages:
-    basename: messages/messages
-  jackson:
-    deserialization:
-      fail_on_unknown_properties: false
 ipring:
   env:
     name: dev
+  netty:
+    server: 192.168.7.41:31265
+  config:
+    ct4-trader: https://test-ct-trader.tostar.top
+    ct4-account: https://test-ct-trader.tostar.top
+    #ct4: http://localhost:8083
 zmq:
   subscribe-address:
     fb: tcp://192.168.7.41:31090

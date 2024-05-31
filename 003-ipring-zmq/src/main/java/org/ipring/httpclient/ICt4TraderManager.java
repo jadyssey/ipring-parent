@@ -1,15 +1,15 @@
 package org.ipring.httpclient;
 
 import com.github.lianjiatech.retrofit.spring.boot.core.RetrofitClient;
+import org.ipring.model.common.Return;
 import org.ipring.model.httpclient.dto.OrderAddDTO;
 import org.ipring.model.httpclient.response.ct4.ModifyOrderVO;
-import org.ipring.model.common.Return;
 import retrofit2.http.Body;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
 
-@RetrofitClient(baseUrl = "${ipring.config.ct4}")
-public interface ICt4Service {
+@RetrofitClient(baseUrl = "${ipring.config.ct4-trader}")
+public interface ICt4TraderManager {
     /**
      * 下单
      */

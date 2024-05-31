@@ -13,6 +13,7 @@
         <module name="020-ipring-juc" />
         <module name="012-ipring-docker" />
         <module name="100-ipring-mysql" />
+        <module name="800-ipring-htmlcss" />
         <module name="099-ipring-redis" />
         <module name="021-ipring-jvm" />
         <module name="888-ipring-markdown" />
@@ -39,6 +40,7 @@
       <module name="050-ipring-odyssey" options="-parameters" />
       <module name="099-ipring-redis" options="-parameters" />
       <module name="100-ipring-mysql" options="-parameters" />
+      <module name="800-ipring-htmlcss" options="-parameters" />
       <module name="888-ipring-markdown" options="-parameters" />
     </option>
   </component>
