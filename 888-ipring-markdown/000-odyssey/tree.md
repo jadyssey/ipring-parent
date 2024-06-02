@@ -104,3 +104,12 @@ B-Tree中的每个节点根据实际情况可以包含大量的关键字信息�
 
 ## 7 B+树
 
+
+
+
+
+## 8 线段树
+
+[树状数组(详细分析+应用)，看不懂打死我!-CSDN博客](https://blog.csdn.net/TheWayForDream/article/details/118436732)
+
+[五分钟丝滑动画讲解 | 树状数组_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1ce411u7qP/?spm_id_from=333.337.search-card.all.click&vd_source=71d5857ff5a77dfd27c7ab5d01560a6c)
