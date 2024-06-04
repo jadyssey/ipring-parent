@@ -91,4 +91,8 @@ public interface SubCode {
     default String getSwaggerMsg() {
         return getSubCode() + "：" + getDesc();
     }
+
+    default boolean success() {
+        return SystemServiceCode.SystemApi.SUCCESS.getSubCode().equalsIgnoreCase(this.getSubCode());
+    }
 }
