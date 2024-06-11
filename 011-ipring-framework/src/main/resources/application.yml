@@ -8,17 +8,6 @@ spring:
   jackson:
     deserialization:
       fail_on_unknown_properties: false
-#  datasource:
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://192.168.136.200:3306/bh_im?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
-#    username: root
-#    password: Root@123
-
-#    禁用redis
-  autoconfigure:
-    exclude:
-      - org.redisson.spring.starter.RedissonAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
 ipring:
   swagger:
     enable: true
@@ -31,3 +20,4 @@ ipring:
   config:
     svc:
       base: http://192.168.7.41:30400
+    ct4: http://192.168.1.80:8083
