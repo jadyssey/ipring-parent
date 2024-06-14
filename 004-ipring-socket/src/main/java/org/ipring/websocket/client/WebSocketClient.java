@@ -32,6 +32,6 @@ public class WebSocketClient {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("hello world!");
+        System.out.println("hello world! 你好！");
     }
 }
