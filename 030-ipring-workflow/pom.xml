@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>013-ipring-spring</artifactId>
+    <artifactId>030-ipring-workflow</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
