@@ -1,5 +1,5 @@
 server:
-  port: 8004
+  port: 18004
 websocket:
   #  port: ${random.int[50000,59999]}
   port: 58041
