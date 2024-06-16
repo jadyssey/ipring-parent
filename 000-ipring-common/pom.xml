@@ -82,6 +82,7 @@
         </dependency>
         <!--#endregion 对象转换工具-->
 
+        <!--rocketMQ-->
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-spring-boot-starter</artifactId>
@@ -95,6 +96,10 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
         </dependency>
 
         <!-- Jackson -->
@@ -121,10 +126,8 @@
             <groupId>io.swagger</groupId>
             <artifactId>swagger-models</artifactId>
         </dependency>
-        <dependency>
-            <groupId>cn.hutool</groupId>
-            <artifactId>hutool-all</artifactId>
-        </dependency>
+
+        <!--网络调用-->
         <dependency>
             <groupId>com.bailun</groupId>
             <artifactId>retrofit-spring-boot-starter</artifactId>
