@@ -63,6 +63,11 @@
 
         <mapstruct>1.5.5.Final</mapstruct>
         <mapstruct.binding>0.2.0</mapstruct.binding>
+
+        <!--高版本不支持cloud了？-->
+        <acitviti.version>7.1.0.M6</acitviti.version>
+
+        <acitviti.cloud.version>7-201801-EA</acitviti.cloud.version>
     </properties>
 
     <dependencyManagement>
@@ -189,8 +194,51 @@
                 <scope>provided</scope>
             </dependency>
             <!--#endregion 对象转换工具-->
-        </dependencies>
 
+            <!--Activiti-->
+            <dependency>
+                <groupId>org.activiti</groupId>
+                <artifactId>activiti-engine</artifactId>
+                <version>${acitviti.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.activiti</groupId>
+                <artifactId>activiti-spring</artifactId>
+                <version>${acitviti.version}</version>
+            </dependency>
+            <!--bpmn 模型处理-->
+            <dependency>
+                <groupId>org.activiti</groupId>
+                <artifactId>activiti-bpmn-model</artifactId>
+                <version>${acitviti.version}</version>
+            </dependency>
+            <!--bpmn 转换-->
+            <dependency>
+                <groupId>org.activiti</groupId>
+                <artifactId>activiti-bpmn-converter</artifactId>
+                <version>${acitviti.version}</version>
+            </dependency>
+            <!--bpmn json数据转换-->
+            <dependency>
+                <groupId>org.activiti</groupId>
+                <artifactId>activiti-json-converter</artifactId>
+                <version>${acitviti.version}</version>
+            </dependency>
+            <!--bpmn布局-->
+            <dependency>
+                <groupId>org.activiti</groupId>
+                <artifactId>activiti-bpmn-layout</artifactId>
+                <version>${acitviti.version}</version>
+            </dependency>
+            <!--Activiti云支持-->
+            <!--<dependency>
+                <groupId>org.activiti.cloud</groupId>
+                <artifactId>activiti-cloud-services-api</artifactId>
+                <version>${acitviti.cloud.version}</version>
+            </dependency>-->
+            <!--Activiti-->
+
+        </dependencies>
     </dependencyManagement>
 
 </project>
