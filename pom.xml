@@ -31,7 +31,7 @@
         <module>011-ipring-framework</module>
         <module>012-ipring-docker</module>
         <module>800-ipring-htmlcss</module>
-        <module>013-ipring-spring</module>
+        <module>030-ipring-workflow</module>
     </modules>
 
     <properties>

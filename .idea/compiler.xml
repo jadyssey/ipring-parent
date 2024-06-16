@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="050-ipring-odyssey" />
+        <module name="030-ipring-workflow" />
         <module name="002-ipring-mq" />
         <module name="011-ipring-framework" />
         <module name="020-ipring-juc" />
@@ -24,6 +25,11 @@
         <module name="004-ipring-socket" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="013-ipring-spring" target="8" />
+      <module name="013-ipring-spring6" target="8" />
+      <module name="015-ipring-spring6" target="8" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
@@ -35,8 +41,12 @@
       <module name="010-ipring-validation" options="-parameters" />
       <module name="011-ipring-framework" options="-parameters" />
       <module name="012-ipring-docker" options="-parameters" />
+      <module name="013-ipring-spring" options="-parameters" />
+      <module name="013-ipring-spring6" options="-parameters" />
+      <module name="015-ipring-spring6" options="-parameters" />
       <module name="020-ipring-juc" options="-parameters" />
       <module name="021-ipring-jvm" options="-parameters" />
+      <module name="030-ipring-workflow" options="-parameters" />
       <module name="050-ipring-odyssey" options="-parameters" />
       <module name="099-ipring-redis" options="-parameters" />
       <module name="100-ipring-mysql" options="-parameters" />
