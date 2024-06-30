@@ -12,8 +12,13 @@
     <file url="file://$PROJECT_DIR$/010-ipring-validation/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/011-ipring-framework/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/012-ipring-docker/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/013-ipring-spring/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/013-ipring-spring/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/013-ipring-spring6/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/015-ipring-spring6/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/020-ipring-juc/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/021-ipring-jvm/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/030-ipring-workflow/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/050-ipring-odyssey/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/099-ipring-redis/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/100-ipring-mysql/src/main/java" charset="UTF-8" />
