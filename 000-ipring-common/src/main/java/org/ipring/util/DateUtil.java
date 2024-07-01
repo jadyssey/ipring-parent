@@ -1,10 +1,8 @@
 package org.ipring.util;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 /**
  * @author: Rainful
@@ -30,6 +28,10 @@ public abstract class DateUtil {
 
     public static String getDateTime(LocalDateTime dateTime) {
         return dateTime.format(DATE_FORMATTER);
+    }
+
+    public static String formatTimestamp(Long timestamp) {
+        return DATE_14_FORMAT.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault()));
     }
 
     public static String getNowTimeByZone(ZoneOffset zoneOffset) {

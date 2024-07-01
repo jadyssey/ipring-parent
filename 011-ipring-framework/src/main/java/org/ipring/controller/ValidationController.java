@@ -1,6 +1,7 @@
 package org.ipring.controller;
 
 import io.swagger.annotations.Api;
+import org.ipring.anno.EnumValue;
 import org.ipring.anno.StlApiOperation;
 import org.ipring.enums.subcode.SystemServiceCode;
 import org.ipring.model.common.Return;

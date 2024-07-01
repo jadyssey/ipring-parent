@@ -127,12 +127,12 @@
         </dependency>
 
         <!--网络调用-->
-        <dependency>
+        <!--<dependency>
             <groupId>com.bailun</groupId>
             <artifactId>retrofit-spring-boot-starter</artifactId>
             <version>1.0.3-SNAPSHOT</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.github.lianjiatech</groupId>
             <artifactId>retrofit-spring-boot-starter</artifactId>

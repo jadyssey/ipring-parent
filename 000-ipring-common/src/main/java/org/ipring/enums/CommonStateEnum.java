@@ -2,6 +2,9 @@ package org.ipring.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.ipring.sender.impl.DingDingNoticeService;
+
+import javax.annotation.Resource;
 
 /**
  * @author: lgj
@@ -17,4 +20,7 @@ public enum CommonStateEnum implements IntEnumType {
     ;
     private final Integer type;
     private final String description;
+
+
+
 }
