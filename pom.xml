@@ -65,7 +65,7 @@
         <mapstruct.binding>0.2.0</mapstruct.binding>
 
         <!--高版本不支持cloud了？-->
-        <acitviti.version>7.1.0.M6</acitviti.version>
+        <acitviti.version>7.0.0.SR1</acitviti.version>
 
         <acitviti.cloud.version>7-201801-EA</acitviti.cloud.version>
     </properties>

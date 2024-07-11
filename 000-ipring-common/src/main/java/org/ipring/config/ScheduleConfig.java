@@ -27,7 +27,7 @@ public class ScheduleConfig implements SchedulingConfigurer {
     public static final String EXECUTOR_SERVICE = "scheduledExecutor";
     public static final Integer EXECUTOR_CORE_POOL_SIZE = 10;
 
-    @Bean(EXECUTOR_SERVICE)
+    // @Bean(EXECUTOR_SERVICE)
     public ThreadPoolTaskScheduler taskExecutor() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
         // 设置线程数

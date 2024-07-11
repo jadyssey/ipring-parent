@@ -51,7 +51,7 @@ public class ActivitiOneTest {
         // 3 完成部署操作
         Deployment deploy = repositoryService.createDeployment()
                 .addClasspathResource("flow/test1.bpmn20.xml")
-                .name("第一个审批流程")
+                .name("网关审批")
                 .deploy();
         System.out.println(deploy.getId());
         System.out.println(deploy.getName());
@@ -93,7 +93,7 @@ public class ActivitiOneTest {
         ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
         RuntimeService runtimeService = defaultProcessEngine.getRuntimeService();
         //  通过流程定义id启动流程 返回流程实例对象  （类比 类和对象 的关系）
-        ProcessInstance processInstance = runtimeService.startProcessInstanceById("test1:1:3");
+        ProcessInstance processInstance = runtimeService.startProcessInstanceById("test1:4:125003");
         System.out.println("processInstance.getId() = " + processInstance.getId());
         System.out.println("processInstance.getDeploymentId() = " + processInstance.getDeploymentId());
         System.out.println("processInstance.getDescription() = " + processInstance.getDescription());
@@ -112,7 +112,6 @@ public class ActivitiOneTest {
             System.out.println("task.getId() = " + task.getId());
             System.out.println("task.getName() = " + task.getName());
             System.out.println("task.getAssignee() = " + task.getAssignee());
-
         });
     }
 
@@ -124,10 +123,10 @@ public class ActivitiOneTest {
         ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
         TaskService taskService = defaultProcessEngine.getTaskService();
 
-        List<Task> list = taskService.createTaskQuery().taskAssignee("李四").list();
+        List<Task> list1 = taskService.createTaskQuery().taskAssignee("张三").list();
 
         // 根据 taskId 完成审批
-        list.forEach(task -> taskService.complete(task.getId()));
+        list1.forEach(task -> taskService.complete(task.getId()));
     }
 }
 
