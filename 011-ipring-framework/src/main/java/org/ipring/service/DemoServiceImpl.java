@@ -20,6 +20,7 @@ public class DemoServiceImpl implements DemoService {
     private final UserMapper userMapper;
     @Override
     public void getUserNameById() {
+        int res = userMapper.insertUser(UserDTO.of("小宝", "775"));
         String userNameById = userMapper.getUserNameById(1L);
         String userNameByUser = userMapper.getUserByUser(UserDTO.of(1L, ""));
         List<String> userList = userMapper.getUserByUserList(Collections.singletonList(UserDTO.of(1L, "")));

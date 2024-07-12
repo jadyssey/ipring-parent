@@ -6,12 +6,15 @@
         SELECT name FROM sys_user where id = #{id}
     </select>
     <select id="getUserByUser" resultType="string">
-        SELECT name FROM sys_user where id = #{userId} and name = #{userName}
+        SELECT name FROM sys_user where id = #{id} and name = #{name}
     </select>
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_user(name, phone) VALUES (#{name}, #{phone})
+    </insert>
     <select id="getUserByUserList" resultType="string">
         SELECT name FROM sys_user where
         <foreach collection="list" item="item" index="index" separator="or">
-            id = #{item.userId} and name = #{item.userName}
+            id = #{item.id} and name = #{item.name}
         </foreach>
     </select>
 </mapper>

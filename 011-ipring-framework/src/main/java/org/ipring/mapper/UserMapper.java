@@ -20,6 +20,14 @@ public interface UserMapper {
     @Unusual
     String getUserByUser(UserDTO userDTO);
 
+    /**
+     * AfterReturning的切面可以拿到插入后的模型，并且模型中含有主键id
+     * @param userDTO
+     * @return
+     */
+    @Unusual
+    int insertUser(UserDTO userDTO);
+
     @Unusual
     List<String> getUserByUserList(List<UserDTO> list);
 }

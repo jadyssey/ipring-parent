@@ -8,14 +8,21 @@ import lombok.Data;
  */
 @Data
 public class UserDTO {
-    private Long userId;
-    private String userName;
-    private String pswd;
+    private Long id;
+    private String name;
+    private String phone;
 
     public static UserDTO of(long l, String s) {
         UserDTO userDTO = new UserDTO();
-        userDTO.setUserId(l);
-        userDTO.setUserName(s);
+        userDTO.setId(l);
+        userDTO.setName(s);
+        return userDTO;
+    }
+
+    public static UserDTO of(String name, String phone) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setName(name);
+        userDTO.setPhone(phone);
         return userDTO;
     }
 }
