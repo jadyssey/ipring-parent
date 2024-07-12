@@ -8,6 +8,13 @@ spring:
   jackson:
     deserialization:
       fail_on_unknown_properties: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.136.202:3306/customdb?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
+    username: root
+    password: Root@123
+
+
 ipring:
   swagger:
     enable: true
