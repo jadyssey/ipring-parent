@@ -2,7 +2,7 @@ package org.ipring.mapper;
 
 
 import org.apache.ibatis.annotations.Mapper;
-import org.ipring.anno.Unusual;
+import org.ipring.anno.Scan;
 import org.ipring.model.param.UserDTO;
 
 import java.util.List;
@@ -14,10 +14,10 @@ import java.util.List;
 @Mapper
 public interface UserMapper {
 
-    @Unusual
+    @Scan
     String getUserNameById(Long id);
 
-    @Unusual
+    @Scan
     String getUserByUser(UserDTO userDTO);
 
     /**
@@ -25,9 +25,9 @@ public interface UserMapper {
      * @param userDTO
      * @return
      */
-    @Unusual
+    @Scan
     int insertUser(UserDTO userDTO);
 
-    @Unusual
+    @Scan
     List<String> getUserByUserList(List<UserDTO> list);
 }

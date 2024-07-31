@@ -28,9 +28,9 @@ public class ActivitiOneTest {
 
     @Test
     public void testTwo() {
-        ProcessEngine processEngine = ProcessEngineConfiguration.createStandaloneProcessEngineConfiguration()
+        ProcessEngine processEngine = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration()
                 .setJdbcDriver("com.mysql.cj.jdbc.Driver")
-                .setJdbcUrl("jdbc:mysql://192.168.136.202:3306/activiti7?createDatabaseIfNotExist=true")
+                .setJdbcUrl("jdbc:mysql://192.168.136.202:3306/activiti6?createDatabaseIfNotExist=true&nullCatalogMeansCurrent=true")
                 .setJdbcUsername("root")
                 .setJdbcPassword("Root@123")
                 .setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE)
