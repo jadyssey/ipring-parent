@@ -1,0 +1,6 @@
+dubbo:
+  application:
+    name: ipring-dubbo-provider
+    logger: slf4j
+  protocol:
+    port: 28016

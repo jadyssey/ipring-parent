@@ -1,0 +1,12 @@
+dubbo:
+  application:
+    name: ipring-dubbo-consumer
+    logger: slf4j
+    qos-port: 33333
+  registry:
+    address: N/A  # 不使用注册中心
+
+  reference:
+    demoService:
+      interface: org.ipring.api.DemoService
+      url: dubbo://192.168.121.144:28016  # 直连服务提供者的地址

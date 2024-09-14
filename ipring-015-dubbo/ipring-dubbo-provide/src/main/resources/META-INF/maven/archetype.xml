@@ -1,5 +1,5 @@
 <archetype>
-  <id>ipring-015-dubbo</id>
+  <id>ipring-dubbo-provide</id>
   <sources>
     <source>src/main/java/App.java</source>
   </sources>

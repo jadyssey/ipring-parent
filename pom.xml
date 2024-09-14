@@ -33,6 +33,9 @@
         <module>ipring-800-htmlcss</module>
         <module>ipring-030-workflow</module>
         <module>ipring-015-dubbo</module>
+        <module>ipring-015-dubbo/ipring-dubbo-client</module>
+        <module>ipring-015-dubbo/ipring-dubbo-consumer</module>
+        <module>ipring-015-dubbo/ipring-dubbo-provide</module>
     </modules>
 
     <properties>

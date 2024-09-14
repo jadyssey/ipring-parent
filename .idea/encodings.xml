@@ -16,6 +16,9 @@
     <file url="file://$PROJECT_DIR$/ipring-010-validation/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ipring-011-framework/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ipring-012-docker/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ipring-015-dubbo/ipring-dubbo-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ipring-015-dubbo/ipring-dubbo-consumer/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ipring-015-dubbo/ipring-dubbo-provide/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ipring-015-dubbo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ipring-020-juc/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ipring-021-jvm/src/main/java" charset="UTF-8" />
