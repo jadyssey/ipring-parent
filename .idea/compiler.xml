@@ -7,22 +7,23 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="050-ipring-odyssey" />
-        <module name="030-ipring-workflow" />
-        <module name="002-ipring-mq" />
-        <module name="011-ipring-framework" />
-        <module name="020-ipring-juc" />
-        <module name="012-ipring-docker" />
-        <module name="100-ipring-mysql" />
-        <module name="800-ipring-htmlcss" />
-        <module name="099-ipring-redis" />
-        <module name="021-ipring-jvm" />
-        <module name="888-ipring-markdown" />
-        <module name="001-ipring-design-patterns" />
-        <module name="010-ipring-validation" />
-        <module name="003-ipring-zmq" />
-        <module name="000-ipring-common" />
-        <module name="004-ipring-socket" />
+        <module name="ipring-001-design-patterns" />
+        <module name="ipring-011-framework" />
+        <module name="ipring-100-mysql" />
+        <module name="ipring-021-jvm" />
+        <module name="ipring-050-odyssey" />
+        <module name="ipring-000-common" />
+        <module name="ipring-020-juc" />
+        <module name="ipring-030-workflow" />
+        <module name="ipring-012-docker" />
+        <module name="ipring-800-htmlcss" />
+        <module name="ipring-003-zmq" />
+        <module name="ipring-888-markdown" />
+        <module name="ipring-099-redis" />
+        <module name="ipring-004-socket" />
+        <module name="ipring-015-dubbo" />
+        <module name="ipring-010-validation" />
+        <module name="ipring-002-mq" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -33,25 +34,26 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="000-ipring-common" options="-parameters" />
-      <module name="001-ipring-design-patterns" options="-parameters" />
-      <module name="002-ipring-mq" options="-parameters" />
-      <module name="003-ipring-zmq" options="-parameters" />
-      <module name="004-ipring-socket" options="-parameters" />
-      <module name="010-ipring-validation" options="-parameters" />
-      <module name="011-ipring-framework" options="-parameters" />
-      <module name="012-ipring-docker" options="-parameters" />
       <module name="013-ipring-spring" options="-parameters" />
       <module name="013-ipring-spring6" options="-parameters" />
       <module name="015-ipring-spring6" options="-parameters" />
-      <module name="020-ipring-juc" options="-parameters" />
-      <module name="021-ipring-jvm" options="-parameters" />
-      <module name="030-ipring-workflow" options="-parameters" />
-      <module name="050-ipring-odyssey" options="-parameters" />
-      <module name="099-ipring-redis" options="-parameters" />
-      <module name="100-ipring-mysql" options="-parameters" />
-      <module name="800-ipring-htmlcss" options="-parameters" />
-      <module name="888-ipring-markdown" options="-parameters" />
+      <module name="ipring-000-common" options="-parameters" />
+      <module name="ipring-001-design-patterns" options="-parameters" />
+      <module name="ipring-002-mq" options="-parameters" />
+      <module name="ipring-003-zmq" options="-parameters" />
+      <module name="ipring-004-socket" options="-parameters" />
+      <module name="ipring-010-validation" options="-parameters" />
+      <module name="ipring-011-framework" options="-parameters" />
+      <module name="ipring-012-docker" options="-parameters" />
+      <module name="ipring-015-dubbo" options="-parameters" />
+      <module name="ipring-020-juc" options="-parameters" />
+      <module name="ipring-021-jvm" options="-parameters" />
+      <module name="ipring-030-workflow" options="-parameters" />
+      <module name="ipring-050-odyssey" options="-parameters" />
+      <module name="ipring-099-redis" options="-parameters" />
+      <module name="ipring-100-mysql" options="-parameters" />
+      <module name="ipring-800-htmlcss" options="-parameters" />
+      <module name="ipring-888-markdown" options="-parameters" />
     </option>
   </component>
 </project>

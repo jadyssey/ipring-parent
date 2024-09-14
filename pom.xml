@@ -16,22 +16,23 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>001-ipring-design-patterns</module>
-        <module>002-ipring-mq</module>
-        <module>000-ipring-common</module>
-        <module>010-ipring-validation</module>
-        <module>020-ipring-juc</module>
-        <module>003-ipring-zmq</module>
-        <module>004-ipring-socket</module>
-        <module>050-ipring-odyssey</module>
-        <module>100-ipring-mysql</module>
-        <module>099-ipring-redis</module>
-        <module>021-ipring-jvm</module>
-        <module>888-ipring-markdown</module>
-        <module>011-ipring-framework</module>
-        <module>012-ipring-docker</module>
-        <module>800-ipring-htmlcss</module>
-        <module>030-ipring-workflow</module>
+        <module>ipring-000-common</module>
+        <module>ipring-001-design-patterns</module>
+        <module>ipring-002-mq</module>
+        <module>ipring-003-zmq</module>
+        <module>ipring-004-socket</module>
+        <module>ipring-010-validation</module>
+        <module>ipring-020-juc</module>
+        <module>ipring-050-odyssey</module>
+        <module>ipring-100-mysql</module>
+        <module>ipring-099-redis</module>
+        <module>ipring-021-jvm</module>
+        <module>ipring-888-markdown</module>
+        <module>ipring-011-framework</module>
+        <module>ipring-012-docker</module>
+        <module>ipring-800-htmlcss</module>
+        <module>ipring-030-workflow</module>
+        <module>ipring-015-dubbo</module>
     </modules>
 
     <properties>
