@@ -36,6 +36,7 @@
         <module>ipring-015-dubbo/ipring-dubbo-client</module>
         <module>ipring-015-dubbo/ipring-dubbo-consumer</module>
         <module>ipring-015-dubbo/ipring-dubbo-provide</module>
+        <module>ipring-060-investigate-image</module>
     </modules>
 
     <properties>
@@ -206,6 +207,15 @@
                 <version>${acitviti.version}</version>
             </dependency>
             <!--Activiti-->
+
+
+            <dependency>
+                <artifactId>libraries-bom</artifactId>
+                <groupId>com.google.cloud</groupId>
+                <scope>import</scope>
+                <type>pom</type>
+                <version>26.34.0</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

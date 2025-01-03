@@ -14,6 +14,23 @@ spring:
     exclude:
       - org.redisson.spring.starter.RedissonAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+  redis:
+    # 地址
+    host: 192.168.121.200
+    # 端口，默认为6379
+    port: 6379
+    ssl: false
+    # 密码
+    password: admin
+    # 连接超时时间
+    timeout: 10000
+    database: 0
+    jedis:
+      pool:
+        max-active: 300
+        max-idle: 100
+        min-idle: 0
+#        max-wait: 10000
 ipring:
   swagger:
     enable: true

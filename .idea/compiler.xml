@@ -4,6 +4,7 @@
     <excludeFromCompile>
       <directory url="file://$PROJECT_DIR$/ipring-015-dubbo/src/main/resources/archetype-resources" includeSubdirectories="true" />
       <directory url="file://$PROJECT_DIR$/ipring-015-dubbo/ipring-dubbo-provide/src/main/resources/archetype-resources" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/ipring-060-investigate-image/src/main/resources/archetype-resources" includeSubdirectories="true" />
     </excludeFromCompile>
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
@@ -12,6 +13,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="ipring-dubbo-consumer" />
+        <module name="ipring-060-investigate-image" />
         <module name="ipring-001-design-patterns" />
         <module name="ipring-dubbo-provide" />
         <module name="ipring-011-framework" />
@@ -57,6 +59,7 @@
       <module name="ipring-021-jvm" options="-parameters" />
       <module name="ipring-030-workflow" options="-parameters" />
       <module name="ipring-050-odyssey" options="-parameters" />
+      <module name="ipring-060-investigate-image" options="-parameters" />
       <module name="ipring-099-redis" options="-parameters" />
       <module name="ipring-100-mysql" options="-parameters" />
       <module name="ipring-800-htmlcss" options="-parameters" />

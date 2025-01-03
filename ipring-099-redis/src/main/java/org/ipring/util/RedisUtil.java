@@ -4,6 +4,7 @@ import cn.hutool.core.convert.Convert;
 import org.ipring.constant.ExpireConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -23,9 +24,11 @@ import java.util.function.Function;
 @Component
 public class RedisUtil {
 
-    @Lazy
+    // @Autowired
+    // private StringRedisTemplate template;
+
     @Autowired
-    private StringRedisTemplate template;
+    private RedisTemplate<String, Object> template;
 
     //缓存空数据的时长，单位秒
     public static final Long CACHE_NULL_TTL = 60L;
@@ -49,14 +52,14 @@ public class RedisUtil {
         return increment;
     }
 
-    public String get(String key) {
+    public Object get(String key) {
         if (!StringUtils.hasText(key)) return null;
         return template.opsForValue().get(key);
     }
 
     public <T> T get(String key, Class<T> tClass) {
-        final String ret = get(key);
-        if (!StringUtils.hasText(ret)) return null;
+        final Object ret = get(key);
+        // if (!StringUtils.hasText(ret)) return null;
         return JsonUtils.toObject(ret, tClass);
     }
 
@@ -144,35 +147,6 @@ public class RedisUtil {
         return r;
     }
 
-    public <R, ID> R query(String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallback, Duration duration) {
-        //获取存储到Redis中的数据key
-        String key = RedisKeyUtil.getKey(keyPrefix, id);
-        //从Redis查询缓存数据
-        String str = template.opsForValue().get(key);
-        //缓存存在数据，直接返回
-        if (StringUtils.hasText(str)) {
-            //返回数据
-            return this.getResult(str, type);
-        }
-        //缓存中存储的是空字符串
-        if (EMPTY_VALUE.equals(str)) {
-            return null;
-        }
-        //从数据库查询数据
-        R r = dbFallback.apply(id);
-        //数据数据为空
-        if (r == null) {
-            template.opsForValue().setIfAbsent(key, EMPTY_VALUE, Duration.ofSeconds(CACHE_NULL_TTL));
-            return null;
-        }
-        //缓存数据
-        Boolean ifAbsent = template.opsForValue().setIfAbsent(key, JsonUtils.toJson(r), duration);
-        // 缓存又存在了数据，可能有其他地方并发更新了缓存，直接递归再来一遍
-        if (Boolean.FALSE.equals(ifAbsent)) {
-            return query(keyPrefix, id, type, dbFallback, duration);
-        }
-        return r;
-    }
 
     /**
      * 刷新缓存
