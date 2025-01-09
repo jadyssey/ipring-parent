@@ -1,4 +1,4 @@
-package org.ipring.model;
+package org.ipring.model.gemini;
 
 import com.google.cloud.vertexai.api.*;
 import com.google.protobuf.ByteString;

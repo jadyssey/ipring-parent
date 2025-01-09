@@ -1,4 +1,4 @@
-package org.ipring.model;// GeminiResponse.java
+package org.ipring.model.gemini;// GeminiResponse.java
 import lombok.Data;
 
 import java.util.List;

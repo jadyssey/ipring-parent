@@ -1,8 +1,10 @@
 package org.ipring.gateway;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.Content;
 import com.google.cloud.vertexai.api.GenerateContentResponse;
+import com.google.cloud.vertexai.api.Part;
 import com.google.cloud.vertexai.generativeai.ContentMaker;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
 import com.google.cloud.vertexai.generativeai.PartMaker;
@@ -15,6 +17,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -46,12 +49,22 @@ public class GeminiGatewayImpl implements GeminiGateway {
              * image/png
              * image/jpeg
              */
-            String imageFormat = getImageFormat(chatBody.getImageUrl());
-            contents.add(ContentMaker.fromMultiModalData(PartMaker.fromMimeTypeAndData("image/" + imageFormat, chatBody.getImageUrl()),
-                    chatBody.getText()));
+            List<Object> multiModalData = new ArrayList<>();
+            if (CollectionUtil.isNotEmpty(chatBody.getImageList())) {
+                multiModalData = chatBody.getImageList().stream().map(image -> {
+                    String imageFormat = getImageFormat(image);
+                    return PartMaker.fromMimeTypeAndData("image/" + imageFormat, image);
+                }).collect(Collectors.toList());
+            } else {
+                String imageFormat = getImageFormat(chatBody.getImageUrl());
+                Part part = PartMaker.fromMimeTypeAndData("image/" + imageFormat, chatBody.getImageUrl());
+                multiModalData.add(part);
+            }
+            multiModalData.add(chatBody.getText());
+            contents.add(ContentMaker.fromMultiModalData(multiModalData.toArray()));
             return model.generateContent(contents);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return null;
         }
     }
 

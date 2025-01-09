@@ -1,4 +1,4 @@
-package org.ipring.model;
+package org.ipring.model.gemini;
 
 import java.util.HashMap;
 import java.util.Map;
