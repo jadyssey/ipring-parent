@@ -1,4 +1,4 @@
-package org.ipring.controller;
+package org.ipring.util;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -9,7 +9,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 public class ZhipuAI {
-    private String apiKey;
+    private final String apiKey;
 
     public ZhipuAI(String apiKey) {
         this.apiKey = apiKey;

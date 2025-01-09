@@ -35,17 +35,9 @@
         <module name="ipring-002-mq" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="013-ipring-spring" target="8" />
-      <module name="013-ipring-spring6" target="8" />
-      <module name="015-ipring-spring6" target="8" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="013-ipring-spring" options="-parameters" />
-      <module name="013-ipring-spring6" options="-parameters" />
-      <module name="015-ipring-spring6" options="-parameters" />
       <module name="ipring-000-common" options="-parameters" />
       <module name="ipring-001-design-patterns" options="-parameters" />
       <module name="ipring-002-mq" options="-parameters" />

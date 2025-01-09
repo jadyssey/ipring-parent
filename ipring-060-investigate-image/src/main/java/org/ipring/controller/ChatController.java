@@ -17,6 +17,7 @@ import org.ipring.model.ChatBody;
 import org.ipring.model.common.Return;
 import org.ipring.model.common.ReturnFactory;
 import org.ipring.util.JsonUtils;
+import org.ipring.util.ZhipuAI;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

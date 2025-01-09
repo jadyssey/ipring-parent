@@ -1,10 +1,5 @@
-package org.ipring.controller;
+package org.ipring.util;
 
-import com.google.cloud.vertexai.VertexAI;
-import com.google.cloud.vertexai.api.GenerateContentResponse;
-import com.google.cloud.vertexai.generativeai.ContentMaker;
-import com.google.cloud.vertexai.generativeai.GenerativeModel;
-import com.google.cloud.vertexai.generativeai.PartMaker;
 import java.io.IOException;
 
 public class GoogleQuickstart {
@@ -15,12 +10,12 @@ public class GoogleQuickstart {
     String location = "us-central1";
     String modelName = "gemini-1.5-flash-001";
 
-    String output = quickstart(projectId, location, modelName);
-    System.out.println(output);
+    // String output = quickstart(projectId, location, modelName);
+    // System.out.println(output);
   }
 
   // Analyzes the provided Multimodal input.
-  public static String quickstart(String projectId, String location, String modelName)
+  /*public static String quickstart(String projectId, String location, String modelName)
       throws IOException {
     // Initialize client that will be used to send requests. This client only needs
     // to be created once, and can be reused for multiple requests.
@@ -35,5 +30,5 @@ public class GoogleQuickstart {
 
       return response.toString();
     }
-  }
+  }*/
 }

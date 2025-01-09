@@ -5,7 +5,6 @@ import com.zhipu.oapi.Constants;
 import com.zhipu.oapi.service.v4.model.ChatCompletionRequest;
 import com.zhipu.oapi.service.v4.model.ChatMessage;
 import com.zhipu.oapi.service.v4.model.ChatMessageRole;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ipring.model.ChatBody;
 import org.ipring.model.ImageExplanationRequest;
@@ -25,7 +24,7 @@ import java.util.List;
 @Component
 @Slf4j
 public class ZhiPuAiGatewayImpl implements ZhiPuAiGateway {
-    public static final String SECRET_KEY = "ddd1ae28c5a6d76102a30d0c9bbf2cc4.LOoSzgyK3IS1hJVO";
+    public static final String SECRET_KEY = "";
 
     @Resource
     private ZhiPuAiApi zhiPuAiApi;
