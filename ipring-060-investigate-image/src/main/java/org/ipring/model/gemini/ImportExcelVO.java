@@ -1,5 +1,6 @@
 package org.ipring.model.gemini;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,12 +12,12 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 /**
  * @author liuguangjin
  * @date 2025/1/9
  */
 @Data
+@ApiModel(value = "识别结果导出模型")
 public class ImportExcelVO {
 
     @ExcelColumn(0)
