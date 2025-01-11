@@ -78,7 +78,7 @@ public class GeminiController {
         log.info("图像识别元数据，总计{}条", podList.size());
         int i = 0;
         for (ImportExcelVO pod : podList) {
-            ImportExcelVO.SignType signType = ImportExcelVO.SignType.all_map.get(pod.getSignType());
+            ImportExcelVO.SignType signType = ImportExcelVO.SignType.all_map.getOrDefault(pod.getSignType(), ImportExcelVO.SignType.COMMON);
             if (Objects.nonNull(signType)) {
                 ChatBody chatBody = new ChatBody();
                 List<String> imageList = new ArrayList<>();

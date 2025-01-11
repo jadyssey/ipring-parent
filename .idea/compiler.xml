@@ -12,15 +12,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="ipring-dubbo-consumer" />
         <module name="ipring-060-investigate-image" />
         <module name="ipring-001-design-patterns" />
-        <module name="ipring-dubbo-provide" />
         <module name="ipring-011-framework" />
         <module name="ipring-100-mysql" />
         <module name="ipring-021-jvm" />
         <module name="ipring-050-odyssey" />
-        <module name="ipring-dubbo-client" />
         <module name="ipring-000-common" />
         <module name="ipring-020-juc" />
         <module name="ipring-030-workflow" />
@@ -30,11 +27,16 @@
         <module name="ipring-888-markdown" />
         <module name="ipring-099-redis" />
         <module name="ipring-004-socket" />
-        <module name="ipring-015-dubbo" />
         <module name="ipring-010-validation" />
         <module name="ipring-002-mq" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="ipring-015-dubbo" target="1.8" />
+      <module name="ipring-dubbo-client" target="1.8" />
+      <module name="ipring-dubbo-consumer" target="1.8" />
+      <module name="ipring-dubbo-provide" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

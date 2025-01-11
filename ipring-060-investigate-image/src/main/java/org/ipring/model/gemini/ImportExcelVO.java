@@ -49,17 +49,16 @@ public class ImportExcelVO {
     private String image3;
 
     @ExcelColumn(7)
-    @ApiModelProperty(value = "问题")
-    private String question;
-
-    @ExcelColumn(8)
-    @ApiModelProperty(value = "回答")
-    private String answer;
-
-    @ExcelColumn(9)
     @ApiModelProperty(value = "用量")
     private String usageMetadata;
 
+    @ExcelColumn(8)
+    @ApiModelProperty(value = "问题")
+    private String question;
+
+    @ExcelColumn(9)
+    @ApiModelProperty(value = "回答")
+    private String answer;
 
     @Getter
     @AllArgsConstructor
@@ -69,7 +68,11 @@ public class ImportExcelVO {
         Person_sign("Person sign", ComConstants.question02),
         Received_on_behalf_of_another_person("Received on behalf of another person", ComConstants.question02),
         Guard_Doormen("Guard/Doormen", ComConstants.question03),
-        Delivered_to_recipients_designated_address("Delivered to recipients designated address", ComConstants.question01);
+        Delivered_to_recipients_designated_address("Delivered to recipients designated address", ComConstants.question01),
+
+        COMMON("通用提问问题", ComConstants.classifyQuestion),
+        ;
+
         private final String text;
         private final String question;
 
