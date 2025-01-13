@@ -11,6 +11,7 @@ import org.ipring.gateway.ChatGptGateway;
 import org.ipring.gateway.ZhiPuAiGatewayImpl;
 import org.ipring.model.ChatBody;
 import org.ipring.model.common.Return;
+import org.ipring.model.gpt.ChatGPTResponse;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,7 +34,7 @@ public class GPTController {
     private final ChatGptGateway chatGptGateway;
     @PostMapping("/4o-mini")
     @StlApiOperation(title = "40-mini", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
-    public Return<String> get(@RequestBody ChatBody chatBody) {
+    public Return<ChatGPTResponse> get(@RequestBody ChatBody chatBody) {
         ChatCompletionRequest chatCompletionRequest = new ChatCompletionRequest();
         chatCompletionRequest.setModel("gpt-4o-mini");
 
