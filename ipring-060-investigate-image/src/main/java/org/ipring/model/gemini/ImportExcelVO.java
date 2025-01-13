@@ -70,7 +70,7 @@ public class ImportExcelVO {
         Guard_Doormen("Guard/Doormen", ComConstants.question03),
         Delivered_to_recipients_designated_address("Delivered to recipients designated address", ComConstants.question01),
 
-        COMMON("通用提问问题", ComConstants.classifyQuestion),
+        COMMON("通用提问问题", ComConstants.en2_classifyQuestion),
         ;
 
         private final String text;

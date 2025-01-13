@@ -93,7 +93,7 @@ public class GeminiController {
                 }
                 chatBody.setImageList(imageList);
 
-                String question = String.format(signType.getQuestion(), pod.getWaybillNo());
+                String question = String.format(signType.getQuestion(), StringUtils.substring(pod.getWaybillNo(), 0, 8));
                 chatBody.setText(question);
                 pod.setQuestion(question);
 
