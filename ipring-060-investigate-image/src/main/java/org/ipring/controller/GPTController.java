@@ -1,30 +1,47 @@
 package org.ipring.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.zhipu.oapi.service.v4.model.ChatCompletionRequest;
 import com.zhipu.oapi.service.v4.model.ChatMessage;
 import com.zhipu.oapi.service.v4.model.ChatMessageRole;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.ipring.anno.StlApiOperation;
 import org.ipring.enums.subcode.SystemServiceCode;
+import org.ipring.excel.ExcelOperateUtils;
 import org.ipring.gateway.ChatGptGateway;
 import org.ipring.gateway.ZhiPuAiGatewayImpl;
+import org.ipring.model.BigModelAnswerText;
 import org.ipring.model.ChatBody;
+import org.ipring.model.ImageExplanationRequest;
 import org.ipring.model.common.Return;
+import org.ipring.model.common.ReturnFactory;
+import org.ipring.model.gemini.ImportExcelVO;
 import org.ipring.model.gpt.ChatGPTResponse;
+import org.ipring.util.JsonUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static org.ipring.model.gemini.ImportExcelVO.SignType.COMMON;
 
 /**
  * @author liuguangjin
  * @date 2025/1/9
  */
+@Slf4j
 @Api(tags = "chatgpt接口")
 @RequestMapping("/chat")
 @RestController
@@ -36,12 +53,150 @@ public class GPTController {
     @StlApiOperation(title = "40-mini", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
     public Return<ChatGPTResponse> get(@RequestBody ChatBody chatBody) {
         ChatCompletionRequest chatCompletionRequest = new ChatCompletionRequest();
-        chatCompletionRequest.setModel("gpt-4o-mini");
+        chatCompletionRequest.setModel(Optional.ofNullable(chatBody.getModel()).orElse("gpt-4o-mini"));
 
         List<ChatMessage> messages = new ArrayList<>();
-        ChatMessage chatMessage = new ChatMessage(ChatMessageRole.USER.value(), ZhiPuAiGatewayImpl.getImageChatContent(chatBody.getText(), chatBody.getImageUrl()));
+        List<ImageExplanationRequest> requests = new ArrayList<>();
+        if (StringUtils.isNotBlank(chatBody.getImageUrl())) {
+            requests.add(ZhiPuAiGatewayImpl.getImageChatContent(chatBody.getImageUrl()));
+        }
+        if (CollectionUtil.isNotEmpty(chatBody.getImageList())) {
+            requests.addAll(chatBody.getImageList().stream().map(ZhiPuAiGatewayImpl::getImageChatContent).collect(Collectors.toList()));
+        }
+        requests.add(ZhiPuAiGatewayImpl.getTextChatContent(chatBody.getText()));
+        ChatMessage chatMessage = new ChatMessage(ChatMessageRole.USER.value(), requests);
         messages.add(chatMessage);
         chatCompletionRequest.setMessages(messages);
         return chatGptGateway.completions(chatCompletionRequest);
+    }
+
+    @PostMapping("/4o-mini/textMap")
+    @StlApiOperation(title = "4o-mini 测试一次，返回自定义模型", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
+    public Return<BigModelAnswerText> getTextMap(@RequestBody ChatBody chatBody) {
+        Return<ChatGPTResponse> res = this.get(chatBody);
+        if (!res.success())
+            return ReturnFactory.info(SystemServiceCode.SystemApi.WAIT_MIN);
+        ChatGPTResponse chatGPTResponse = res.getBodyMessage();
+        if (Objects.isNull(chatGPTResponse)) {
+            return ReturnFactory.info(SystemServiceCode.SystemApi.WAIT_MIN);
+        }
+        BigModelAnswerText resp = new BigModelAnswerText();
+
+        List<ChatGPTResponse.Choice> choices = chatGPTResponse.getChoices();
+        List<String> sourceTextList = choices.stream().map(ChatGPTResponse.Choice::getMessage).map(ChatGPTResponse.Message::getContent).collect(Collectors.toList());
+        resp.setSourceTextList(sourceTextList);
+        resp.setGptUsage(chatGPTResponse.getUsage());
+        resp.setModel(chatGPTResponse.getModel());
+        return ReturnFactory.success(resp);
+    }
+
+    @PostMapping("/4o-mini/import-choice-one")
+    @StlApiOperation(title = "4o-mini 导入测试一条数据", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
+    public Return<ImportExcelVO> importExcelTestOne(@RequestParam Integer index, @RequestParam(required = false) String model, @RequestParam("file") MultipartFile file, HttpServletResponse response) {
+        List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
+        ImportExcelVO pod = podList.get(index);
+        ImportExcelVO.SignType signType = ImportExcelVO.SignType.all_map.getOrDefault(pod.getSignType(), COMMON);
+        if (Objects.nonNull(signType)) {
+            ChatBody chatBody = new ChatBody();
+            chatBody.setModel(model);
+            List<String> imageList = new ArrayList<>();
+            if (StringUtils.isNotBlank(pod.getImage1())) {
+                imageList.add(pod.getImage1());
+            }
+            if (StringUtils.isNotBlank(pod.getImage2())) {
+                imageList.add(pod.getImage2());
+            }
+            if (StringUtils.isNotBlank(pod.getImage3())) {
+                imageList.add(pod.getImage3());
+            }
+            chatBody.setImageList(imageList);
+
+            String question = String.format(signType.getQuestion(), StringUtils.substring(pod.getWaybillNo(), 0, 8));
+            chatBody.setText(question);
+            pod.setQuestion(question);
+
+            Return<BigModelAnswerText> textMap = this.getTextMap(chatBody);
+            if (textMap.success()) {
+                BigModelAnswerText bodyMessage = textMap.getBodyMessage();
+                if (CollectionUtil.isNotEmpty(bodyMessage.getSourceTextList()))
+                    pod.setAnswer(String.join(",", bodyMessage.getSourceTextList()));
+                pod.setUsageMetadata(JsonUtils.toJson(bodyMessage.getGptUsage()));
+                pod.setModel(bodyMessage.getModel());
+            }
+        }
+        return ReturnFactory.success(pod);
+    }
+
+    @PostMapping("/4o-mini/import")
+    @StlApiOperation(title = "4o-mini 导入数据批量调用", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
+    public void importExcel(@RequestParam("file") MultipartFile file, @RequestParam(required = false) String model, HttpServletResponse response) {
+        List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
+        log.info("图像识别元数据，总计{}条", podList.size());
+        int i = 0;
+        for (ImportExcelVO pod : podList) {
+            ImportExcelVO.SignType signType = ImportExcelVO.SignType.all_map.getOrDefault(pod.getSignType(), ImportExcelVO.SignType.COMMON);
+            if (Objects.nonNull(signType)) {
+                ChatBody chatBody = new ChatBody();
+                chatBody.setModel(model);
+                List<String> imageList = new ArrayList<>();
+                if (StringUtils.isNotBlank(pod.getImage1())) {
+                    imageList.add(pod.getImage1());
+                }
+                if (StringUtils.isNotBlank(pod.getImage2())) {
+                    imageList.add(pod.getImage2());
+                }
+                if (StringUtils.isNotBlank(pod.getImage3())) {
+                    imageList.add(pod.getImage3());
+                }
+                chatBody.setImageList(imageList);
+
+                String question = String.format(signType.getQuestion(), StringUtils.substring(pod.getWaybillNo(), 0, 8));
+                chatBody.setText(question);
+                pod.setQuestion(question);
+
+                try {
+                    i++;
+                    log.info("第{}条，开始调用：{}", i, JsonUtils.toJson(chatBody));
+                    Return<BigModelAnswerText> textMap = this.getTextMap(chatBody);
+                    log.info("第{}条，AI识别完成：{}", i, JsonUtils.toJson(textMap.getBodyMessage()));
+                    if (textMap.success()) {
+                        BigModelAnswerText bodyMessage = textMap.getBodyMessage();
+                        if (CollectionUtil.isNotEmpty(bodyMessage.getSourceTextList()))
+                            pod.setAnswer(String.join(",", bodyMessage.getSourceTextList()));
+                        pod.setUsageMetadata(JsonUtils.toJson(bodyMessage.getGptUsage()));
+                        pod.setModel(bodyMessage.getModel());
+                    } else {
+                        continue;
+                    }
+                    // TimeUnit.SECONDS.sleep(61);
+                } catch (Exception e) {
+                    log.error("抛出异常：", e);
+                    break;
+                }
+            }
+        }
+        String answerAll = podList.stream().map(ImportExcelVO::getAnswer).collect(Collectors.joining(","));
+        log.info("识别结束，开始写入本地文件：{}", answerAll);
+        SXSSFWorkbook sxssfWorkbook = ExcelOperateUtils.exportToBigDataFile(podList);
+        // ExcelOperateUtils.downData(sxssfWorkbook, response, "pod.xlsx");
+        String fileName = writeLocalPath("gpt", sxssfWorkbook);
+        log.info("识别结束，写入本地文件成功 {}", fileName);
+    }
+
+    private static String writeLocalPath(String namePrefix, SXSSFWorkbook workbook) {
+        String name = namePrefix + "pod" + System.currentTimeMillis();
+        try (FileOutputStream outputStream = new FileOutputStream(name + ".xlsx")) {
+            workbook.write(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            // 关闭 SXSSFWorkbook，释放资源
+            try {
+                workbook.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return name;
     }
 }

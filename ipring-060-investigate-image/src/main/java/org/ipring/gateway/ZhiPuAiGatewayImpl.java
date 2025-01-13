@@ -46,9 +46,7 @@ public class ZhiPuAiGatewayImpl implements ZhiPuAiGateway {
 
         ImageExplanationRequest requestImg = new ImageExplanationRequest();
         requestImg.setType("image_url");
-
         ImageReq imageReq = new ImageReq();
-
         imageReq.setUrl(imageUrl);
         requestImg.setImage_url(imageReq);
         requests.add(requestImg);
@@ -58,5 +56,21 @@ public class ZhiPuAiGatewayImpl implements ZhiPuAiGateway {
         requestText.setText(text);
         requests.add(requestText);
         return JsonUtils.toJson(requests);
+    }
+
+    public static ImageExplanationRequest getTextChatContent(String text) {
+        ImageExplanationRequest requestText = new ImageExplanationRequest();
+        requestText.setType("text");
+        requestText.setText(text);
+        return requestText;
+    }
+
+    public static ImageExplanationRequest getImageChatContent(String imageUrl) {
+        ImageExplanationRequest requestImg = new ImageExplanationRequest();
+        requestImg.setType("image_url");
+        ImageReq imageReq = new ImageReq();
+        imageReq.setUrl(imageUrl);
+        requestImg.setImage_url(imageReq);
+        return requestImg;
     }
 }

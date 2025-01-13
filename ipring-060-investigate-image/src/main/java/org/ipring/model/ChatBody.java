@@ -10,6 +10,8 @@ import java.util.List;
  */
 @Data
 public class ChatBody {
+    private String model;
+
     private String text;
     private String imageUrl;
     private List<String> imageList;

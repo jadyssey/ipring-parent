@@ -67,7 +67,8 @@ public class GeminiController {
         // 转响应模型
         BigModelAnswerText resp = new BigModelAnswerText();
         resp.setSourceTextList(textList);
-        resp.setUsageMetadata(geminiResponse.getUsageMetadata());
+        resp.setGeminiUsage(geminiResponse.getUsageMetadata());
+        resp.setModel(geminiResponse.getUnknownFields().getFields().values().stream().map(JsonUtils::toJson).collect(Collectors.joining(",")));
         return ReturnFactory.success(resp);
     }
 
@@ -106,7 +107,7 @@ public class GeminiController {
                         BigModelAnswerText bodyMessage = textMap.getBodyMessage();
                         if (CollectionUtil.isNotEmpty(bodyMessage.getSourceTextList()))
                             pod.setAnswer(String.join(",", bodyMessage.getSourceTextList()));
-                        pod.setUsageMetadata(JsonUtils.toJson(bodyMessage.getUsageMetadata()));
+                        pod.setUsageMetadata(JsonUtils.toJson(bodyMessage.getGeminiUsage()));
                     } else {
                         break;
                     }
@@ -161,7 +162,7 @@ public class GeminiController {
             }
             chatBody.setImageList(imageList);
 
-            String question = String.format(signType.getQuestion(), pod.getWaybillNo());
+            String question = String.format(signType.getQuestion(), StringUtils.substring(pod.getWaybillNo(), 0, 8));
             chatBody.setText(question);
             pod.setQuestion(question);
 
@@ -170,7 +171,7 @@ public class GeminiController {
                 BigModelAnswerText bodyMessage = textMap.getBodyMessage();
                 if (CollectionUtil.isNotEmpty(bodyMessage.getSourceTextList()))
                     pod.setAnswer(String.join(",", bodyMessage.getSourceTextList()));
-                pod.setUsageMetadata(JsonUtils.toJson(bodyMessage.getUsageMetadata()));
+                pod.setUsageMetadata(JsonUtils.toJson(bodyMessage.getGeminiUsage()));
             }
         }
         return ReturnFactory.success(pod);

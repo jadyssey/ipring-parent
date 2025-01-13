@@ -53,10 +53,14 @@ public class ImportExcelVO {
     private String usageMetadata;
 
     @ExcelColumn(8)
+    @ApiModelProperty(value = "模型")
+    private String model;
+
+    @ExcelColumn(9)
     @ApiModelProperty(value = "问题")
     private String question;
 
-    @ExcelColumn(9)
+    @ExcelColumn(10)
     @ApiModelProperty(value = "回答")
     private String answer;
 

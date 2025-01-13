@@ -3,7 +3,7 @@ package org.ipring.model;
 import cn.hutool.core.collection.CollectionUtil;
 import lombok.Data;
 import org.ipring.model.gemini.GeminiResponse;
-import org.ipring.util.JsonUtils;
+import org.ipring.model.gpt.ChatGPTResponse;
 
 import java.util.Arrays;
 import java.util.List;
@@ -17,23 +17,16 @@ import java.util.stream.Collectors;
  */
 @Data
 public class BigModelAnswerText {
+    private String model;
+
     private List<String> sourceTextList;
 
     private Map<String, Boolean> map;
+
     private List<String> list;
 
-    private GeminiResponse.UsageMetadata usageMetadata;
-
-    public Map<String, Boolean> getMap() {
-        try {
-            if (CollectionUtil.isNotEmpty(this.getSourceTextList()) && this.getSourceTextList().size() == 1) {
-                return (Map<String, Boolean>) Optional.ofNullable(this.getSourceTextList().get(0)).map(tx -> JsonUtils.toObject(tx, Map.class)).orElse(null);
-            }
-        } catch (Exception e) {
-            return null;
-        }
-        return null;
-    }
+    private GeminiResponse.UsageMetadata geminiUsage;
+    private ChatGPTResponse.Usage gptUsage;
 
     public List<String> getList() {
         try {
