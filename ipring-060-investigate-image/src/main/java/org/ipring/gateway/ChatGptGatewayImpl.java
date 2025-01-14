@@ -26,7 +26,7 @@ public class ChatGptGatewayImpl implements ChatGptGateway {
         String secretKey = HttpUtils.getHeader("secretKey");
         log.info("请求：{}", JsonUtils.toJson(data));
         ChatGPTResponse completions = chatGptApi.completions("Bearer " + secretKey, data);
-        log.info("响应结果：{}", completions);
+        log.info("响应结果：{}", JsonUtils.toJson(completions));
         return ReturnFactory.success(completions);
     }
 }
