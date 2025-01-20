@@ -67,6 +67,9 @@ public class GPTController {
         ChatMessage chatMessage = new ChatMessage(ChatMessageRole.USER.value(), requests);
         messages.add(chatMessage);
         chatCompletionRequest.setMessages(messages);
+        if (chatBody.getSupplier().equals(2)) {
+            chatGptGateway.azureCompletions(chatCompletionRequest);
+        }
         return chatGptGateway.completions(chatCompletionRequest);
     }
 
@@ -129,7 +132,7 @@ public class GPTController {
 
     @PostMapping("/4o-mini/import")
     @StlApiOperation(title = "4o-mini 导入数据批量调用", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
-    public void importExcel(@RequestParam("file") MultipartFile file, @RequestParam(required = false) String model, HttpServletResponse response) {
+    public void importExcel(@RequestParam("file") MultipartFile file, @RequestParam(required = false) String model, @RequestParam(required = false) Integer supplier, HttpServletResponse response) {
         List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
         log.info("图像识别元数据，总计{}条", podList.size());
         int i = 0;
@@ -138,6 +141,7 @@ public class GPTController {
             if (Objects.nonNull(signType)) {
                 ChatBody chatBody = new ChatBody();
                 chatBody.setModel(model);
+                chatBody.setSupplier(supplier);
                 List<String> imageList = new ArrayList<>();
                 if (StringUtils.isNotBlank(pod.getImage1())) {
                     imageList.add(pod.getImage1());

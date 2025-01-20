@@ -111,7 +111,7 @@ public class GeminiController {
                     } else {
                         break;
                     }
-                    TimeUnit.SECONDS.sleep(61);
+                    TimeUnit.SECONDS.sleep(58);
                 } catch (InterruptedException e) {
                     break;
                 }

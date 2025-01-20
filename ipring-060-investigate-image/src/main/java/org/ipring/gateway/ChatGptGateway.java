@@ -10,4 +10,6 @@ import org.ipring.model.gpt.ChatGPTResponse;
  */
 public interface ChatGptGateway {
     Return<ChatGPTResponse> completions(ChatCompletionRequest data);
+
+   Return<ChatGPTResponse> azureCompletions(ChatCompletionRequest data);
 }

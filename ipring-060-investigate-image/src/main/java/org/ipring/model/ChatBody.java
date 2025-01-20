@@ -12,6 +12,12 @@ import java.util.List;
 public class ChatBody {
     private String model;
 
+    /**
+     * 1-chatgpt
+     * 2-azure
+     */
+    private Integer supplier;
+
     private String text;
     private String imageUrl;
     private List<String> imageList;
