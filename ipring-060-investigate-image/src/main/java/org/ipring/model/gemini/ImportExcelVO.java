@@ -25,42 +25,50 @@ public class ImportExcelVO {
     private String waybillNo;
 
     @ExcelColumn(1)
-    @ApiModelProperty(value = "id")
-    private String id;
-
-    @ExcelColumn(2)
     @ApiModelProperty(value = "签收类型")
     private String signType;
 
+    @ExcelColumn(2)
+    @ApiModelProperty(value = "地址1")
+    private String address1;
+
     @ExcelColumn(3)
+    @ApiModelProperty(value = "地址2")
+    private String address2;
+
+    @ExcelColumn(4)
+    @ApiModelProperty(value = "地址3")
+    private String address3;
+
+    @ExcelColumn(5)
     @ApiModelProperty(value = "不合规原因")
     private String reason;
 
-    @ExcelColumn(4)
+    @ExcelColumn(6)
     @ApiModelProperty(value = "POD图片1")
     private String image1;
 
-    @ExcelColumn(5)
+    @ExcelColumn(7)
     @ApiModelProperty(value = "POD图片2")
     private String image2;
 
-    @ExcelColumn(6)
+    @ExcelColumn(8)
     @ApiModelProperty(value = "POD图片3")
     private String image3;
 
-    @ExcelColumn(7)
+    @ExcelColumn(9)
     @ApiModelProperty(value = "用量")
     private String usageMetadata;
 
-    @ExcelColumn(8)
+    @ExcelColumn(10)
     @ApiModelProperty(value = "模型")
     private String model;
 
-    @ExcelColumn(9)
+    @ExcelColumn(11)
     @ApiModelProperty(value = "问题")
     private String question;
 
-    @ExcelColumn(10)
+    @ExcelColumn(12)
     @ApiModelProperty(value = "回答")
     private String answer;
 

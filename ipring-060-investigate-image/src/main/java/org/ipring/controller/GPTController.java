@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.ipring.model.gemini.ImportExcelVO.SignType.COMMON;
@@ -67,7 +68,7 @@ public class GPTController {
         ChatMessage chatMessage = new ChatMessage(ChatMessageRole.USER.value(), requests);
         messages.add(chatMessage);
         chatCompletionRequest.setMessages(messages);
-        if (chatBody.getSupplier().equals(2)) {
+        if (Objects.nonNull(chatBody.getSupplier()) && chatBody.getSupplier().equals(2)) {
             chatGptGateway.azureCompletions(chatCompletionRequest);
         }
         return chatGptGateway.completions(chatCompletionRequest);
@@ -132,7 +133,7 @@ public class GPTController {
 
     @PostMapping("/4o-mini/import")
     @StlApiOperation(title = "4o-mini 导入数据批量调用", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
-    public void importExcel(@RequestParam("file") MultipartFile file, @RequestParam(required = false) String model, @RequestParam(required = false) Integer supplier, HttpServletResponse response) {
+    public void importExcel(@RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, HttpServletResponse response) {
         List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
         log.info("图像识别元数据，总计{}条", podList.size());
         int i = 0;
@@ -157,12 +158,11 @@ public class GPTController {
                 String question = String.format(signType.getQuestion(), StringUtils.substring(pod.getWaybillNo(), 0, 8));
                 chatBody.setText(question);
                 pod.setQuestion(question);
-
                 try {
                     i++;
                     log.info("第{}条，开始调用：{}", i, JsonUtils.toJson(chatBody));
                     Return<BigModelAnswerText> textMap = this.getTextMap(chatBody);
-                    log.info("第{}条，AI识别完成：{}", i, JsonUtils.toJson(textMap.getBodyMessage()));
+                    log.info("第{}条，AI识别完成", i);
                     if (textMap.success()) {
                         BigModelAnswerText bodyMessage = textMap.getBodyMessage();
                         if (CollectionUtil.isNotEmpty(bodyMessage.getSourceTextList()))
@@ -172,10 +172,15 @@ public class GPTController {
                     } else {
                         continue;
                     }
-                    // TimeUnit.SECONDS.sleep(61);
                 } catch (Exception e) {
-                    log.error("抛出异常：", e);
-                    break;
+                    log.error("远程异常：", e);
+                    pod.setAnswer("调用异常->" + e.getLocalizedMessage());
+                    continue;
+                }
+                try {
+                    TimeUnit.SECONDS.sleep(3);
+                } catch (InterruptedException e) {
+                    log.error("睡眠，抛出异常：", e);
                 }
             }
         }

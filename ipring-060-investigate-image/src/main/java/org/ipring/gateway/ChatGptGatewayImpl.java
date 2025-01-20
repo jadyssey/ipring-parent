@@ -27,10 +27,25 @@ public class ChatGptGatewayImpl implements ChatGptGateway {
     @Override
     public Return<ChatGPTResponse> completions(ChatCompletionRequest data) {
         String secretKey = HttpUtils.getHeader("secretKey");
-        log.info("请求：{}", JsonUtils.toJson(data));
-        ChatGPTResponse completions = chatGptApi.completions("Bearer " + secretKey, data);
+        Map<String, Object> map = JsonUtils.toMap(data);
+        map.put("max_tokens", 5000);
+        log.info("请求体：{}", JsonUtils.toJson(data));
+        ChatGPTResponse completions = completionsAndTry(secretKey, map, 2);
         log.info("响应结果：{}", JsonUtils.toJson(completions));
         return ReturnFactory.success(completions);
+    }
+
+    public ChatGPTResponse completionsAndTry(String secretKey, Map<String, Object> map, Integer count) {
+        try {
+            return chatGptApi.completions("Bearer " + secretKey, map);
+        } catch (Exception e) {
+            log.info("调用失败，当前count ={}", count);
+            if (count > 1) {
+                return completionsAndTry(secretKey, map, --count);
+            } else {
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -42,7 +57,6 @@ public class ChatGptGatewayImpl implements ChatGptGateway {
         if (data.getModel().equals("gpt-4o")) {
             completions = azureChatGptApi.azureGpt4o(apiKey, map);
         } else {
-            map.put("max_tokens", 800);
             completions = azureChatGptApi.azureGpt4oMini(apiKey, map);
         }
         log.info("响应结果：{}", JsonUtils.toJson(completions));

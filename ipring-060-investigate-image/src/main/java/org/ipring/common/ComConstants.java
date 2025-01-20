@@ -66,7 +66,6 @@ public interface ComConstants {
             // 交接动作
             "Question 7. Is there anyone handing over a package to someone else in the picture Or the recipient has the package in their hands? If yes, then true; otherwise, false.\n" +
             // 识别街道号码:
-            "Question 8. There is a street number, mailbox number or house number printed on the picture. Can you find it? If yes, output the recognized number; otherwise, output the symbol '-'." +
+            "Question 8. Please extract only the street numbers, house numbers, or email addresses from the non-delivery label images. Ignore any information on the delivery label? If yes, output the recognized number; otherwise, output the symbol '-'." +
             "The response result should be separated by '::', for example: 'true::Abc123::false'.";
-
 }
