@@ -12,7 +12,7 @@ import java.util.Map;
  * @author liuguangjin
  * @date 2025/1/9
  */
-@RetrofitClient(baseUrl = "https://ai-14308262588829ai639299680606.openai.azure.com")
+@RetrofitClient(baseUrl = "https://dbu-cps-openai-test.openai.azure.com")
 public interface AzureChatGptApi {
 
     @POST(value = "openai/deployments/gpt-4o/chat/completions?api-version=2024-08-01-preview")

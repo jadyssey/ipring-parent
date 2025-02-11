@@ -69,7 +69,7 @@ public class GPTController {
         messages.add(chatMessage);
         chatCompletionRequest.setMessages(messages);
         if (Objects.nonNull(chatBody.getSupplier()) && chatBody.getSupplier().equals(2)) {
-            chatGptGateway.azureCompletions(chatCompletionRequest);
+            return chatGptGateway.azureCompletions(chatCompletionRequest);
         }
         return chatGptGateway.completions(chatCompletionRequest);
     }

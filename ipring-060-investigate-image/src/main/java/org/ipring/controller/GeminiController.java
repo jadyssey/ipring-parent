@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -111,8 +110,8 @@ public class GeminiController {
                     } else {
                         break;
                     }
-                    TimeUnit.SECONDS.sleep(58);
-                } catch (InterruptedException e) {
+                    // TimeUnit.SECONDS.sleep(58);
+                } catch (Exception e) {
                     break;
                 }
             }
@@ -177,3 +176,6 @@ public class GeminiController {
         return ReturnFactory.success(pod);
     }
 }
+
+
+
