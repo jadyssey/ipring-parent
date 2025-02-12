@@ -86,4 +86,8 @@ public class ReturnFactory {
         if (null == resp) return false;
         return resp.getCode().equals(SUCCESS) && StringUtils.hasText(resp.getSubCode()) && resp.getSubCode().endsWith(SUCCESS_SUB_CODE_END);
     }
+    public static boolean check(ZtReturn<?> resp) {
+        if (null == resp) return false;
+        return resp.getCode().equals(200);
+    }
 }

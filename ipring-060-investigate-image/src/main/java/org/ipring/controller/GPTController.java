@@ -68,10 +68,10 @@ public class GPTController {
         ChatMessage chatMessage = new ChatMessage(ChatMessageRole.USER.value(), requests);
         messages.add(chatMessage);
         chatCompletionRequest.setMessages(messages);
-        if (Objects.nonNull(chatBody.getSupplier()) && chatBody.getSupplier().equals(2)) {
-            return chatGptGateway.azureCompletions(chatCompletionRequest);
+        if (Objects.nonNull(chatBody.getSupplier()) && chatBody.getSupplier().equals(1)) {
+            return chatGptGateway.completions(chatCompletionRequest);
         }
-        return chatGptGateway.completions(chatCompletionRequest);
+        return chatGptGateway.azureCompletions(chatCompletionRequest);
     }
 
     @PostMapping("/4o-mini/textMap")
@@ -138,22 +138,13 @@ public class GPTController {
         log.info("图像识别元数据，总计{}条", podList.size());
         int i = 0;
         for (ImportExcelVO pod : podList) {
-            ImportExcelVO.SignType signType = ImportExcelVO.SignType.all_map.getOrDefault(pod.getSignType(), ImportExcelVO.SignType.COMMON);
+            // ImportExcelVO.SignType signType = ImportExcelVO.SignType.all_map.getOrDefault(pod.getSignType(), ImportExcelVO.SignType.COMMON);
+            ImportExcelVO.SignType signType = ImportExcelVO.SignType.COMMON;
             if (Objects.nonNull(signType)) {
                 ChatBody chatBody = new ChatBody();
                 chatBody.setModel(model);
                 chatBody.setSupplier(supplier);
-                List<String> imageList = new ArrayList<>();
-                if (StringUtils.isNotBlank(pod.getImage1())) {
-                    imageList.add(pod.getImage1());
-                }
-                if (StringUtils.isNotBlank(pod.getImage2())) {
-                    imageList.add(pod.getImage2());
-                }
-                if (StringUtils.isNotBlank(pod.getImage3())) {
-                    imageList.add(pod.getImage3());
-                }
-                chatBody.setImageList(imageList);
+                chatBody.setImageList(pod.getImgToImgList());
 
                 String question = String.format(signType.getQuestion(), StringUtils.substring(pod.getWaybillNo(), 0, 8));
                 chatBody.setText(question);
@@ -163,25 +154,24 @@ public class GPTController {
                     log.info("第{}条，开始调用：{}", i, JsonUtils.toJson(chatBody));
                     Return<BigModelAnswerText> textMap = this.getTextMap(chatBody);
                     log.info("第{}条，AI识别完成", i);
-                    if (textMap.success()) {
+                    if (textMap.success() && textMap.hashData()) {
                         BigModelAnswerText bodyMessage = textMap.getBodyMessage();
                         if (CollectionUtil.isNotEmpty(bodyMessage.getSourceTextList()))
                             pod.setAnswer(String.join(",", bodyMessage.getSourceTextList()));
                         pod.setUsageMetadata(JsonUtils.toJson(bodyMessage.getGptUsage()));
                         pod.setModel(bodyMessage.getModel());
                     } else {
+                        log.error("第{}条，识别异常，跳过", i);
                         continue;
                     }
                 } catch (Exception e) {
-                    log.error("远程异常：", e);
+                    log.error("第{}条 远程异常：", i, e);
                     pod.setAnswer("调用异常->" + e.getLocalizedMessage());
+                    sleep(5); // 控制速率
                     continue;
                 }
-                try {
-                    TimeUnit.SECONDS.sleep(3);
-                } catch (InterruptedException e) {
-                    log.error("睡眠，抛出异常：", e);
-                }
+                // 控制速率
+                // sleep(1);
             }
         }
         String answerAll = podList.stream().map(ImportExcelVO::getAnswer).collect(Collectors.joining(","));
@@ -190,6 +180,14 @@ public class GPTController {
         // ExcelOperateUtils.downData(sxssfWorkbook, response, "pod.xlsx");
         String fileName = writeLocalPath("gpt", sxssfWorkbook);
         log.info("识别结束，写入本地文件成功 {}", fileName);
+    }
+
+    private static void sleep(Integer seconds) {
+        try {
+            TimeUnit.SECONDS.sleep(seconds);
+        } catch (InterruptedException e) {
+            log.error("睡眠，抛出异常：", e);
+        }
     }
 
     private static String writeLocalPath(String namePrefix, SXSSFWorkbook workbook) {

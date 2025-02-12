@@ -57,7 +57,9 @@ public class ChatGptGatewayImpl implements ChatGptGateway {
         if (data.getModel().equals("gpt-4o")) {
             completions = azureChatGptApi.azureGpt4o(apiKey, map);
         } else {
-            completions = azureChatGptApi.azureGpt4oMini(apiKey, map);
+            String result = azureChatGptApi.azureGpt4oMini(apiKey, map);
+            log.info("azureChatGptApi.azureGpt4oMini 返回结果：{}", result);
+            completions = JsonUtils.toObject(result, ChatGPTResponse.class);
         }
         log.info("响应结果：{}", JsonUtils.toJson(completions));
         return ReturnFactory.success(completions);

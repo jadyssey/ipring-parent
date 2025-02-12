@@ -5,13 +5,17 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.ipring.common.ComConstants;
 import org.ipring.excel.ExcelColumn;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * @author liuguangjin
  * @date 2025/1/9
@@ -25,50 +29,62 @@ public class ImportExcelVO {
     private String waybillNo;
 
     @ExcelColumn(1)
+    @ApiModelProperty(value = "详细地址")
+    private String address;
+
+    @ExcelColumn(2)
+    @ApiModelProperty(value = "收件地外门牌")
+    private String doorNumberExe;
+
+    @ExcelColumn(3)
     @ApiModelProperty(value = "签收类型")
     private String signType;
 
-    @ExcelColumn(2)
-    @ApiModelProperty(value = "地址1")
-    private String address1;
-
-    @ExcelColumn(3)
-    @ApiModelProperty(value = "地址2")
-    private String address2;
-
     @ExcelColumn(4)
-    @ApiModelProperty(value = "地址3")
-    private String address3;
+    @ApiModelProperty(value = "POD图片原始地址")
+    private String images;
 
     @ExcelColumn(5)
-    @ApiModelProperty(value = "不合规原因")
-    private String reason;
-
-    @ExcelColumn(6)
     @ApiModelProperty(value = "POD图片1")
     private String image1;
 
-    @ExcelColumn(7)
+    @ExcelColumn(6)
     @ApiModelProperty(value = "POD图片2")
     private String image2;
 
-    @ExcelColumn(8)
+    @ExcelColumn(7)
     @ApiModelProperty(value = "POD图片3")
     private String image3;
 
+    @ExcelColumn(8)
+    @ApiModelProperty(value = "POD图片4")
+    private String image4;
+
     @ExcelColumn(9)
+    @ApiModelProperty(value = "POD图片5")
+    private String image5;
+
+    @ExcelColumn(10)
+    @ApiModelProperty(value = "人工-是否合规")
+    private String podFlag;
+
+    @ExcelColumn(11)
+    @ApiModelProperty(value = "人工-不合规原因")
+    private String reason;
+
+    @ExcelColumn(12)
     @ApiModelProperty(value = "用量")
     private String usageMetadata;
 
-    @ExcelColumn(10)
+    @ExcelColumn(13)
     @ApiModelProperty(value = "模型")
     private String model;
 
-    @ExcelColumn(11)
+    @ExcelColumn(14)
     @ApiModelProperty(value = "问题")
     private String question;
 
-    @ExcelColumn(12)
+    @ExcelColumn(15)
     @ApiModelProperty(value = "回答")
     private String answer;
 
@@ -90,4 +106,11 @@ public class ImportExcelVO {
 
         public static final Map<String, SignType> all_map = Arrays.stream(SignType.values()).collect(Collectors.toMap(SignType::getText, Function.identity()));
     }
+
+
+    // 将当前模型中的字段img1 img2 img3.. 转成imglist
+    public List<String> getImgToImgList() {
+        return Stream.of(this.image1, this.image2, this.image3, this.image4, this.image5).filter(StringUtils::isNotBlank).collect(Collectors.toList());
+    }
+
 }

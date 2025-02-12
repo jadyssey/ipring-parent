@@ -59,7 +59,7 @@ public interface ComConstants {
             // 运单号识别
             "Question 2. Check if there is a code starting with '%s' on the package in the picture. If there is, output the code; otherwise, output the symbol '-'.\n" +
             "Question 3. Is the package placed in any location that can be identified by the recipient? If yes, then true; otherwise, false.\n" +
-            //         放门口
+            // 放门口
             "Question 4. Is the package placed close to the front door? If yes, then true; otherwise, false.\n" +
             "Question 5. Is the package placed in a mailbox or other container? If yes, then true; otherwise, false.\n" +
             "Question 6. Is there a photo of an ID document in the image? If yes, then true; otherwise, false.\n" +

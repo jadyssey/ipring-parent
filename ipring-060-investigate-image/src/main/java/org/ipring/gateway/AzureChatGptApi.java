@@ -19,5 +19,5 @@ public interface AzureChatGptApi {
     ChatGPTResponse azureGpt4o(@Header(value = "api-key") String apiKey, @Body Map<String, Object> data);
 
     @POST(value = "/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-08-01-preview")
-    ChatGPTResponse azureGpt4oMini(@Header(value = "api-key") String apiKey, @Body Map<String, Object> data);
+    String azureGpt4oMini(@Header(value = "api-key") String apiKey, @Body Map<String, Object> data);
 }
