@@ -1,6 +1,7 @@
 package org.ipring.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.azure.ai.openai.models.ChatCompletions;
 import com.zhipu.oapi.service.v4.model.ChatCompletionRequest;
 import com.zhipu.oapi.service.v4.model.ChatMessage;
 import com.zhipu.oapi.service.v4.model.ChatMessageRole;
@@ -14,6 +15,7 @@ import org.ipring.enums.subcode.SystemServiceCode;
 import org.ipring.excel.ExcelOperateUtils;
 import org.ipring.gateway.ChatGptGateway;
 import org.ipring.gateway.ZhiPuAiGatewayImpl;
+import org.ipring.gateway.azure.OpenAIService;
 import org.ipring.model.BigModelAnswerText;
 import org.ipring.model.ChatBody;
 import org.ipring.model.ImageExplanationRequest;
@@ -22,10 +24,12 @@ import org.ipring.model.common.ReturnFactory;
 import org.ipring.model.gemini.ImportExcelVO;
 import org.ipring.model.gpt.ChatGPTResponse;
 import org.ipring.util.JsonUtils;
+import org.ipring.util.StringMatchUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -50,6 +54,32 @@ import static org.ipring.model.gemini.ImportExcelVO.SignType.COMMON;
 @RequiredArgsConstructor
 public class GPTController {
     private final ChatGptGateway chatGptGateway;
+    @Resource
+    private OpenAIService openAIService;
+
+    @PostMapping("/azure-ai")
+    @StlApiOperation(title = "azure-ai", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
+    public Return<ChatCompletions> azureAi(@RequestBody ChatBody chatBody) {
+        ChatCompletionRequest chatCompletionRequest = new ChatCompletionRequest();
+        chatCompletionRequest.setModel(Optional.ofNullable(chatBody.getModel()).orElse("gpt-4o-mini"));
+
+        List<ChatMessage> messages = new ArrayList<>();
+        List<ImageExplanationRequest> requests = new ArrayList<>();
+        if (StringUtils.isNotBlank(chatBody.getImageUrl())) {
+            requests.add(ZhiPuAiGatewayImpl.getImageChatContent(chatBody.getImageUrl()));
+        }
+        if (CollectionUtil.isNotEmpty(chatBody.getImageList())) {
+            requests.addAll(chatBody.getImageList().stream().map(ZhiPuAiGatewayImpl::getImageChatContent).collect(Collectors.toList()));
+        }
+        requests.add(ZhiPuAiGatewayImpl.getTextChatContent(chatBody.getText()));
+        ChatMessage chatMessage = new ChatMessage(ChatMessageRole.USER.value(), requests);
+        messages.add(chatMessage);
+        chatCompletionRequest.setMessages(messages);
+
+        return ReturnFactory.success(openAIService.getChatResponse(chatBody.getImageUrl(), chatBody.getText()));
+    }
+
+
     @PostMapping("/4o-mini")
     @StlApiOperation(title = "40-mini", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
     public Return<ChatGPTResponse> get(@RequestBody ChatBody chatBody) {
@@ -146,20 +176,31 @@ public class GPTController {
                 chatBody.setSupplier(supplier);
                 chatBody.setImageList(pod.getImgToImgList());
 
-                String question = String.format(signType.getQuestion(), StringUtils.substring(pod.getWaybillNo(), 0, 8));
+                chatBody.setSystemSetup(signType.getSystemSetup());
+                String question = String.format(signType.getQuestion(), pod.getWaybillNo().length(), StringUtils.substring(pod.getWaybillNo(), 0, 6));
                 chatBody.setText(question);
                 pod.setQuestion(question);
                 try {
                     i++;
+                    long start = System.currentTimeMillis();
                     log.info("第{}条，开始调用：{}", i, JsonUtils.toJson(chatBody));
                     Return<BigModelAnswerText> textMap = this.getTextMap(chatBody);
-                    log.info("第{}条，AI识别完成", i);
+                    // 耗时
+                    long spendTime = System.currentTimeMillis() - start;
+                    log.info("第{}条，AI识别完成，耗时：{}ms", i, spendTime);
                     if (textMap.success() && textMap.hashData()) {
                         BigModelAnswerText bodyMessage = textMap.getBodyMessage();
-                        if (CollectionUtil.isNotEmpty(bodyMessage.getSourceTextList()))
+                        if (CollectionUtil.isNotEmpty(bodyMessage.getSourceTextList())) {
                             pod.setAnswer(String.join(",", bodyMessage.getSourceTextList()));
+                            Optional.of(pod.getAnswer().split(":"))
+                                    .filter(ans -> ans.length > 1).map(ans -> ans[1])
+                                    .ifPresent(waybill -> {
+                                        pod.setMatchingRate(StringMatchUtils.matchingRate(waybill, pod.getWaybillNo()));
+                                    });
+                        }
                         pod.setUsageMetadata(JsonUtils.toJson(bodyMessage.getGptUsage()));
                         pod.setModel(bodyMessage.getModel());
+                        pod.setTime(spendTime);
                     } else {
                         log.error("第{}条，识别异常，跳过", i);
                         continue;

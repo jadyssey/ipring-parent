@@ -15,18 +15,18 @@ public class OpenAIQuickstart {
     public static void main(String[] args) {
         String azureOpenaiKey = Configuration.getGlobalConfiguration().get("AZURE_OPENAI_API_KEY");
         String endpoint = Configuration.getGlobalConfiguration().get("AZURE_OPENAI_ENDPOINT");
-        String deploymentOrModelId = "gpt-4o mini";
+        String deploymentOrModelId = "{azure-open-ai-deployment-model-id}";
 
         OpenAIClient client = new OpenAIClientBuilder()
             .endpoint(endpoint)
             .credential(new AzureKeyCredential(azureOpenaiKey))
             .buildClient();
-
         List<ChatRequestMessage> chatMessages = new ArrayList<>();
         chatMessages.add(new ChatRequestSystemMessage("You are a helpful assistant."));
         chatMessages.add(new ChatRequestUserMessage("Does Azure OpenAI support customer managed keys?"));
         chatMessages.add(new ChatRequestAssistantMessage("Yes, customer managed keys are supported by Azure OpenAI?"));
-        chatMessages.add(new ChatRequestUserMessage("Do other Azure AI services support this too?"));
+        chatMessages.add(new ChatRequestUserMessage("Do other Azure AI services support this too?"));    
+
         ChatCompletions chatCompletions = client.getChatCompletions(deploymentOrModelId, new ChatCompletionsOptions(chatMessages));
 
         System.out.printf("Model ID=%s is created at %s.%n", chatCompletions.getId(), chatCompletions.getCreatedAt());

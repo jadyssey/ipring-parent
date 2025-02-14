@@ -34,7 +34,7 @@ public class ImportExcelVO {
 
     @ExcelColumn(2)
     @ApiModelProperty(value = "收件地外门牌")
-    private String doorNumberExe;
+    private Integer doorNumberExe;
 
     @ExcelColumn(3)
     @ApiModelProperty(value = "签收类型")
@@ -77,31 +77,40 @@ public class ImportExcelVO {
     private String usageMetadata;
 
     @ExcelColumn(13)
-    @ApiModelProperty(value = "模型")
+    @ApiModelProperty(value = "使用模型")
     private String model;
 
     @ExcelColumn(14)
-    @ApiModelProperty(value = "问题")
-    private String question;
+    @ApiModelProperty(value = "耗时（单位毫秒）")
+    private Long time;
 
     @ExcelColumn(15)
-    @ApiModelProperty(value = "回答")
+    @ApiModelProperty(value = "AI-提示词")
+    private String question;
+
+    @ExcelColumn(16)
+    @ApiModelProperty(value = "运单匹配率")
+    private Double matchingRate;
+
+    @ExcelColumn(17)
+    @ApiModelProperty(value = "AI-原始回答")
     private String answer;
 
     @Getter
     @AllArgsConstructor
     public enum SignType {
 
-        Mailbox("Mailbox", ComConstants.question04),
-        Person_sign("Person sign", ComConstants.question02),
-        Received_on_behalf_of_another_person("Received on behalf of another person", ComConstants.question02),
-        Guard_Doormen("Guard/Doormen", ComConstants.question03),
-        Delivered_to_recipients_designated_address("Delivered to recipients designated address", ComConstants.question01),
+        Mailbox("Mailbox", "", ComConstants.question04),
+        Person_sign("Person sign", "", ComConstants.question02),
+        Received_on_behalf_of_another_person("Received on behalf of another person", "", ComConstants.question02),
+        Guard_Doormen("Guard/Doormen", "", ComConstants.question03),
+        Delivered_to_recipients_designated_address("Delivered to recipients designated address", "", ComConstants.question01),
 
-        COMMON("通用提问问题", ComConstants.en2_classifyQuestion),
+        COMMON("通用提问问题", ComConstants.systemSetup, ComConstants.en2_classifyQuestion),
         ;
 
         private final String text;
+        private final String systemSetup;
         private final String question;
 
         public static final Map<String, SignType> all_map = Arrays.stream(SignType.values()).collect(Collectors.toMap(SignType::getText, Function.identity()));

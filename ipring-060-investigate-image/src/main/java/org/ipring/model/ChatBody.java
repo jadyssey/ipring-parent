@@ -18,6 +18,8 @@ public class ChatBody {
      */
     private Integer supplier;
 
+    private String systemSetup;
+
     private String text;
     private String imageUrl;
     private List<String> imageList;

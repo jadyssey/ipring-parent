@@ -39,7 +39,7 @@ public class ChatGptGatewayImpl implements ChatGptGateway {
         try {
             return chatGptApi.completions("Bearer " + secretKey, map);
         } catch (Exception e) {
-            log.info("调用失败，当前count ={}", count);
+            log.error("调用失败，当前count ={}", count);
             if (count > 1) {
                 return completionsAndTry(secretKey, map, --count);
             } else {
@@ -57,11 +57,25 @@ public class ChatGptGatewayImpl implements ChatGptGateway {
         if (data.getModel().equals("gpt-4o")) {
             completions = azureChatGptApi.azureGpt4o(apiKey, map);
         } else {
-            String result = azureChatGptApi.azureGpt4oMini(apiKey, map);
-            log.info("azureChatGptApi.azureGpt4oMini 返回结果：{}", result);
-            completions = JsonUtils.toObject(result, ChatGPTResponse.class);
+            completions = azureCompletionsAndTry(apiKey, map, 2);
         }
         log.info("响应结果：{}", JsonUtils.toJson(completions));
         return ReturnFactory.success(completions);
+    }
+
+    public ChatGPTResponse azureCompletionsAndTry(String apiKey, Map<String, Object> map, Integer count) {
+        String result = null;
+        try {
+            result = azureChatGptApi.azureGpt4oMini(apiKey, map);
+            // log.info("azureChatGptApi.azureGpt4oMini 返回结果：{}", result);
+            return JsonUtils.toObject(result, ChatGPTResponse.class);
+        } catch (Exception e) {
+            log.error("调用失败，当前count ={}, result={}", count, result);
+            if (count > 1) {
+                return completionsAndTry(apiKey, map, --count);
+            } else {
+                throw e;
+            }
+        }
     }
 }
