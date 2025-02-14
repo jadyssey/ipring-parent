@@ -1,5 +1,6 @@
 package org.ipring.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.zhipu.oapi.service.v4.model.ChatCompletionRequest;
@@ -21,6 +22,7 @@ import org.ipring.model.ChatBody;
 import org.ipring.model.ImageExplanationRequest;
 import org.ipring.model.common.Return;
 import org.ipring.model.common.ReturnFactory;
+import org.ipring.model.delivery.Questionnaire;
 import org.ipring.model.gemini.ImportExcelVO;
 import org.ipring.model.gpt.ChatGPTResponse;
 import org.ipring.util.JsonUtils;
@@ -59,24 +61,8 @@ public class GPTController {
 
     @PostMapping("/azure-ai")
     @StlApiOperation(title = "azure-ai", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
-    public Return<ChatCompletions> azureAi(@RequestBody ChatBody chatBody) {
-        ChatCompletionRequest chatCompletionRequest = new ChatCompletionRequest();
-        chatCompletionRequest.setModel(Optional.ofNullable(chatBody.getModel()).orElse("gpt-4o-mini"));
-
-        List<ChatMessage> messages = new ArrayList<>();
-        List<ImageExplanationRequest> requests = new ArrayList<>();
-        if (StringUtils.isNotBlank(chatBody.getImageUrl())) {
-            requests.add(ZhiPuAiGatewayImpl.getImageChatContent(chatBody.getImageUrl()));
-        }
-        if (CollectionUtil.isNotEmpty(chatBody.getImageList())) {
-            requests.addAll(chatBody.getImageList().stream().map(ZhiPuAiGatewayImpl::getImageChatContent).collect(Collectors.toList()));
-        }
-        requests.add(ZhiPuAiGatewayImpl.getTextChatContent(chatBody.getText()));
-        ChatMessage chatMessage = new ChatMessage(ChatMessageRole.USER.value(), requests);
-        messages.add(chatMessage);
-        chatCompletionRequest.setMessages(messages);
-
-        return ReturnFactory.success(openAIService.getChatResponse(chatBody.getImageUrl(), chatBody.getText()));
+    public Return<ChatCompletions> azureAiGpt(@RequestBody ChatBody chatBody) {
+        return ReturnFactory.success(openAIService.getImageResp(chatBody));
     }
 
 
@@ -170,50 +156,50 @@ public class GPTController {
         for (ImportExcelVO pod : podList) {
             // ImportExcelVO.SignType signType = ImportExcelVO.SignType.all_map.getOrDefault(pod.getSignType(), ImportExcelVO.SignType.COMMON);
             ImportExcelVO.SignType signType = ImportExcelVO.SignType.COMMON;
-            if (Objects.nonNull(signType)) {
-                ChatBody chatBody = new ChatBody();
-                chatBody.setModel(model);
-                chatBody.setSupplier(supplier);
-                chatBody.setImageList(pod.getImgToImgList());
+            ChatBody chatBody = new ChatBody();
+            chatBody.setModel(model);
+            chatBody.setSupplier(supplier);
+            chatBody.setImageList(pod.getImgToImgList());
 
-                chatBody.setSystemSetup(signType.getSystemSetup());
-                String question = String.format(signType.getQuestion(), pod.getWaybillNo().length(), StringUtils.substring(pod.getWaybillNo(), 0, 6));
-                chatBody.setText(question);
-                pod.setQuestion(question);
-                try {
-                    i++;
-                    long start = System.currentTimeMillis();
-                    log.info("第{}条，开始调用：{}", i, JsonUtils.toJson(chatBody));
-                    Return<BigModelAnswerText> textMap = this.getTextMap(chatBody);
-                    // 耗时
-                    long spendTime = System.currentTimeMillis() - start;
-                    log.info("第{}条，AI识别完成，耗时：{}ms", i, spendTime);
-                    if (textMap.success() && textMap.hashData()) {
-                        BigModelAnswerText bodyMessage = textMap.getBodyMessage();
-                        if (CollectionUtil.isNotEmpty(bodyMessage.getSourceTextList())) {
-                            pod.setAnswer(String.join(",", bodyMessage.getSourceTextList()));
-                            Optional.of(pod.getAnswer().split(":"))
-                                    .filter(ans -> ans.length > 1).map(ans -> ans[1])
-                                    .ifPresent(waybill -> {
-                                        pod.setMatchingRate(StringMatchUtils.matchingRate(waybill, pod.getWaybillNo()));
-                                    });
-                        }
-                        pod.setUsageMetadata(JsonUtils.toJson(bodyMessage.getGptUsage()));
-                        pod.setModel(bodyMessage.getModel());
-                        pod.setTime(spendTime);
-                    } else {
-                        log.error("第{}条，识别异常，跳过", i);
-                        continue;
+            chatBody.setSystemSetup(signType.getSystemSetup());
+            String question = String.format(signType.getQuestion(), pod.getWaybillNo().length(), StringUtils.substring(pod.getWaybillNo(), 0, 6));
+            chatBody.setText(question);
+            pod.setQuestion(question);
+            try {
+                i++;
+                long start = System.currentTimeMillis();
+                log.info("第{}条，开始调用：{}", i, JsonUtils.toJson(chatBody));
+                // Return<BigModelAnswerText> textMap = this.getTextMap(chatBody);
+                Return<ChatCompletions> textMap = this.azureAiGpt(chatBody);
+                // 耗时
+                long spendTime = System.currentTimeMillis() - start;
+                log.info("第{}条，AI识别完成，耗时：{}ms", i, spendTime);
+                if (textMap.success() && textMap.hashData()) {
+                    ChatCompletions chatCompletions = textMap.getBodyMessage();
+
+                    List<Questionnaire> questionnairesList = chatCompletions.getChoices().stream().map(choice -> JsonUtils.toObject(choice.getMessage().getContent(), Questionnaire.class))
+                            .collect(Collectors.toList());
+                    if (CollectionUtil.isNotEmpty(questionnairesList) && questionnairesList.size() == 1) {
+                        pod.setAnswer(chatCompletions.getChoices().get(0).getMessage().getContent());
+                        Questionnaire questionnaire = questionnairesList.get(0);
+                        BeanUtil.copyProperties(questionnaire, pod);
+                        pod.setMatchingRate(StringMatchUtils.matchingRate(questionnaire.getQ2(), pod.getWaybillNo()));
                     }
-                } catch (Exception e) {
-                    log.error("第{}条 远程异常：", i, e);
-                    pod.setAnswer("调用异常->" + e.getLocalizedMessage());
-                    sleep(5); // 控制速率
+                    pod.setUsageMetadata(JsonUtils.toJson(chatCompletions.getUsage()));
+                    pod.setModel(chatCompletions.getModel());
+                    pod.setTime(spendTime);
+                } else {
+                    log.error("第{}条，识别异常，跳过", i);
                     continue;
                 }
-                // 控制速率
-                // sleep(1);
+            } catch (Exception e) {
+                log.error("第{}条 远程异常：", i, e);
+                pod.setAnswer("调用异常->" + e.getLocalizedMessage());
+                sleep(5); // 控制速率
+                continue;
             }
+            // 控制速率
+            // sleep(1);
         }
         String answerAll = podList.stream().map(ImportExcelVO::getAnswer).collect(Collectors.joining(","));
         log.info("识别结束，开始写入本地文件：{}", answerAll);

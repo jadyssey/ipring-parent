@@ -4,12 +4,17 @@ import com.azure.ai.openai.OpenAIClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.*;
 import com.azure.core.credential.AzureKeyCredential;
+import com.azure.core.util.BinaryData;
+import org.apache.commons.lang3.StringUtils;
+import org.ipring.model.ChatBody;
 import org.ipring.util.AzureAiProperties;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OpenAIService {
@@ -17,25 +22,70 @@ public class OpenAIService {
     @Resource
     private AzureAiProperties azureAiProperties;
 
-    public static OpenAIClient client;
+    private static OpenAIClient client;
 
-    public ChatCompletions getChatResponse(String imgList, String userMessage) {
-        List<ChatRequestMessage> chatMessages = new ArrayList<>();
-        chatMessages.add(new ChatRequestSystemMessage("You are a helpful assistant."));
-        chatMessages.add(new ChatRequestUserMessage(userMessage));
-        if (client == null) {
-            client = new OpenAIClientBuilder()
+    @PostConstruct
+    public void init() {
+        // 初始化 OpenAIClient
+        client = initOpenAIClient();
+    }
+
+    private OpenAIClient initOpenAIClient() {
+        try {
+            return new OpenAIClientBuilder()
                     .endpoint(azureAiProperties.getEndpoint())
                     .credential(new AzureKeyCredential(azureAiProperties.getApiKey()))
                     .buildClient();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize OpenAIClient", e);
+        }
+    }
+
+    /**
+     * 带图片的消息
+     *
+     * @param chatBody
+     * @return
+     */
+    public ChatCompletions getImageResp(ChatBody chatBody) {
+        List<String> imageList = Optional.ofNullable(chatBody.getImageList()).orElse(new ArrayList<>());
+        Optional.ofNullable(chatBody.getImageUrl()).filter(StringUtils::isNotBlank).ifPresent(imageList::add);
+
+        List<ChatRequestMessage> chatMessages = new ArrayList<>();
+        if (StringUtils.isNotBlank(chatBody.getSystemSetup())) {
+            // 添加系统消息
+            chatMessages.add(new ChatRequestSystemMessage(chatBody.getSystemSetup()));
         }
 
-        return client.getChatCompletions(azureAiProperties.getModelId(), new ChatCompletionsOptions(chatMessages));
-  /*
-        StringBuilder response = new StringBuilder();
-        for (ChatChoice choice : chatCompletions.getChoices()) {
-            response.append(choice.getMessage().getContent()).append("\n");
-        }
-        return response.toString();*/
+        // 创建包含文本和图片的用户消息列表
+        List<ChatMessageContentItem> contentItems = new ArrayList<>();
+        // 添加图片内容
+        imageList.forEach(imageUrl -> {
+            ChatMessageImageContentItem imageContentItem = new ChatMessageImageContentItem(new ChatMessageImageUrl(imageUrl));
+            contentItems.add(imageContentItem);
+        });
+
+        // 添加文本内容
+        contentItems.add(new ChatMessageTextContentItem(chatBody.getText()));
+
+        // 创建用户消息并设置内容
+        chatMessages.add(new ChatRequestUserMessage(contentItems));
+
+        // 设置响应格式
+        ChatCompletionsOptions chatCompletionsOptions = new ChatCompletionsOptions(chatMessages);
+
+        ChatCompletionsResponseFormat jsonResponseFormat = getChatCompletionsResponseFormat();
+        chatCompletionsOptions.setResponseFormat(jsonResponseFormat);
+        // 调用 OpenAI 接口获取聊天完成结果
+        return client.getChatCompletions(chatBody.getModel(), chatCompletionsOptions);
+    }
+
+    private static ChatCompletionsJsonSchemaResponseFormat getChatCompletionsResponseFormat() {
+        // 创建自定义 JSON 模式
+        ChatCompletionsJsonSchemaResponseFormatJsonSchema responseFormatJsonSchema = new ChatCompletionsJsonSchemaResponseFormatJsonSchema("7questions");
+        responseFormatJsonSchema.setStrict(true);
+        // 创建 ChatCompletionsResponseFormat 并设置为 json_schema 类型和自定义 JSON 模式
+        responseFormatJsonSchema.setSchema(BinaryData.fromString("{\"type\": \"object\",\"properties\": {\"q1\": { \"type\": \"boolean\" },\"q2\": { \"type\": \"string\" },\"q3\": { \"type\": \"boolean\" },\"q4\": { \"type\": \"boolean\" },\"q5\": { \"type\": \"boolean\" },\"q6\": { \"type\": \"boolean\" },\"q7\": { \"type\": \"string\" }},\"required\": [\"q1\", \"q2\", \"q3\", \"q4\", \"q5\", \"q6\", \"q7\"],\"additionalProperties\": false}"));
+        return new ChatCompletionsJsonSchemaResponseFormat(responseFormatJsonSchema);
     }
 }

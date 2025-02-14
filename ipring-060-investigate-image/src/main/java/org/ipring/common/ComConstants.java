@@ -78,5 +78,5 @@ public interface ComConstants {
             "Question 6. Is there anyone handing over a package to someone else in the picture Or the recipient has the package in their hands? If yes, then true; otherwise, false.\n" +
             // 识别街道号码:
             "Question 7. Please only extract the street/house/mailbox number from the real scene in the picture, and ignore all numbers on the printed document. If a valid house number exists, output that number; otherwise, output the symbol '-'.\n" +
-            "Please answer these 7 questions in sequence, the answers are separated by the English colon ':'. The output format is such as 'true:GO123:false:111', to ensure that the answer is accurate and the format is correct.";
+            "Please answer these 7 questions in sequence, the answers are json object.";
 }

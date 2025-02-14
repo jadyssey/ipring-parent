@@ -17,5 +17,4 @@ public class AzureAiProperties {
 
     private String apiKey;
     private String endpoint;
-    private String modelId;
 }

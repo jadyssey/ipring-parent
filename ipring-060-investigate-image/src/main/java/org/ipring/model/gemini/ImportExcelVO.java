@@ -34,7 +34,7 @@ public class ImportExcelVO {
 
     @ExcelColumn(2)
     @ApiModelProperty(value = "收件地外门牌")
-    private Integer doorNumberExe;
+    private String doorNumberExe;
 
     @ExcelColumn(3)
     @ApiModelProperty(value = "签收类型")
@@ -95,6 +95,34 @@ public class ImportExcelVO {
     @ExcelColumn(17)
     @ApiModelProperty(value = "AI-原始回答")
     private String answer;
+
+    @ExcelColumn(18)
+    @ApiModelProperty(value = "回答1")
+    private boolean q1;
+
+    @ExcelColumn(19)
+    @ApiModelProperty(value = "回答2")
+    private String q2;
+
+    @ExcelColumn(20)
+    @ApiModelProperty(value = "回答3")
+    private boolean q3;
+
+    @ExcelColumn(21)
+    @ApiModelProperty(value = "回答4")
+    private boolean q4;
+
+    @ExcelColumn(22)
+    @ApiModelProperty(value = "回答5")
+    private boolean q5;
+
+    @ExcelColumn(23)
+    @ApiModelProperty(value = "回答6")
+    private boolean q6;
+
+    @ExcelColumn(24)
+    @ApiModelProperty(value = "回答7")
+    private String q7;
 
     @Getter
     @AllArgsConstructor
