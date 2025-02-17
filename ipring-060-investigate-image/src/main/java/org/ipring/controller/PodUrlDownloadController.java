@@ -67,6 +67,8 @@ public class PodUrlDownloadController {
                         log.error("第i={}行， 图片丢失保存，总图片数量为：{}, data={}", row, listReturn.getData().size(), JsonUtils.toJson(listReturn.getData()));
                     }
                 }
+            } else {
+                log.error("第 {} 行，图片下载失败，{}", row, JsonUtils.toJson(listReturn));
             }
             row++;
         }

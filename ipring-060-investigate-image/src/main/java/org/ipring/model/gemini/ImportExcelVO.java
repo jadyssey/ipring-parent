@@ -98,7 +98,7 @@ public class ImportExcelVO {
 
     @ExcelColumn(18)
     @ApiModelProperty(value = "回答1")
-    private boolean q1;
+    private Boolean q1;
 
     @ExcelColumn(19)
     @ApiModelProperty(value = "回答2")
@@ -106,19 +106,19 @@ public class ImportExcelVO {
 
     @ExcelColumn(20)
     @ApiModelProperty(value = "回答3")
-    private boolean q3;
+    private Boolean q3;
 
     @ExcelColumn(21)
     @ApiModelProperty(value = "回答4")
-    private boolean q4;
+    private Boolean q4;
 
     @ExcelColumn(22)
     @ApiModelProperty(value = "回答5")
-    private boolean q5;
+    private Boolean q5;
 
     @ExcelColumn(23)
     @ApiModelProperty(value = "回答6")
-    private boolean q6;
+    private Boolean q6;
 
     @ExcelColumn(24)
     @ApiModelProperty(value = "回答7")
