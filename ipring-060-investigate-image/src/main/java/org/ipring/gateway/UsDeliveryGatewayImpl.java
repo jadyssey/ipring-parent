@@ -1,6 +1,7 @@
 package org.ipring.gateway;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.ipring.model.common.ZtReturn;
 import org.ipring.model.delivery.AmazonBatchFileVO;
 import org.ipring.util.HttpUtils;
@@ -23,6 +24,9 @@ public class UsDeliveryGatewayImpl implements DeliveryGateway {
     @Override
     public ZtReturn<List<String>> batchDownloadImg(AmazonBatchFileVO amazonBatchFileVO) {
         String secretKey = HttpUtils.getHeader("Authorization");
+        if (StringUtils.isBlank(secretKey)) {
+            secretKey = amazonBatchFileVO.getAuthorization();
+        }
         // 调用batchDownloadImg下载图片
         return usDeliveryApi.batchDownloadImg("Bearer " + secretKey, amazonBatchFileVO);
     }

@@ -26,7 +26,7 @@ import org.ipring.model.delivery.Questionnaire;
 import org.ipring.model.gemini.ImportExcelVO;
 import org.ipring.model.gpt.ChatGPTResponse;
 import org.ipring.util.JsonUtils;
-import org.ipring.util.StringMatchUtils;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,10 +39,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import static org.ipring.model.gemini.ImportExcelVO.SignType.COMMON;
 
 /**
  * @author liuguangjin
@@ -58,6 +58,9 @@ public class GPTController {
     private final ChatGptGateway chatGptGateway;
     @Resource
     private OpenAIService openAIService;
+
+    @Resource
+    private ThreadPoolTaskExecutor commonThreadPool;
 
     @PostMapping("/azure-ai")
     @StlApiOperation(title = "azure-ai", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
@@ -115,7 +118,7 @@ public class GPTController {
     public Return<ImportExcelVO> importExcelTestOne(@RequestParam Integer index, @RequestParam(required = false) String model, @RequestParam("file") MultipartFile file, HttpServletResponse response) {
         List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
         ImportExcelVO pod = podList.get(index);
-        ImportExcelVO.SignType signType = ImportExcelVO.SignType.all_map.getOrDefault(pod.getSignType(), COMMON);
+        ImportExcelVO.SignType signType = ImportExcelVO.SignType.all_map.getOrDefault(pod.getSignType(), ImportExcelVO.SignType.COMMON);
         if (Objects.nonNull(signType)) {
             ChatBody chatBody = new ChatBody();
             chatBody.setModel(model);
@@ -151,62 +154,72 @@ public class GPTController {
     @StlApiOperation(title = "4o-mini 导入数据批量调用", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
     public void importExcel(@RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, HttpServletResponse response) {
         List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
+        long start = System.currentTimeMillis();
         log.info("图像识别元数据，总计{}条", podList.size());
-        int i = 0;
-        for (ImportExcelVO pod : podList) {
-            // ImportExcelVO.SignType signType = ImportExcelVO.SignType.all_map.getOrDefault(pod.getSignType(), ImportExcelVO.SignType.COMMON);
-            ImportExcelVO.SignType signType = ImportExcelVO.SignType.COMMON;
-            ChatBody chatBody = new ChatBody();
-            chatBody.setModel(model);
-            chatBody.setSupplier(supplier);
-            chatBody.setImageList(pod.getImgToImgList());
-
-            chatBody.setSystemSetup(signType.getSystemSetup());
-            String question = String.format(signType.getQuestion(), pod.getWaybillNo().length(), StringUtils.substring(pod.getWaybillNo(), 0, 6));
-            chatBody.setText(question);
-            pod.setQuestion(question);
-            try {
-                i++;
-                long start = System.currentTimeMillis();
-                log.info("第{}条，开始调用：{}", i, JsonUtils.toJson(chatBody));
-                // Return<BigModelAnswerText> textMap = this.getTextMap(chatBody);
-                Return<ChatCompletions> textMap = this.azureAiGpt(chatBody);
-                // 耗时
-                long spendTime = System.currentTimeMillis() - start;
-                log.info("第{}条，AI识别完成，耗时：{}ms", i, spendTime);
-                if (textMap.success() && textMap.hashData()) {
-                    ChatCompletions chatCompletions = textMap.getBodyMessage();
-
-                    List<Questionnaire> questionnairesList = chatCompletions.getChoices().stream().map(choice -> JsonUtils.toObject(choice.getMessage().getContent(), Questionnaire.class))
-                            .collect(Collectors.toList());
-                    if (CollectionUtil.isNotEmpty(questionnairesList) && questionnairesList.size() == 1) {
-                        pod.setAnswer(chatCompletions.getChoices().get(0).getMessage().getContent());
-                        Questionnaire questionnaire = questionnairesList.get(0);
-                        BeanUtil.copyProperties(questionnaire, pod);
-                        pod.setMatchingRate(StringMatchUtils.matchingRate(questionnaire.getQ2(), pod.getWaybillNo()));
-                    }
-                    pod.setUsageMetadata(JsonUtils.toJson(chatCompletions.getUsage()));
-                    pod.setModel(chatCompletions.getModel());
-                    pod.setTime(spendTime);
-                } else {
-                    log.error("第{}条，识别异常，跳过", i);
-                    continue;
-                }
-            } catch (Exception e) {
-                log.error("第{}条 远程异常：", i, e);
-                pod.setAnswer("调用异常->" + e.getLocalizedMessage());
-                sleep(5); // 控制速率
-                continue;
+        List<Future<?>> submitList = new ArrayList<>();
+        for (int i = 0; i < podList.size(); i++) {
+            ImportExcelVO pod = podList.get(i);
+            int finalI = i;
+            Future<?> submit = commonThreadPool.submit(() -> imageHandle(model, supplier, pod, finalI));
+            submitList.add(submit);
+        }
+        try {
+            for (Future<?> future : submitList) {
+                future.get();
             }
-            // 控制速率
-            // sleep(1);
+        } catch (InterruptedException | ExecutionException e) {
+            log.error("多线程报错，", e);
         }
         String answerAll = podList.stream().map(ImportExcelVO::getAnswer).collect(Collectors.joining(","));
         log.info("识别结束，开始写入本地文件：{}", answerAll);
         SXSSFWorkbook sxssfWorkbook = ExcelOperateUtils.exportToBigDataFile(podList);
-        // ExcelOperateUtils.downData(sxssfWorkbook, response, "pod.xlsx");
         String fileName = writeLocalPath("gpt", sxssfWorkbook);
-        log.info("识别结束，写入本地文件成功 {}", fileName);
+        log.info("识别结束，写入本地文件成功 {}, 耗时：{}", fileName, System.currentTimeMillis() - start);
+    }
+
+    private void imageHandle(String model, Integer supplier, ImportExcelVO pod, int i) {
+        // ImportExcelVO.SignType signType = ImportExcelVO.SignType.all_map.getOrDefault(pod.getSignType(), ImportExcelVO.SignType.COMMON);
+        ImportExcelVO.SignType signType = ImportExcelVO.SignType.Q_0221;
+        ChatBody chatBody = new ChatBody();
+        chatBody.setModel(model);
+        chatBody.setSupplier(supplier);
+        chatBody.setImageList(pod.getImgToImgList());
+
+        chatBody.setSystemSetup(signType.getSystemSetup());
+        // String question = String.format(signType.getQuestion(), pod.getWaybillNo().length());
+        String question = signType.getQuestion().replace("%s", String.valueOf(pod.getWaybillNo().length()));
+        chatBody.setText(question);
+        chatBody.setJsonResponseFormat(signType.getJsonResponseFormat());
+        pod.setQuestion(question);
+        try {
+            i++;
+            long start = System.currentTimeMillis();
+            log.info("第{}条，开始调用：{}", i, JsonUtils.toJson(chatBody));
+            // Return<BigModelAnswerText> textMap = this.getTextMap(chatBody);
+            Return<ChatCompletions> textMap = this.azureAiGpt(chatBody);
+            // 记录耗时
+            long spendTime = System.currentTimeMillis() - start;
+            log.info("第{}条，AI识别完成，耗时：{}ms", i, spendTime);
+            if (!textMap.success() || !textMap.hashData()) {
+                log.error("第{}条，识别异常，跳过", i);
+            }
+            ChatCompletions chatCompletions = textMap.getBodyMessage();
+
+            List<Questionnaire> questionnairesList = chatCompletions.getChoices().stream().map(choice -> JsonUtils.toObject(choice.getMessage().getContent(), Questionnaire.class)).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(questionnairesList) && questionnairesList.size() == 1) {
+                pod.setAnswer(chatCompletions.getChoices().get(0).getMessage().getContent());
+                Questionnaire questionnaire = questionnairesList.get(0);
+                BeanUtil.copyProperties(questionnaire, pod);
+                // pod.setMatchingRate(StringMatchUtils.matchingRate(questionnaire.getQ2(), pod.getWaybillNo()));
+            }
+            pod.setUsageMetadata(JsonUtils.toJson(chatCompletions.getUsage()));
+            pod.setModel(chatCompletions.getModel());
+            pod.setTime(spendTime);
+        } catch (Exception e) {
+            log.error("第{}条 远程异常：", i, e);
+            pod.setAnswer("调用异常->" + e.getLocalizedMessage());
+            // sleep(5); // 控制速率
+        }
     }
 
     private static void sleep(Integer seconds) {

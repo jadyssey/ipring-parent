@@ -21,6 +21,8 @@ public class ChatBody {
     private String systemSetup;
 
     private String text;
+    private String jsonResponseFormat;
+
     private String imageUrl;
     private List<String> imageList;
 }

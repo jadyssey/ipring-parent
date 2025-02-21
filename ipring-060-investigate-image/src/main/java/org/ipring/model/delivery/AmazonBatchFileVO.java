@@ -11,4 +11,5 @@ import java.util.List;
 @NoArgsConstructor
 public class AmazonBatchFileVO {
     private List<String> fileKeyList;
+    private String Authorization;
 }

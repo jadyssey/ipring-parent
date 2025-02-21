@@ -106,7 +106,7 @@ public class ImportExcelVO {
 
     @ExcelColumn(20)
     @ApiModelProperty(value = "回答3")
-    private Boolean q3;
+    private String q3;
 
     @ExcelColumn(21)
     @ApiModelProperty(value = "回答4")
@@ -128,18 +128,22 @@ public class ImportExcelVO {
     @AllArgsConstructor
     public enum SignType {
 
-        Mailbox("Mailbox", "", ComConstants.question04),
-        Person_sign("Person sign", "", ComConstants.question02),
-        Received_on_behalf_of_another_person("Received on behalf of another person", "", ComConstants.question02),
-        Guard_Doormen("Guard/Doormen", "", ComConstants.question03),
-        Delivered_to_recipients_designated_address("Delivered to recipients designated address", "", ComConstants.question01),
+        Mailbox("Mailbox", "", ComConstants.question04, ""),
+        Person_sign("Person sign", "", ComConstants.question02, ""),
+        Received_on_behalf_of_another_person("Received on behalf of another person", "", ComConstants.question02, ""),
+        Guard_Doormen("Guard/Doormen", "", ComConstants.question03, ""),
+        Delivered_to_recipients_designated_address("Delivered to recipients designated address", "", ComConstants.question01, ""),
 
-        COMMON("通用提问问题", ComConstants.systemSetup, ComConstants.en2_classifyQuestion),
+        COMMON("通用提问问题", ComConstants.systemSetup, ComConstants.en2_classifyQuestion, ComConstants.en2_classifyQuestion_jsonResponseFormat),
+
+
+        Q_0221("0221通用问题", ComConstants.systemSetup2, ComConstants.Q_0221_THREE, ComConstants.Q_0221_jsonResponseFormat)
         ;
 
         private final String text;
         private final String systemSetup;
         private final String question;
+        private final String jsonResponseFormat;
 
         public static final Map<String, SignType> all_map = Arrays.stream(SignType.values()).collect(Collectors.toMap(SignType::getText, Function.identity()));
     }

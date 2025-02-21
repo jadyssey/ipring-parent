@@ -54,7 +54,7 @@ public class OpenAIService {
         List<ChatRequestMessage> chatMessages = new ArrayList<>();
         if (StringUtils.isNotBlank(chatBody.getSystemSetup())) {
             // 添加系统消息
-            chatMessages.add(new ChatRequestSystemMessage(chatBody.getSystemSetup()));
+            // chatMessages.add(new ChatRequestSystemMessage(chatBody.getSystemSetup())); todo
         }
 
         // 创建包含文本和图片的用户消息列表
@@ -74,18 +74,19 @@ public class OpenAIService {
         // 设置响应格式
         ChatCompletionsOptions chatCompletionsOptions = new ChatCompletionsOptions(chatMessages);
 
-        ChatCompletionsResponseFormat jsonResponseFormat = getChatCompletionsResponseFormat();
+        ChatCompletionsResponseFormat jsonResponseFormat = getChatCompletionsResponseFormat(chatBody.getJsonResponseFormat());
         chatCompletionsOptions.setResponseFormat(jsonResponseFormat);
+        // chatCompletionsOptions.setTemperature() todo
         // 调用 OpenAI 接口获取聊天完成结果
         return client.getChatCompletions(chatBody.getModel(), chatCompletionsOptions);
     }
 
-    private static ChatCompletionsJsonSchemaResponseFormat getChatCompletionsResponseFormat() {
+    private static ChatCompletionsJsonSchemaResponseFormat getChatCompletionsResponseFormat(String jsonResponseFormat) {
         // 创建自定义 JSON 模式
-        ChatCompletionsJsonSchemaResponseFormatJsonSchema responseFormatJsonSchema = new ChatCompletionsJsonSchemaResponseFormatJsonSchema("7questions");
+        ChatCompletionsJsonSchemaResponseFormatJsonSchema responseFormatJsonSchema = new ChatCompletionsJsonSchemaResponseFormatJsonSchema("my_answer_format");
         responseFormatJsonSchema.setStrict(true);
         // 创建 ChatCompletionsResponseFormat 并设置为 json_schema 类型和自定义 JSON 模式
-        responseFormatJsonSchema.setSchema(BinaryData.fromString("{\"type\": \"object\",\"properties\": {\"q1\": { \"type\": \"boolean\" },\"q2\": { \"type\": \"string\" },\"q3\": { \"type\": \"boolean\" },\"q4\": { \"type\": \"boolean\" },\"q5\": { \"type\": \"boolean\" },\"q6\": { \"type\": \"boolean\" },\"q7\": { \"type\": \"string\" }},\"required\": [\"q1\", \"q2\", \"q3\", \"q4\", \"q5\", \"q6\", \"q7\"],\"additionalProperties\": false}"));
+        responseFormatJsonSchema.setSchema(BinaryData.fromString(jsonResponseFormat));
         return new ChatCompletionsJsonSchemaResponseFormat(responseFormatJsonSchema);
     }
 }

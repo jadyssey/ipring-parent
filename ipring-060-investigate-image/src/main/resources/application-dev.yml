@@ -4,7 +4,12 @@ spring:
 #    url: jdbc:mysql://192.168.121.168:3306/customdb?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true
 #    username: root
 #    password: Root@123
-
+ipring:
+  task-pool:
+    core-size: 50
+    max-size: 50
+    keep-alive: 60
+    queue-capacity: 100
 azure:
   openai:
     api-key:

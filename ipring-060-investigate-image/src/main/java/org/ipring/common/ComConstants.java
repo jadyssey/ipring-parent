@@ -59,6 +59,7 @@ public interface ComConstants {
      * 系统设定
      */
     String systemSetup = "Suppose you are an auditor, and you need to review the pictures taken by the courier when the parcel is properly delivered.";
+    String systemSetup2 = "你是严格的物流领域的图片识别专家";
 
     /**
      * 提示词
@@ -79,4 +80,54 @@ public interface ComConstants {
             // 识别街道号码:
             "Question 7. Please only extract the street/house/mailbox number from the real scene in the picture, and ignore all numbers on the printed document. If a valid house number exists, output that number; otherwise, output the symbol '-'.\n" +
             "Please answer these 7 questions in sequence, the answers are json object.";
+    String en2_classifyQuestion_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": { \"type\": \"boolean\" },\"q2\": { \"type\": \"string\" },\"q3\": { \"type\": \"boolean\" },\"q4\": { \"type\": \"boolean\" },\"q5\": { \"type\": \"boolean\" },\"q6\": { \"type\": \"boolean\" },\"q7\": { \"type\": \"string\" }},\"required\": [\"q1\", \"q2\", \"q3\", \"q4\", \"q5\", \"q6\", \"q7\"],\"additionalProperties\": false}";
+
+    /**
+     * 0221 优化后的提示词
+     */
+    String Q_0221_ONE =
+            "请按步骤分析图像：\n" +
+            "1. 定位检测：识别包裹外表面最大平面区域，检测是否有矩形文档类对象贴附\n" +
+            "2. 要素核验：若存在，进一步在定位检测区域内是否同时包含：\n" +
+            "   - 文字区块：查看图片中是否有\"收件人地址\"文本信息\n" +
+            "   - 编码区块：至少1个条形码或二维码，且邻近有%s位以字母、数字组成的单号\n" +
+            "   - 企业标识：快递公司LOGO或名称（如“GOFO”“CIRRO”）\n" +
+            "3. 清晰度判断：上述关键要素的文本/图形需完整无遮挡，文字可提取，文字在图像分辨率下可被人类肉眼辨识\n" +
+            "4. 输出结论格式：\n" +
+            "  - q1: 步骤1、2、3都满足的且内容完整清晰的快递面单\n" +
+            "  - q2: 置信度:0-100%\n" +
+            "  - q3: 请给出分析的理由";
+String Q_0221_TWO =
+            "请按步骤分析图像：\n" +
+            "1. 定位检测：识别包裹外表面是否有长方形热敏纸张贴在包裹表面\n" +
+            "2. 要素核验：若存在，进一步在定位检测区域内是否同时包含：\n" +
+            "   - 文字区块：查看图片中是否有\"收件人地址\"文本信息\n" +
+            "   - 编码区块：至少1个条形码或二维码，且邻近有%s位以字母、数字组成的单号\n" +
+            "3. 清晰度判断：\n" +
+            "   - 暗部无彩色噪斑\n" +
+            "   - 无运动模糊\n" +
+            "   - 文字可读，最小可见字号≤8pt\n" +
+            "4. 输出结论格式：\n" +
+            "  - q1: 步骤1、2、3都满足且内容完整清晰的快递面单\n" +
+            "  - q2: 置信度:0-100%\n" +
+            "  - q3: 请给出分析的理由";
+
+    String Q_0221_THREE =
+            "请按步骤分析图像：\n" +
+            "1. 定位检测：识别包裹外表面是否有纸张贴在包裹表面\n" +
+            "2. 要素核验：若存在，进一步在定位检测区域内是否同时包含：\n" +
+            "   - 文字区块：查看图片中是否有\"收件人地址\"文本信息\n" +
+            "   - 编码区块：至少含有一个条形码和一个二维码\n" +
+            "3. 清晰度判断：\n" +
+            "   - 无严重噪斑\n" +
+            "   - 无运动模糊\n" +
+            "   - 文字区块文字可读\n" +
+            "4. 输出结论格式：\n" +
+            "  - q1: 步骤1、2、3都满足且内容完整清晰的快递面单\n" +
+            "  - q2: 置信度:0-100%\n" +
+            "  - q3: 请给出分析的理由";
+
+
+
+    String Q_0221_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"boolean\"},\"q2\": {\"type\": \"number\"},\"q3\": {\"type\": \"string\"}},\"required\": [\"q1\", \"q2\", \"q3\"],\"additionalProperties\": false}";
 }

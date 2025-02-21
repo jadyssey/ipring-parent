@@ -12,7 +12,7 @@ public class Questionnaire {
     private String q2;
 
     @JsonProperty("q3")
-    private Boolean q3;
+    private String q3;
 
     @JsonProperty("q4")
     private Boolean q4;
