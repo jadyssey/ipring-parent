@@ -98,7 +98,7 @@ public class ImportExcelVO {
 
     @ExcelColumn(18)
     @ApiModelProperty(value = "回答1")
-    private Boolean q1;
+    private String q1;
 
     @ExcelColumn(19)
     @ApiModelProperty(value = "回答2")
@@ -110,19 +110,27 @@ public class ImportExcelVO {
 
     @ExcelColumn(21)
     @ApiModelProperty(value = "回答4")
-    private Boolean q4;
+    private String q4;
 
     @ExcelColumn(22)
     @ApiModelProperty(value = "回答5")
-    private Boolean q5;
+    private String q5;
 
     @ExcelColumn(23)
     @ApiModelProperty(value = "回答6")
-    private Boolean q6;
+    private String q6;
 
     @ExcelColumn(24)
     @ApiModelProperty(value = "回答7")
     private String q7;
+
+    @ExcelColumn(25)
+    @ApiModelProperty(value = "含有二维码的图片链接为")
+    private String qrCodeUrl;
+
+    @ExcelColumn(26)
+    @ApiModelProperty(value = "二维码识别结果是否匹配")
+    private String qrCodeFlag;
 
     @Getter
     @AllArgsConstructor
@@ -137,7 +145,7 @@ public class ImportExcelVO {
         COMMON("通用提问问题", ComConstants.systemSetup, ComConstants.en2_classifyQuestion, ComConstants.en2_classifyQuestion_jsonResponseFormat),
 
 
-        Q_0221("0221通用问题", ComConstants.systemSetup2, ComConstants.Q_0221_THREE, ComConstants.Q_0221_jsonResponseFormat)
+        Q_0221("0221通用问题", ComConstants.systemSetup2, ComConstants.Q_0221_THREE, ComConstants.THREE_Q_jsonResponseFormat)
         ;
 
         private final String text;

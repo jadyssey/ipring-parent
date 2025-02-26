@@ -59,7 +59,8 @@ public interface ComConstants {
      * 系统设定
      */
     String systemSetup = "Suppose you are an auditor, and you need to review the pictures taken by the courier when the parcel is properly delivered.";
-    String systemSetup2 = "你是严格的物流领域的图片识别专家";
+    String systemSetup2 = "You are a senior logistics quality inspection expert, skilled in accurately identifying shipping labels through image features. Please follow the strict three-level verification process according to international express shipping label standards.";
+
 
     /**
      * 提示词
@@ -112,6 +113,9 @@ String Q_0221_TWO =
             "  - q2: 置信度:0-100%\n" +
             "  - q3: 请给出分析的理由";
 
+    /**
+     * 1000单筛出来22单，准确率100%
+     */
     String Q_0221_THREE =
             "请按步骤分析图像：\n" +
             "1. 定位检测：识别包裹外表面是否有纸张贴在包裹表面\n" +
@@ -121,13 +125,78 @@ String Q_0221_TWO =
             "3. 清晰度判断：\n" +
             "   - 无严重噪斑\n" +
             "   - 无运动模糊\n" +
-            "   - 文字区块文字可读\n" +
+            "   - 文字区块文字清晰可提取\n" +
             "4. 输出结论格式：\n" +
             "  - q1: 步骤1、2、3都满足且内容完整清晰的快递面单\n" +
-            "  - q2: 置信度:0-100%\n" +
-            "  - q3: 请给出分析的理由";
+            "  - q2: 请给出分析的理由\n" +
+            "  - q3: 如果q1为true，请给出你从文字区块中提取到的数据以用于佐证你q2的理由";
 
+    // String Q_0221_4 =
+    //         "请按步骤分析图像：\n" +
+    //         "1. 定位检测：识别包裹外表面是否有纸张贴在包裹表面\n" +
+    //         "2. 要素核验：若存在，进一步在定位检测区域内是否同时包含：\n" +
+    //         "   - 文字区块：识别是否有\"收件人地址\"文本信息且无缺失\n" +
+    //         "   - 编码区块：至少含有一个条形码和一个二维码\n" +
+    //         "3. 清晰度判断：\n" +
+    //         "   - 无严重噪斑\n" +
+    //         "   - 无运动模糊\n" +
+    //         "   - 文字区块需要可识别，最小可见字号≤16pt\n" +
+    //         "4. 输出结论格式：\n" +
+    //         "  - q1: 步骤1、2、3都满足且内容完整无缺失的快递面单\n" +
+    //         "  - q2: 请输出文字区块中提取到的地址信息" +
+    //         "  - q3: 请给出q1回答分析的详细理由\n" ;
 
+    String Q_0221_5 =
+            "请按步骤分析图像：\n" +
+            "1. 定位检测：识别快递包裹外表面是否有纸张贴在表面，如果有则认为是快递面单\n" +
+            "2. 要素核验：\n" +
+            "   - 文字区块：面单上识别是否有\"收件人地址\"文本信息且无缺失\n" +
+            "   - 编码区块：面单上识别至少含有一个条形码和一个二维码\n" +
+            "3. 清晰度判断：\n" +
+            "   - 无严重噪斑\n" +
+            "   - 无运动模糊\n" +
+            "   - 面单文字区块需要可识别，最小可见字号≤16pt\n" +
+            "4. 输出结论格式：\n" +
+            "  - q1: 输出包裹表面快递面单中提取到的地址信息，如果未输出，则认为要素核验不通过\n" +
+            "  - q2: 请给出分析推理过程\n" +
+            "  - q3: 步骤1、2、3都满足且内容完整无缺失的快递面单\n";
 
-    String Q_0221_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"boolean\"},\"q2\": {\"type\": \"number\"},\"q3\": {\"type\": \"string\"}},\"required\": [\"q1\", \"q2\", \"q3\"],\"additionalProperties\": false}";
+    /**
+     * 三轮1000单，拉出64单，false的错了一单
+     */
+    String Q_0221_7 =
+            "以第一张图片为示例，该图片展示了一个包裹，包裹上贴有一个运单标签，请按步骤分析其他的图片：\n" +
+            "1. 定位检测：识别快递包裹外表面是否有运单标签\n" +
+            "2. 要素核验：\n" +
+            "   - 文字区块：识别运单标签上是否有\"收件人地址\"文本信息且无缺失\n" +
+            "   - 编码区块：识别运单标签上是否有条形码或二维码\n" +
+            "3. 清晰度判断：\n" +
+            "   - 运单标签文字区块需要可识别，最小可见字号≤16pt\n" +
+            "   - OCR识别置信度≥90%（重点检测城市/邮编/物流编号）\n" +
+            "   - 条码区域分辨率≥150ppi \n" +
+            "4. 审核任务的输出结论格式：\n" +
+            "  - q1: 请给出详细的分析推理过程\n" +
+            "  - q2: 定位检测的结果是否识别到运单标签？\n" +
+            "  - q3: 多张图片中是否存在任意一张含有运单标签且符合要素核验？\n" +
+            "  - q4: 多张图片中是否存在任意一张含有运单标签且符合清晰度判断？\n";
+
+    String Q_0221_8 =
+            "请按步骤分析图像：\n" +
+            "1. 定位检测：识别快递包裹外表面是否有纸张贴在表面，如果有则认为是运单标签\n" +
+            "2. 要素核验：\n" +
+            "   - 文字区块：运单标签上识别是否有\"收件人地址\"文本信息且无缺失\n" +
+            "   - 编码区块：运单标签上是否有条形码或二维码\n" +
+            "3. 清晰度判断：\n" +
+            "   - 运单标签文字区块需要可识别，最小可见字号≤16pt\n" +
+            "   - OCR识别置信度≥90%（重点检测城市/邮编/物流编号）\n" +
+            "   - 条码区域分辨率≥150ppi \n" +
+            "4. 输出结论格式：\n" +
+            "  - q1: 输出包裹表面运单标签中提取到的地址信息，如果未输出，则认为要素核验不通过\n" +
+            "  - q2: 请给出分析推理过程\n" +
+            "  - q3: 步骤1、2、3都满足且内容完整无缺失的快递面单\n";
+
+    String FIVE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"number\"},\"q2\": {\"type\": \"number\"},\"q3\": {\"type\": \"number\"},\"q4\": {\"type\": \"number\"},\"q5\": {\"type\": \"number\"}},\"required\": [\"q1\", \"q2\", \"q3\", \"q4\", \"q5\"],\"additionalProperties\": false}";
+    String FOUR_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"boolean\"},\"q2\": {\"type\": \"string\"},\"q3\": {\"type\": \"string\"},\"q4\": {\"type\": \"string\"}},\"required\": [\"q1\", \"q2\", \"q3\", \"q4\"],\"additionalProperties\": false}";
+    String THREE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"boolean\"},\"q2\": {\"type\": \"string\"},\"q3\": {\"type\": \"string\"}},\"required\": [\"q1\", \"q2\", \"q3\"],\"additionalProperties\": false}";
+    String TWO_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"string\"},\"q2\": {\"type\": \"string\"}},\"required\": [\"q1\", \"q2\"],\"additionalProperties\": false}";
 }

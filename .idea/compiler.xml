@@ -31,12 +31,6 @@
         <module name="ipring-002-mq" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="ipring-015-dubbo" target="1.8" />
-      <module name="ipring-dubbo-client" target="1.8" />
-      <module name="ipring-dubbo-consumer" target="1.8" />
-      <module name="ipring-dubbo-provide" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
@@ -48,7 +42,6 @@
       <module name="ipring-010-validation" options="-parameters" />
       <module name="ipring-011-framework" options="-parameters" />
       <module name="ipring-012-docker" options="-parameters" />
-      <module name="ipring-015-dubbo" options="-parameters" />
       <module name="ipring-020-juc" options="-parameters" />
       <module name="ipring-021-jvm" options="-parameters" />
       <module name="ipring-030-workflow" options="-parameters" />
@@ -58,9 +51,6 @@
       <module name="ipring-100-mysql" options="-parameters" />
       <module name="ipring-800-htmlcss" options="-parameters" />
       <module name="ipring-888-markdown" options="-parameters" />
-      <module name="ipring-dubbo-client" options="-parameters" />
-      <module name="ipring-dubbo-consumer" options="-parameters" />
-      <module name="ipring-dubbo-provide" options="-parameters" />
     </option>
   </component>
 </project>

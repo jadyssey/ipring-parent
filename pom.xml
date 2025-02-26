@@ -78,23 +78,6 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>fastjson</artifactId>
-                <version>${fastjson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-all</artifactId>
-                <version>${netty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.zeromq</groupId>
-                <artifactId>jeromq</artifactId>
-                <version>${jeromq.version}</version>
-            </dependency>
-
-
-            <dependency>
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson-spring-boot-starter</artifactId>
                 <version>${redisson}</version>

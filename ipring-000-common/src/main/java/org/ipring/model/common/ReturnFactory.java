@@ -4,6 +4,8 @@ import org.ipring.enums.SubCode;
 import org.ipring.enums.subcode.SystemServiceCode;
 import org.springframework.util.StringUtils;
 
+import java.util.Objects;
+
 /**
  * @author lgj
  * @date 2024/4/1
@@ -87,7 +89,7 @@ public class ReturnFactory {
         return resp.getCode().equals(SUCCESS) && StringUtils.hasText(resp.getSubCode()) && resp.getSubCode().endsWith(SUCCESS_SUB_CODE_END);
     }
     public static boolean check(ZtReturn<?> resp) {
-        if (null == resp) return false;
+        if (null == resp || Objects.isNull(resp.getCode())) return false;
         return resp.getCode().equals(200);
     }
 }

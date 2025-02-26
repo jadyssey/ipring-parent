@@ -2,6 +2,7 @@ package org.ipring.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.extra.qrcode.QrCodeUtil;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.zhipu.oapi.service.v4.model.ChatCompletionRequest;
 import com.zhipu.oapi.service.v4.model.ChatMessage;
@@ -32,13 +33,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.net.URL;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -152,7 +153,7 @@ public class GPTController {
 
     @PostMapping("/4o-mini/import")
     @StlApiOperation(title = "4o-mini 导入数据批量调用", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
-    public void importExcel(@RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, HttpServletResponse response) {
+    public void importExcel(@RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, @RequestParam String fileName, HttpServletResponse response) {
         List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
         long start = System.currentTimeMillis();
         log.info("图像识别元数据，总计{}条", podList.size());
@@ -170,11 +171,11 @@ public class GPTController {
         } catch (InterruptedException | ExecutionException e) {
             log.error("多线程报错，", e);
         }
-        String answerAll = podList.stream().map(ImportExcelVO::getAnswer).collect(Collectors.joining(","));
+        String answerAll = podList.stream().map(ImportExcelVO::getAnswer).collect(Collectors.joining("##"));
         log.info("识别结束，开始写入本地文件：{}", answerAll);
         SXSSFWorkbook sxssfWorkbook = ExcelOperateUtils.exportToBigDataFile(podList);
-        String fileName = writeLocalPath("gpt", sxssfWorkbook);
-        log.info("识别结束，写入本地文件成功 {}, 耗时：{}", fileName, System.currentTimeMillis() - start);
+        String fileNameResp = writeLocalPath("gpt_" + fileName, sxssfWorkbook);
+        log.info("识别结束，写入本地文件成功 {}, 耗时：{}", fileNameResp, System.currentTimeMillis() - start);
     }
 
     private void imageHandle(String model, Integer supplier, ImportExcelVO pod, int i) {
@@ -183,19 +184,41 @@ public class GPTController {
         ChatBody chatBody = new ChatBody();
         chatBody.setModel(model);
         chatBody.setSupplier(supplier);
-        chatBody.setImageList(pod.getImgToImgList());
+        List<String> imgList = pod.getImgToImgList().stream().filter(StringUtils::isNotBlank).collect(Collectors.toList());
+        Collections.reverse(imgList);
+        chatBody.setImageList(imgList);
 
         chatBody.setSystemSetup(signType.getSystemSetup());
-        // String question = String.format(signType.getQuestion(), pod.getWaybillNo().length());
+        // String question = String.format(signType.getQuestion(), (pod.getAddress().replace(" ", "").length()/3) * 2);
         String question = signType.getQuestion().replace("%s", String.valueOf(pod.getWaybillNo().length()));
         chatBody.setText(question);
         chatBody.setJsonResponseFormat(signType.getJsonResponseFormat());
         pod.setQuestion(question);
         try {
             i++;
-            long start = System.currentTimeMillis();
             log.info("第{}条，开始调用：{}", i, JsonUtils.toJson(chatBody));
             // Return<BigModelAnswerText> textMap = this.getTextMap(chatBody);
+            // 前置处理二维码，由于网速不快，先放AI后置处理 todo
+            /*pod.setQrCodeFlag("FALSE");
+            long start = System.currentTimeMillis();
+            for (String imgUrl : chatBody.getImageList()) {
+                try {
+                    String decodeWaybillNo = QRCodeUtil.decodeQRCodeFromURL(imgUrl);
+                    if (pod.getWaybillNo().equalsIgnoreCase(decodeWaybillNo)) {
+                        pod.setQrCodeUrl(imgUrl);
+                        pod.setQrCodeFlag("TRUE");
+                        pod.setAnswer("成功识别二维码，跳过AI识别");
+                        return;
+                    }
+                } catch (Exception e) {
+                    // 记录异常日志，可以根据实际需求调整处理方式
+                    // 未识别到二维码也会到这里来
+                    // log.error("Failed to decode QR code from URL: " + imgUrl, e);
+                }
+            }
+            long spendTime = System.currentTimeMillis() - start;
+            log.info("第{}条，二维码识别完成，耗时：{}ms", i, spendTime);*/
+            long start = System.currentTimeMillis();
             Return<ChatCompletions> textMap = this.azureAiGpt(chatBody);
             // 记录耗时
             long spendTime = System.currentTimeMillis() - start;
@@ -211,6 +234,35 @@ public class GPTController {
                 Questionnaire questionnaire = questionnairesList.get(0);
                 BeanUtil.copyProperties(questionnaire, pod);
                 // pod.setMatchingRate(StringMatchUtils.matchingRate(questionnaire.getQ2(), pod.getWaybillNo()));
+
+                // 后置二维码识别 todo
+                pod.setQrCodeFlag("-");
+                if (!pod.getQ1().equalsIgnoreCase("TRUE")) {
+                    log.info("第{}条，二维码识别开始", i);
+                    for (String imgUrl : chatBody.getImageList()) {
+                        try {
+                            BufferedImage bufferedImage = ImageIO.read(new URL(imgUrl));
+                            String decodeWaybillNo = QrCodeUtil.decode(bufferedImage);
+                            if (pod.getWaybillNo().equalsIgnoreCase(decodeWaybillNo)) {
+                                pod.setQrCodeUrl(imgUrl);
+                                pod.setQrCodeFlag("TRUE");
+                                break;
+                                // pod.setAnswer("成功识别二维码，跳过AI识别");
+                            } else if (StringUtils.isNotBlank(decodeWaybillNo)) {
+                                pod.setQrCodeFlag("FALSE");
+                                // 查出数据了，但是与运单不一致
+                                pod.setQrCodeUrl(decodeWaybillNo + "#" + imgUrl);
+                            } else {
+                                pod.setQrCodeFlag("FALSE");
+                            }
+                        } catch (Exception e) {
+                            pod.setQrCodeFlag("ERROR");
+                            // 记录异常日志，可以根据实际需求调整处理方式
+                            log.error("Failed to decode QR code from URL: " + imgUrl, e);
+                        }
+                    }
+                }
+
             }
             pod.setUsageMetadata(JsonUtils.toJson(chatCompletions.getUsage()));
             pod.setModel(chatCompletions.getModel());
@@ -231,7 +283,7 @@ public class GPTController {
     }
 
     private static String writeLocalPath(String namePrefix, SXSSFWorkbook workbook) {
-        String name = namePrefix + "pod" + System.currentTimeMillis();
+        String name = namePrefix + System.currentTimeMillis();
         try (FileOutputStream outputStream = new FileOutputStream(name + ".xlsx")) {
             workbook.write(outputStream);
         } catch (IOException e) {
@@ -245,5 +297,12 @@ public class GPTController {
             }
         }
         return name;
+    }
+
+    public static void main(String[] args) throws IOException {
+        String imgUrl = "https://gofo-sys-admin.s3.us-west-2.amazonaws.com/sys-mod-file/2025-02-24/app-file/17404443849090EA9D875-D9A0-4292-9A0D-6B27FE8580FE-966-000000F7A5A5EDBB.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250225T124655Z&X-Amz-SignedHeaders=host&X-Amz-Expires=604800&X-Amz-Credential=AKIAR234HW752KIISC4O%2F20250225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Signature=f799f29467253644bfbd530b17fb7faa80cc5f9e69f1188bf04a4baab138366c";
+        BufferedImage bufferedImage = ImageIO.read(new URL(imgUrl));
+        String decodeWaybillNo = QrCodeUtil.decode(bufferedImage);
+        System.out.println("decodeWaybillNo = " + decodeWaybillNo);
     }
 }

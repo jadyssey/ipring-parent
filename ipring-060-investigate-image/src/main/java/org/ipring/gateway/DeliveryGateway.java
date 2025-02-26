@@ -10,5 +10,6 @@ import java.util.List;
  * @date 2025/2/11
  */
 public interface DeliveryGateway {
-    ZtReturn<List<String>> batchDownloadImg(AmazonBatchFileVO amazonBatchFileVO);
+    ZtReturn<List<String>> usBatchDownloadImg(AmazonBatchFileVO amazonBatchFileVO);
+    ZtReturn<List<String>> frBatchDownloadImg(AmazonBatchFileVO amazonBatchFileVO);
 }

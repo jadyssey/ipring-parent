@@ -1,5 +1,6 @@
 package org.ipring.controller;
 
+import cn.hutool.extra.qrcode.QrCodeUtil;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,14 +9,15 @@ import org.ipring.anno.StlApiOperation;
 import org.ipring.enums.subcode.SystemServiceCode;
 import org.ipring.excel.ExcelOperateUtils;
 import org.ipring.gateway.DeliveryGateway;
+import org.ipring.model.ImgDecodeResp;
 import org.ipring.model.common.Return;
+import org.ipring.model.common.ReturnFactory;
 import org.ipring.model.common.ZtReturn;
 import org.ipring.model.delivery.AmazonBatchFileVO;
 import org.ipring.model.delivery.ImgDownloadExcelVO;
 import org.ipring.model.delivery.ReasonDownloadExcelVO;
 import org.ipring.model.enums.NonComplianceReason;
-import org.ipring.util.HttpUtils;
-import org.ipring.util.JsonUtils;
+import org.ipring.util.*;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,9 +28,12 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,7 +44,7 @@ import java.util.stream.Collectors;
  * @author liuguangjin
  * @date 2025/2/11
  */
-@Api(tags = "pod原始信息处理")
+@Api(tags = "pod相关处理")
 @RequestMapping("/pod")
 @RestController
 @Validated
@@ -49,9 +54,32 @@ public class PodHandlerController {
     private final DeliveryGateway deliveryGateway;
     private final ThreadPoolTaskExecutor commonThreadPool;
 
+    @PostMapping("/img-qr")
+    @StlApiOperation(title = "pod图片二维码识别", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
+    public Return<ImgDecodeResp> imageDecode(@RequestParam String imageUrl) throws IOException {
+        BufferedImage bufferedImage = ImageIO.read(new URL(imageUrl));
+
+        // 2. 获取工具实例（自动初始化 OpenCV 和模型）
+        WeChatQRCodeTool tool = WeChatQRCodeTool.getInstance();
+        // 3. 解码二维码
+        String weChatResult = tool.decode(bufferedImage);
+        // 对比谷歌二维码识别
+        String googleZxing = QrCodeUtil.decode(bufferedImage);
+        String customDecode = CustomDecodeUtil.decode(bufferedImage);
+        ImgDecodeResp resp = new ImgDecodeResp();
+        resp.setWeChatQRCodeTool(weChatResult);
+        resp.setGoogleZxing(googleZxing);
+        resp.setCustomDecodeUtil(customDecode);
+
+        String decode = CustomFileDecodeUtil.decode("D:\\img");
+        resp.setCustomDecodeUtilV2(decode);
+        return ReturnFactory.success(resp);
+    }
+
+
     @PostMapping("/url-convert")
     @StlApiOperation(title = "pod图片地址转换", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
-    public void importExcelAndExport(@RequestParam("file") MultipartFile file, HttpServletResponse response) {
+    public void importExcelAndExport(@RequestParam("file") MultipartFile file, HttpServletResponse response, @RequestParam String nation, @RequestParam String fileName) {
         List<ImgDownloadExcelVO> podList = ExcelOperateUtils.importToList(file, ImgDownloadExcelVO.class);
         String secretKey = HttpUtils.getHeader("Authorization");
         log.info("开始转换模型，并调用下载图片");
@@ -62,7 +90,7 @@ public class PodHandlerController {
             Future<?> submit = commonThreadPool.submit(() -> {
                 try {
                     RequestContextHolder.setRequestAttributes(requestAttributes);
-                    imageConvert(podList, secretKey, finalRow);
+                    imageConvert(podList, secretKey, finalRow, nation);
                 } finally {
                     RequestContextHolder.resetRequestAttributes();
                 }
@@ -78,17 +106,22 @@ public class PodHandlerController {
         }
         log.info("开始下载");
         SXSSFWorkbook sxssfWorkbook = ExcelOperateUtils.exportToBigDataFile(podList);
-        String fileName = writeLocalPath("download_img", sxssfWorkbook);
+        String fileNameResp = writeLocalPath("download_img_" + fileName, sxssfWorkbook);
         log.info("下载结束，写入本地文件成功 {}", fileName);
     }
 
-    private void imageConvert(List<ImgDownloadExcelVO> podList, String auth, int row) {
+    private void imageConvert(List<ImgDownloadExcelVO> podList, String auth, int row, String nation) {
         ImgDownloadExcelVO imgDownloadExcelVO = podList.get(row);
         List<String> imgList = Arrays.asList(imgDownloadExcelVO.getImages().split(","));
         AmazonBatchFileVO amazonBatchFileVO = new AmazonBatchFileVO();
         amazonBatchFileVO.setFileKeyList(imgList);
         amazonBatchFileVO.setAuthorization(auth);
-        ZtReturn<List<String>> listReturn = deliveryGateway.batchDownloadImg(amazonBatchFileVO);
+        ZtReturn<List<String>> listReturn = new ZtReturn<>();
+        if (nation.equals("us")) {
+            listReturn = deliveryGateway.usBatchDownloadImg(amazonBatchFileVO);
+        } else if (nation.equals("fr")) {
+            listReturn = deliveryGateway.frBatchDownloadImg(amazonBatchFileVO);
+        }
         if (listReturn.success() && listReturn.hashData()) {
             for (int i = 0; i < listReturn.getData().size(); i++) {
                 if (i == 0) {
