@@ -70,8 +70,8 @@ public class GPTController {
     }
 
 
-    @PostMapping("/4o-mini")
-    @StlApiOperation(title = "40-mini", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
+//    @PostMapping("/4o-mini")
+//    @StlApiOperation(title = "40-mini", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
     public Return<ChatGPTResponse> get(@RequestBody ChatBody chatBody) {
         ChatCompletionRequest chatCompletionRequest = new ChatCompletionRequest();
         chatCompletionRequest.setModel(Optional.ofNullable(chatBody.getModel()).orElse("gpt-4o-mini"));
@@ -94,8 +94,8 @@ public class GPTController {
         return chatGptGateway.azureCompletions(chatCompletionRequest);
     }
 
-    @PostMapping("/4o-mini/textMap")
-    @StlApiOperation(title = "4o-mini 测试一次，返回自定义模型", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
+//    @PostMapping("/4o-mini/textMap")
+//    @StlApiOperation(title = "4o-mini 测试一次，返回自定义模型", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
     public Return<BigModelAnswerText> getTextMap(@RequestBody ChatBody chatBody) {
         Return<ChatGPTResponse> res = this.get(chatBody);
         if (!res.success())
@@ -114,8 +114,8 @@ public class GPTController {
         return ReturnFactory.success(resp);
     }
 
-    @PostMapping("/4o-mini/import-choice-one")
-    @StlApiOperation(title = "4o-mini 导入测试一条数据", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
+//    @PostMapping("/4o-mini/import-choice-one")
+//    @StlApiOperation(title = "4o-mini 导入测试一条数据", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
     public Return<ImportExcelVO> importExcelTestOne(@RequestParam Integer index, @RequestParam(required = false) String model, @RequestParam("file") MultipartFile file, HttpServletResponse response) {
         List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
         ImportExcelVO pod = podList.get(index);
@@ -262,7 +262,6 @@ public class GPTController {
                         }
                     }
                 }
-
             }
             pod.setUsageMetadata(JsonUtils.toJson(chatCompletions.getUsage()));
             pod.setModel(chatCompletions.getModel());

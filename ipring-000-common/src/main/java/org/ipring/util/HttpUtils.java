@@ -9,6 +9,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Optional;
@@ -24,9 +25,23 @@ public class HttpUtils {
     /**
      * 得到 request 对象
      */
-    public static HttpServletRequest getRequest() {
+    public static Optional<HttpServletResponse> getResponse() {
+        if (RequestContextHolder.getRequestAttributes() == null) {
+            return Optional.empty();
+        }
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-        return attributes.getRequest();
+        return Optional.ofNullable(attributes.getResponse());
+    }
+
+    /**
+     * 得到 request 对象
+     */
+    public static Optional<HttpServletRequest> getRequest() {
+        if (RequestContextHolder.getRequestAttributes() == null) {
+            return Optional.empty();
+        }
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        return Optional.ofNullable(attributes.getRequest());
     }
 
     /**
@@ -35,7 +50,9 @@ public class HttpUtils {
      * @param header 请求头名称
      */
     public static String getHeader(String header) {
-        return getRequest().getHeader(header);
+        Optional<HttpServletRequest> requestOpt = getRequest();
+        if (!requestOpt.isPresent()) return null;
+        return requestOpt.map(hsr -> hsr.getHeader(header)).orElse(null);
     }
 
     /**
@@ -93,7 +110,9 @@ public class HttpUtils {
     };
 
     public static String getReqIp() {
-        HttpServletRequest request = getRequest();
+        Optional<HttpServletRequest> requestOpt = getRequest();
+        if (!requestOpt.isPresent()) return null;
+        HttpServletRequest request = requestOpt.get();
         String ipTest = request.getHeader("ip-test");
         if (org.springframework.util.StringUtils.hasText(ipTest)) {
             return ipTest;

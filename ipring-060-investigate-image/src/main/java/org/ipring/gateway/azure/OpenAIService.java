@@ -67,7 +67,9 @@ public class OpenAIService {
 
         // 添加图片内容
         imageList.forEach(imageUrl -> {
-            ChatMessageImageContentItem imageContentItem = new ChatMessageImageContentItem(new ChatMessageImageUrl(imageUrl));
+            ChatMessageImageUrl chatMessageImageUrl = new ChatMessageImageUrl(imageUrl);
+//            chatMessageImageUrl.setDetail(ChatMessageImageDetailLevel.LOW);
+            ChatMessageImageContentItem imageContentItem = new ChatMessageImageContentItem(chatMessageImageUrl);
             contentItems.add(imageContentItem);
         });
 

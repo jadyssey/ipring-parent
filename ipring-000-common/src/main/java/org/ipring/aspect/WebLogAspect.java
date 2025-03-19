@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.ipring.constant.LogConstant.*;
 
@@ -48,10 +49,15 @@ public class WebLogAspect {
     @Before("webLog()")
     public void doBefore(JoinPoint joinPoint) {
         try {
-            HttpServletRequest request = HttpUtils.getRequest();
             Signature signature = joinPoint.getSignature();
             MethodSignature method = (MethodSignature) signature;
             StlApiOperation operation = method.getMethod().getAnnotation(StlApiOperation.class);
+            Optional<HttpServletRequest> requestOpt = HttpUtils.getRequest();
+            if (!requestOpt.isPresent()) {
+                log.debug("方法描述 {}", signature.getDeclaringTypeName() + ":" + signature.getName(), operation == null ? "此方法无描述" : operation.title());
+                return;
+            }
+            HttpServletRequest request = requestOpt.get();
             log.debug("请求路径 {} ,进入方法 {}, 方法描述 {}",
                     request.getRequestURI() + ":" + request.getMethod(), signature.getDeclaringTypeName() + ":" + signature.getName(), operation == null ? "此方法无描述" : operation.title());
             MDC.put(REQ, getRequestInfo(request).toJSONString());
@@ -68,11 +74,10 @@ public class WebLogAspect {
     @AfterReturning(pointcut = "webLog() || exceptions()", returning = "result")
     public void afterReturning(Object result) {
         try {
-            HttpServletRequest request = HttpUtils.getRequest();
             Map<String, String> map = MDC.getCopyOfContextMap();
             if (map != null) {
                 JSONObject jsonObject = new JSONObject(true);
-                jsonObject.put(URI, request.getRequestURI());
+                jsonObject.put(URI, HttpUtils.getRequest().map(HttpServletRequest::getRequestURI).orElse(""));
                 jsonObject.put(TOOK, System.currentTimeMillis() - Long.parseLong(map.getOrDefault(START_TIME, String.valueOf(System.currentTimeMillis()))));
                 jsonObject.put(UID, map.getOrDefault(UID, ""));
                 jsonObject.put(REQ, JSON.parse(map.getOrDefault(REQ, "")));

@@ -145,7 +145,7 @@ public class ImportExcelVO {
         COMMON("通用提问问题", ComConstants.systemSetup, ComConstants.en2_classifyQuestion, ComConstants.en2_classifyQuestion_jsonResponseFormat),
 
 
-        Q_0221("0221通用问题", ComConstants.systemSetup2, ComConstants.Q_0221_THREE, ComConstants.THREE_Q_jsonResponseFormat)
+        Q_0221("0221通用问题", ComConstants.systemSetup2, ComConstants.Q_0221_THREE_PROD, ComConstants.ONE_Q_jsonResponseFormat)
         ;
 
         private final String text;

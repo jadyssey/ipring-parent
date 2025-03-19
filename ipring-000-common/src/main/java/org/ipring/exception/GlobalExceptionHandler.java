@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -104,7 +105,12 @@ public class GlobalExceptionHandler {
     }*/
 
     private void printErrorLog(String exceptionName, Throwable e, Return returnModel) {
-        HttpServletRequest request = HttpUtils.getRequest();
+        Optional<HttpServletRequest> requestOpt = HttpUtils.getRequest();
+        if (!requestOpt.isPresent()) {
+            log.error("[Catch {}] printErrorLog: ", exceptionName, e);
+            return;
+        }
+        HttpServletRequest request = requestOpt.get();
 
         LogEntity logEntity = LogEntity.init();
         logEntity.setParams(convertMap(request.getParameterMap()));

@@ -98,7 +98,7 @@ public interface ComConstants {
             "  - q1: 步骤1、2、3都满足的且内容完整清晰的快递面单\n" +
             "  - q2: 置信度:0-100%\n" +
             "  - q3: 请给出分析的理由";
-String Q_0221_TWO =
+        String Q_0221_TWO =
             "请按步骤分析图像：\n" +
             "1. 定位检测：识别包裹外表面是否有长方形热敏纸张贴在包裹表面\n" +
             "2. 要素核验：若存在，进一步在定位检测区域内是否同时包含：\n" +
@@ -131,20 +131,21 @@ String Q_0221_TWO =
             "  - q2: 请给出分析的理由\n" +
             "  - q3: 如果q1为true，请给出你从文字区块中提取到的数据以用于佐证你q2的理由";
 
-    // String Q_0221_4 =
-    //         "请按步骤分析图像：\n" +
-    //         "1. 定位检测：识别包裹外表面是否有纸张贴在包裹表面\n" +
-    //         "2. 要素核验：若存在，进一步在定位检测区域内是否同时包含：\n" +
-    //         "   - 文字区块：识别是否有\"收件人地址\"文本信息且无缺失\n" +
-    //         "   - 编码区块：至少含有一个条形码和一个二维码\n" +
-    //         "3. 清晰度判断：\n" +
-    //         "   - 无严重噪斑\n" +
-    //         "   - 无运动模糊\n" +
-    //         "   - 文字区块需要可识别，最小可见字号≤16pt\n" +
-    //         "4. 输出结论格式：\n" +
-    //         "  - q1: 步骤1、2、3都满足且内容完整无缺失的快递面单\n" +
-    //         "  - q2: 请输出文字区块中提取到的地址信息" +
-    //         "  - q3: 请给出q1回答分析的详细理由\n" ;
+    /**
+     * 生产版本，去掉多余问题
+     */
+    String Q_0221_THREE_PROD =
+            "请按步骤分析图像：\n" +
+            "1. 定位检测：识别包裹外表面是否有纸张贴在包裹表面\n" +
+            "2. 要素核验：若存在，进一步在定位检测区域内是否同时包含：\n" +
+            "   - 文字区块：查看图片中是否有\"收件人地址\"文本信息\n" +
+            "   - 编码区块：至少含有一个条形码和一个二维码\n" +
+            "3. 清晰度判断：\n" +
+            "   - 无严重噪斑\n" +
+            "   - 无运动模糊\n" +
+            "   - 文字区块文字清晰可提取\n" +
+            "4. 输出结论格式：\n" +
+            "  - q1: 步骤1、2、3都满足且内容完整清晰的快递面单";
 
     String Q_0221_5 =
             "请按步骤分析图像：\n" +
@@ -198,5 +199,5 @@ String Q_0221_TWO =
     String FIVE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"number\"},\"q2\": {\"type\": \"number\"},\"q3\": {\"type\": \"number\"},\"q4\": {\"type\": \"number\"},\"q5\": {\"type\": \"number\"}},\"required\": [\"q1\", \"q2\", \"q3\", \"q4\", \"q5\"],\"additionalProperties\": false}";
     String FOUR_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"boolean\"},\"q2\": {\"type\": \"string\"},\"q3\": {\"type\": \"string\"},\"q4\": {\"type\": \"string\"}},\"required\": [\"q1\", \"q2\", \"q3\", \"q4\"],\"additionalProperties\": false}";
     String THREE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"boolean\"},\"q2\": {\"type\": \"string\"},\"q3\": {\"type\": \"string\"}},\"required\": [\"q1\", \"q2\", \"q3\"],\"additionalProperties\": false}";
-    String TWO_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"string\"},\"q2\": {\"type\": \"string\"}},\"required\": [\"q1\", \"q2\"],\"additionalProperties\": false}";
+    String ONE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"boolean\"}},\"required\": [\"q1\"],\"additionalProperties\": false}";
 }
