@@ -10,6 +10,7 @@ import java.util.List;
  */
 @Data
 public class ChatBody {
+    private String qr;
     private String model;
 
     /**

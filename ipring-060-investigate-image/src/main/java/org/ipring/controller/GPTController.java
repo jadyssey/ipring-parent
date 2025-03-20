@@ -2,6 +2,7 @@ package org.ipring.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.StopWatch;
 import cn.hutool.extra.qrcode.QrCodeUtil;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.zhipu.oapi.service.v4.model.ChatCompletionRequest;
@@ -43,6 +44,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -153,7 +156,7 @@ public class GPTController {
 
     @PostMapping("/4o-mini/import")
     @StlApiOperation(title = "4o-mini 导入数据批量调用", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
-    public List<ImportExcelVO> importExcel(@RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, @RequestParam String fileName, HttpServletResponse response) {
+    public List<ImportExcelVO> importExcel(@RequestParam(name = "qr", required = false) String qr, @RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, @RequestParam String fileName, HttpServletResponse response) {
         List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
         long start = System.currentTimeMillis();
         log.info("图像识别元数据，总计{}条", podList.size());
@@ -161,15 +164,15 @@ public class GPTController {
         for (int i = 0; i < podList.size(); i++) {
             ImportExcelVO pod = podList.get(i);
             int finalI = i;
-            Future<?> submit = commonThreadPool.submit(() -> imageHandle(model, supplier, pod, finalI));
+            Future<?> submit = commonThreadPool.submit(() -> imageHandle(qr, model, supplier, pod, finalI));
             submitList.add(submit);
         }
-        try {
-            for (Future<?> future : submitList) {
-                future.get();
+        for (Future<?> future : submitList) {
+            try {
+                future.get(30, TimeUnit.SECONDS);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                log.error("多线程报错，", e);
             }
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("多线程报错，", e);
         }
         String answerAll = podList.stream().map(ImportExcelVO::getAnswer).collect(Collectors.joining("##"));
         log.info("识别结束，开始写入本地文件：{}", answerAll);
@@ -179,9 +182,10 @@ public class GPTController {
         return podList;
     }
 
-    private void imageHandle(String model, Integer supplier, ImportExcelVO pod, int i) {
+    private void imageHandle(String qr, String model, Integer supplier, ImportExcelVO pod, int i) {
         ImportExcelVO.SignType signType = ImportExcelVO.SignType.Q_0319_MS;
         ChatBody chatBody = new ChatBody();
+        chatBody.setQr(qr);
         chatBody.setModel(model);
         chatBody.setSupplier(supplier);
         List<String> imgList = pod.getImgToImgList().stream().filter(StringUtils::isNotBlank).collect(Collectors.toList());
@@ -198,76 +202,93 @@ public class GPTController {
             i++;
             log.info("第{}条，开始调用：{}", i, JsonUtils.toJson(chatBody));
             // Return<BigModelAnswerText> textMap = this.getTextMap(chatBody);
-            // 前置处理二维码，由于网速不快，先放AI后置处理 todo
-            /*pod.setQrCodeFlag("FALSE");
-            long start = System.currentTimeMillis();
-            for (String imgUrl : chatBody.getImageList()) {
-                try {
-                    BufferedImage bufferedImage = ImageIO.read(new URL(imgUrl));
-                    String decodeWaybillNo = CustomDecodeUtil.decode(bufferedImage);
-                    if (pod.getWaybillNo().equalsIgnoreCase(decodeWaybillNo)) {
-                        pod.setQrCodeUrl(imgUrl);
-                        pod.setQrCodeFlag("TRUE");
-                        pod.setAnswer("成功识别二维码，跳过AI识别");
-                        pod.setTime(System.currentTimeMillis() - start);
-                        return;
+            // 前置处理二维码，由于网速不快，先放AI后置处理
+            StopWatch sw = new StopWatch();
+            if ("before".equalsIgnoreCase(chatBody.getQr())) {
+                pod.setQrCodeFlag("FALSE");
+                sw.start("qr");
+                for (String imgUrl : chatBody.getImageList()) {
+                    try {
+                        BufferedImage bufferedImage = ImageIO.read(new URL(imgUrl));
+                        long start = System.currentTimeMillis();
+                        String decodeWaybillNo = CustomDecodeUtil.decode(bufferedImage);
+                        long end = System.currentTimeMillis();
+//                        log.info("图片二维码识别速度：{}", end - start); // 平均0.5s一个
+                        if (pod.getWaybillNo().equalsIgnoreCase(decodeWaybillNo)) {
+                            sw.stop();
+                            pod.setQrCodeUrl(imgUrl);
+                            pod.setQrCodeFlag("TRUE");
+                            pod.setAnswer("成功识别二维码，跳过AI识别");
+                            pod.setTime(sw.getLastTaskTimeMillis());
+                            log.info("第{}条，二维码识别完成 - true，耗时：{}ms", i, sw.getLastTaskTimeMillis());
+                            return;
+                        } else if (StringUtils.isNotBlank(decodeWaybillNo)) {
+                            pod.setQrCodeFlag("FALSE");
+                            // 查出数据了，但是与运单不一致
+                            pod.setQrCodeUrl(decodeWaybillNo + "#" + imgUrl);
+                        } else {
+                            pod.setQrCodeFlag("FALSE");
+                        }
+                    } catch (Exception e) {
+                        // 记录异常日志，可以根据实际需求调整处理方式
+                        // 未识别到二维码也会到这里来
+                        // log.error("Failed to decode QR code from URL: " + imgUrl, e);
                     }
-                } catch (Exception e) {
-                    // 记录异常日志，可以根据实际需求调整处理方式
-                    // 未识别到二维码也会到这里来
-                    // log.error("Failed to decode QR code from URL: " + imgUrl, e);
                 }
+                sw.stop();
+                log.info("第{}条，二维码识别完成 - false，耗时：{}ms", i, sw.getLastTaskTimeMillis());
             }
-            long spendTime = System.currentTimeMillis() - start;
-            log.info("第{}条，二维码识别完成，耗时：{}ms", i, spendTime);*/
-            long start = System.currentTimeMillis();
-            Return<ChatCompletions> textMap = this.azureAiGpt(chatBody);
-            // 记录耗时
-            long spendTime = System.currentTimeMillis() - start;
-            log.info("第{}条，AI识别完成，耗时：{}ms", i, spendTime);
-            if (!textMap.success() || !textMap.hashData()) {
-                log.error("第{}条，识别异常，跳过", i);
-            }
-            ChatCompletions chatCompletions = textMap.getBodyMessage();
+            if (StringUtils.isNotBlank(chatBody.getModel())) {
+                sw.start("ai");
+                Return<ChatCompletions> textMap = this.azureAiGpt(chatBody);
+                sw.stop();
+                // 记录耗时
+                long spendTime = sw.getLastTaskTimeMillis();
+                log.info("第{}条，AI识别完成，耗时：{}ms", i, sw.getLastTaskTimeMillis());
+                if (!textMap.success() || !textMap.hashData()) {
+                    log.error("第{}条，识别异常，跳过", i);
+                }
+                ChatCompletions chatCompletions = textMap.getBodyMessage();
 
-            List<Questionnaire> questionnairesList = chatCompletions.getChoices().stream().map(choice -> JsonUtils.toObject(choice.getMessage().getContent(), Questionnaire.class)).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(questionnairesList) && questionnairesList.size() == 1) {
-                pod.setAnswer(chatCompletions.getChoices().get(0).getMessage().getContent());
-                Questionnaire questionnaire = questionnairesList.get(0);
-                BeanUtil.copyProperties(questionnaire, pod);
-                // pod.setMatchingRate(StringMatchUtils.matchingRate(questionnaire.getQ2(), pod.getWaybillNo()));
+                List<Questionnaire> questionnairesList = chatCompletions.getChoices().stream().map(choice -> JsonUtils.toObject(choice.getMessage().getContent(), Questionnaire.class)).collect(Collectors.toList());
+                if (CollectionUtil.isNotEmpty(questionnairesList) && questionnairesList.size() == 1) {
+                    pod.setAnswer(chatCompletions.getChoices().get(0).getMessage().getContent());
+                    Questionnaire questionnaire = questionnairesList.get(0);
+                    BeanUtil.copyProperties(questionnaire, pod);
+                    // pod.setMatchingRate(StringMatchUtils.matchingRate(questionnaire.getQ2(), pod.getWaybillNo()));
 
-                // 后置二维码识别 todo
-                pod.setQrCodeFlag("-");
-                if (StringUtils.isNotBlank(pod.getShippingLabelQuestion()) && !pod.getShippingLabelQuestion().equalsIgnoreCase("TRUE")) {
-                    log.info("第{}条，二维码识别开始", i);
-                    for (String imgUrl : chatBody.getImageList()) {
-                        try {
-                            BufferedImage bufferedImage = ImageIO.read(new URL(imgUrl));
-                            String decodeWaybillNo = CustomDecodeUtil.decode(bufferedImage);
-                            if (pod.getWaybillNo().equalsIgnoreCase(decodeWaybillNo)) {
-                                pod.setQrCodeUrl(imgUrl);
-                                pod.setQrCodeFlag("TRUE");
-                                break;
-                                // pod.setAnswer("成功识别二维码，跳过AI识别");
-                            } else if (StringUtils.isNotBlank(decodeWaybillNo)) {
-                                pod.setQrCodeFlag("FALSE");
-                                // 查出数据了，但是与运单不一致
-                                pod.setQrCodeUrl(decodeWaybillNo + "#" + imgUrl);
-                            } else {
-                                pod.setQrCodeFlag("FALSE");
+                    // 后置二维码识别 todo
+                    pod.setQrCodeFlag("-");
+                    if (StringUtils.isNotBlank(pod.getShippingLabelQuestion()) && !pod.getShippingLabelQuestion().equalsIgnoreCase("TRUE") && !"before".equalsIgnoreCase(chatBody.getQr())) {
+                        log.info("第{}条，二维码识别开始", i);
+                        for (String imgUrl : chatBody.getImageList()) {
+                            try {
+                                BufferedImage bufferedImage = ImageIO.read(new URL(imgUrl));
+                                String decodeWaybillNo = CustomDecodeUtil.decode(bufferedImage);
+                                if (pod.getWaybillNo().equalsIgnoreCase(decodeWaybillNo)) {
+                                    pod.setQrCodeUrl(imgUrl);
+                                    pod.setQrCodeFlag("TRUE");
+                                    break;
+                                    // pod.setAnswer("成功识别二维码，跳过AI识别");
+                                } else if (StringUtils.isNotBlank(decodeWaybillNo)) {
+                                    pod.setQrCodeFlag("FALSE");
+                                    // 查出数据了，但是与运单不一致
+                                    pod.setQrCodeUrl(decodeWaybillNo + "#" + imgUrl);
+                                } else {
+                                    pod.setQrCodeFlag("FALSE");
+                                }
+                            } catch (Exception e) {
+                                pod.setQrCodeFlag("ERROR");
+                                // 记录异常日志，可以根据实际需求调整处理方式
+                                log.error("Failed to decode QR code from URL: " + imgUrl, e);
                             }
-                        } catch (Exception e) {
-                            pod.setQrCodeFlag("ERROR");
-                            // 记录异常日志，可以根据实际需求调整处理方式
-                            log.error("Failed to decode QR code from URL: " + imgUrl, e);
                         }
                     }
                 }
+                pod.setUsageMetadata(JsonUtils.toJson(chatCompletions.getUsage()));
+                pod.setModel(chatCompletions.getModel());
+                pod.setTime(spendTime);
             }
-            pod.setUsageMetadata(JsonUtils.toJson(chatCompletions.getUsage()));
-            pod.setModel(chatCompletions.getModel());
-            pod.setTime(spendTime);
         } catch (Exception e) {
             log.error("第{}条 远程异常：", i, e);
             pod.setErrorInfo("调用异常->" + e.getLocalizedMessage());
