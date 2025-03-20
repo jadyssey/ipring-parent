@@ -196,8 +196,13 @@ public interface ComConstants {
             "  - q2: 请给出分析推理过程\n" +
             "  - q3: 步骤1、2、3都满足且内容完整无缺失的快递面单\n";
 
+    String Q_0319_MS = "Identify an image that contains a shipping label affixed to the surface of a parcel. The image should be clear and legible, with no significant noise or blurriness. The shipping label must include the recipient's address and at least one barcode or QR code. shippingLabelQuestion: The output should indicate whether the image meets all the specified criteria？";
+    String Q_0319_ONE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"shippingLabelQuestion\": {\"type\": \"boolean\"}},\"required\": [\"shippingLabelQuestion\"],\"additionalProperties\": false}";
+
+
     String FIVE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"number\"},\"q2\": {\"type\": \"number\"},\"q3\": {\"type\": \"number\"},\"q4\": {\"type\": \"number\"},\"q5\": {\"type\": \"number\"}},\"required\": [\"q1\", \"q2\", \"q3\", \"q4\", \"q5\"],\"additionalProperties\": false}";
     String FOUR_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"boolean\"},\"q2\": {\"type\": \"string\"},\"q3\": {\"type\": \"string\"},\"q4\": {\"type\": \"string\"}},\"required\": [\"q1\", \"q2\", \"q3\", \"q4\"],\"additionalProperties\": false}";
     String THREE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"boolean\"},\"q2\": {\"type\": \"string\"},\"q3\": {\"type\": \"string\"}},\"required\": [\"q1\", \"q2\", \"q3\"],\"additionalProperties\": false}";
     String ONE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"boolean\"}},\"required\": [\"q1\"],\"additionalProperties\": false}";
+
 }

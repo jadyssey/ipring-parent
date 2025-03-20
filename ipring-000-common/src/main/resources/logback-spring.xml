@@ -6,6 +6,12 @@
                     converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
     <conversionRule conversionWord="wEx"
                     converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+
+    <!--获取配置属性信息-->
+    <property name="appName" value="ipring-project"/>
+    <!--定义日志文件的存储地址，根路径下logs目录-->
+    <property name="logDir" value="/logs/${appName}" />
+
     <!-- 彩色日志格式 -->
     <property name="CONSOLE_LOG_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} %yellow([%X{traceId:--}][%X{uid:--}][%X{reqIp:--}][%t]) %highlight(%-5level) %magenta(%logger{30}:%-3L) - %m%n"/>
@@ -27,14 +33,38 @@
             <charset>utf-8</charset>
         </encoder>
     </appender>
+
+
+    <!--按照每天生成所有日志文件-->
+    <appender name="LOG_ALL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logDir}/${appName}-all.log</file>
+        <!--滚动策略-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <fileNamePattern>${logDir}/${appName}-all.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!--日志文件大小-->
+            <maxFileSize>100MB</maxFileSize>
+            <!--日志文件保留天数-->
+            <maxHistory>15</maxHistory>
+        </rollingPolicy>
+        <!--encoder 默认配置为PatternLayoutEncoder-->
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf-8</charset>
+        </encoder>
+    </appender>
+
+
     <springProfile name="dev">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="LOG_ALL" />
         </root>
     </springProfile>
     <springProfile name="test,prod">
         <root level="INFO">
             <appender-ref ref="STDOUT"/>
+            <appender-ref ref="LOG_ALL" />
         </root>
     </springProfile>
 </configuration>

@@ -60,15 +60,10 @@ public class OpenAIService {
         // 创建包含文本和图片的用户消息列表
         List<ChatMessageContentItem> contentItems = new ArrayList<>();
 
-        // todo 示例图片，不能使用该临时链接
-        // String tempImg = "https://gofo-sys-admin.s3.us-west-2.amazonaws.com/sys-mod-file/2025-02-20/app-file/17401027601681174414C-9574-4DF1-80BE-B018B903AE80-4842-000001022BBCF857.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250221T135427Z&X-Amz-SignedHeaders=host&X-Amz-Expires=604800&X-Amz-Credential=AKIAR234HW752KIISC4O%2F20250221%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Signature=55ad76322a03f3b8c456c92f84ebb80abc2af9596dff79e9ab3908dd0b268ac0";
-        // ChatMessageImageContentItem tempImageContentItem = new ChatMessageImageContentItem(new ChatMessageImageUrl(tempImg));
-        // contentItems.add(tempImageContentItem);
-
         // 添加图片内容
         imageList.forEach(imageUrl -> {
             ChatMessageImageUrl chatMessageImageUrl = new ChatMessageImageUrl(imageUrl);
-//            chatMessageImageUrl.setDetail(ChatMessageImageDetailLevel.LOW);
+            chatMessageImageUrl.setDetail(ChatMessageImageDetailLevel.LOW);
             ChatMessageImageContentItem imageContentItem = new ChatMessageImageContentItem(chatMessageImageUrl);
             contentItems.add(imageContentItem);
         });

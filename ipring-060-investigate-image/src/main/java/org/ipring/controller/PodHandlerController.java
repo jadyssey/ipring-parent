@@ -18,6 +18,9 @@ import org.ipring.model.delivery.ImgDownloadExcelVO;
 import org.ipring.model.delivery.ReasonDownloadExcelVO;
 import org.ipring.model.enums.NonComplianceReason;
 import org.ipring.util.*;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -71,9 +75,29 @@ public class PodHandlerController {
         resp.setGoogleZxing(googleZxing);
         resp.setCustomDecodeUtil(customDecode);
 
-        String decode = CustomFileDecodeUtil.decode("D:\\img");
-        resp.setCustomDecodeUtilV2(decode);
+//        String decode = CustomFileDecodeUtil.decode("D:\\img");
+//        resp.setCustomDecodeUtilV2(decode);
         return ReturnFactory.success(resp);
+    }
+
+    @PostMapping("/img-process")
+    @StlApiOperation(title = "pod图片二维码处理", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
+    public Return<?> imageProcess(@RequestParam String imageUrl, @RequestParam Integer tool) throws IOException {
+        BufferedImage bufferedImage = ImageIO.read(new URL(imageUrl));
+        int cvtype = CvType.CV_8UC3;
+        if (bufferedImage.getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            cvtype = CvType.CV_8UC1;
+        }
+        OpenCVLoader.loadOpenCV();
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+        Mat image = WeChatQRCodeTool.bufImg2Mat(bufferedImage, bufferedImage.getType(), cvtype);
+        Mat qrCodeAndCut = ImageHandlerUtil.findQRCodeAndCut(image);
+        if (qrCodeAndCut == null) return ReturnFactory.error();
+
+        Mat mat = ImageHandlerUtil.processAndThresholdImage(qrCodeAndCut);
+        ImageHandlerUtil.createCLAHE(mat);
+        return ReturnFactory.success();
     }
 
 

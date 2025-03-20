@@ -1,17 +1,11 @@
 package org.ipring.util;
 
 import cn.hutool.core.collection.CollectionUtil;
-import com.google.zxing.BinaryBitmap;
-import com.google.zxing.LuminanceSource;
-import com.google.zxing.MultiFormatReader;
-import com.google.zxing.Result;
-import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
-import com.google.zxing.common.HybridBinarizer;
+import cn.hutool.extra.qrcode.QrCodeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.opencv.core.*;
 import org.opencv.imgproc.CLAHE;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.objdetect.QRCodeDetector;
 import org.opencv.utils.Converters;
 
 import java.awt.image.BufferedImage;
@@ -31,9 +25,10 @@ public class CustomDecodeUtil {
     private static final String TEMP_PATH = "D:\\img\\tmp\\" + "temp.jpg";
 
     static {
+        OpenCVLoader.loadOpenCV();
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         // 打印OpenCV版本信息以确认加载成功
-        System.out.println("OpenCV version: " + Core.VERSION);
+//        System.out.println("OpenCV version: " + Core.VERSION);
     }
 
     /**
@@ -44,17 +39,20 @@ public class CustomDecodeUtil {
      * @param matImg 二维码图片数据
      * @return 成功返回二维码识别结果，失败返回null
      */
-    public static String decodeQRcode(QRCodeDetector detector, Mat matImg) {
+    public static String decodeQRcode(WeChatQRCodeTool weChatQRCodeTool, Mat matImg) {
         String qrCodeText = null;
-        try {
-            BufferedImage bufferedImage = mat2img(matImg);
+        BufferedImage bufferedImage = mat2img(matImg);
+        qrCodeText = QrCodeUtil.decode(bufferedImage);
+        /*try {
             // 将 BufferedImage 转换为 BinaryBitmap
             LuminanceSource source = new BufferedImageLuminanceSource(bufferedImage);
             BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(source));
             Result result = new MultiFormatReader().decode(binaryBitmap);
-            qrCodeText = result.getText();
         } catch (Exception e) {
-            qrCodeText = detector.detectAndDecode(matImg);
+            qrCodeText = weChatQRCodeTool.decode(bufferedImage);
+        }*/
+        if (StringUtils.isBlank(qrCodeText)) {
+            qrCodeText = weChatQRCodeTool.decode(bufferedImage);
         }
         return qrCodeText;
     }
@@ -89,9 +87,9 @@ public class CustomDecodeUtil {
             cvtype = CvType.CV_8UC1;
         }
         Mat image = WeChatQRCodeTool.bufImg2Mat(bufferedImage, bufferedImage.getType(), cvtype);
-        QRCodeDetector detector = new QRCodeDetector();
+        WeChatQRCodeTool weChatQRCodeTool = WeChatQRCodeTool.getInstance();
         // 1. 第一次识别
-        String qrCode = decodeQRcode(detector, image);
+        String qrCode = decodeQRcode(weChatQRCodeTool, image);
         if (StringUtils.isNotBlank(qrCode)) {
             return qrCode;
         }
@@ -103,7 +101,7 @@ public class CustomDecodeUtil {
 
         Mat mat = qRcodeAndCut.get(0);
         // 2. 第二次识别
-        qrCode = decodeQRcode(detector, mat);
+        qrCode = decodeQRcode(weChatQRCodeTool, mat);
         if (StringUtils.isNotBlank(qrCode)) {
             return qrCode;
         }
@@ -123,7 +121,7 @@ public class CustomDecodeUtil {
         // 生成二值化后的图像 mat2
         // Imgcodecs.imwrite(TEMP_PATH, mat2);
         // 3. 第三次识别
-        qrCode = decodeQRcode(detector, mat2);
+        qrCode = decodeQRcode(weChatQRCodeTool, mat2);
         if (StringUtils.isNotBlank(qrCode)) {
             return qrCode;
         }
@@ -134,7 +132,7 @@ public class CustomDecodeUtil {
         clahe.apply(mat, mat);
         // Imgcodecs.imwrite(TEMP_PATH, mat);
         // 4. 第四次识别
-        qrCode = decodeQRcode(detector, mat);
+        qrCode = decodeQRcode(weChatQRCodeTool, mat);
         if (StringUtils.isNotBlank(qrCode)) {
             return qrCode;
         }

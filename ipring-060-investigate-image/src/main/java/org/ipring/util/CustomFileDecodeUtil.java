@@ -29,7 +29,7 @@ public class CustomFileDecodeUtil {
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         // 打印OpenCV版本信息以确认加载成功
-        System.out.println("OpenCV version: " + Core.VERSION);
+//        System.out.println("OpenCV version: " + Core.VERSION);
     }
 
     /**
@@ -366,7 +366,7 @@ public class CustomFileDecodeUtil {
                         // 这里定义一个新的Mat对象，主要是为了保留原图，未下次处理做准备
                         Mat mat2 = new Mat();
                         // 根据 OTSU 算法进行二值化
-                        Imgproc.threshold(mat, mat2, 205, 255, Imgproc.THRESH_OTSU);
+                        Imgproc.threshold(mat, mat2, 0, 255, Imgproc.THRESH_OTSU);
                         // 生成二值化后的图像
                         Imgcodecs.imwrite(TEMP_PATH, mat2);
                         // 3. 第三次识别

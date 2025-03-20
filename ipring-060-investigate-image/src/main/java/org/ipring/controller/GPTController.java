@@ -26,6 +26,7 @@ import org.ipring.model.common.ReturnFactory;
 import org.ipring.model.delivery.Questionnaire;
 import org.ipring.model.gemini.ImportExcelVO;
 import org.ipring.model.gpt.ChatGPTResponse;
+import org.ipring.util.CustomDecodeUtil;
 import org.ipring.util.JsonUtils;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
@@ -42,7 +43,6 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -153,7 +153,7 @@ public class GPTController {
 
     @PostMapping("/4o-mini/import")
     @StlApiOperation(title = "4o-mini 导入数据批量调用", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
-    public void importExcel(@RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, @RequestParam String fileName, HttpServletResponse response) {
+    public List<ImportExcelVO> importExcel(@RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, @RequestParam String fileName, HttpServletResponse response) {
         List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
         long start = System.currentTimeMillis();
         log.info("图像识别元数据，总计{}条", podList.size());
@@ -176,11 +176,11 @@ public class GPTController {
         SXSSFWorkbook sxssfWorkbook = ExcelOperateUtils.exportToBigDataFile(podList);
         String fileNameResp = writeLocalPath("gpt_" + fileName, sxssfWorkbook);
         log.info("识别结束，写入本地文件成功 {}, 耗时：{}", fileNameResp, System.currentTimeMillis() - start);
+        return podList;
     }
 
     private void imageHandle(String model, Integer supplier, ImportExcelVO pod, int i) {
-        // ImportExcelVO.SignType signType = ImportExcelVO.SignType.all_map.getOrDefault(pod.getSignType(), ImportExcelVO.SignType.COMMON);
-        ImportExcelVO.SignType signType = ImportExcelVO.SignType.Q_0221;
+        ImportExcelVO.SignType signType = ImportExcelVO.SignType.Q_0319_MS;
         ChatBody chatBody = new ChatBody();
         chatBody.setModel(model);
         chatBody.setSupplier(supplier);
@@ -203,11 +203,13 @@ public class GPTController {
             long start = System.currentTimeMillis();
             for (String imgUrl : chatBody.getImageList()) {
                 try {
-                    String decodeWaybillNo = QRCodeUtil.decodeQRCodeFromURL(imgUrl);
+                    BufferedImage bufferedImage = ImageIO.read(new URL(imgUrl));
+                    String decodeWaybillNo = CustomDecodeUtil.decode(bufferedImage);
                     if (pod.getWaybillNo().equalsIgnoreCase(decodeWaybillNo)) {
                         pod.setQrCodeUrl(imgUrl);
                         pod.setQrCodeFlag("TRUE");
                         pod.setAnswer("成功识别二维码，跳过AI识别");
+                        pod.setTime(System.currentTimeMillis() - start);
                         return;
                     }
                 } catch (Exception e) {
@@ -237,12 +239,12 @@ public class GPTController {
 
                 // 后置二维码识别 todo
                 pod.setQrCodeFlag("-");
-                if (!pod.getQ1().equalsIgnoreCase("TRUE")) {
+                if (StringUtils.isNotBlank(pod.getShippingLabelQuestion()) && !pod.getShippingLabelQuestion().equalsIgnoreCase("TRUE")) {
                     log.info("第{}条，二维码识别开始", i);
                     for (String imgUrl : chatBody.getImageList()) {
                         try {
                             BufferedImage bufferedImage = ImageIO.read(new URL(imgUrl));
-                            String decodeWaybillNo = QrCodeUtil.decode(bufferedImage);
+                            String decodeWaybillNo = CustomDecodeUtil.decode(bufferedImage);
                             if (pod.getWaybillNo().equalsIgnoreCase(decodeWaybillNo)) {
                                 pod.setQrCodeUrl(imgUrl);
                                 pod.setQrCodeFlag("TRUE");
@@ -268,16 +270,7 @@ public class GPTController {
             pod.setTime(spendTime);
         } catch (Exception e) {
             log.error("第{}条 远程异常：", i, e);
-            pod.setAnswer("调用异常->" + e.getLocalizedMessage());
-            // sleep(5); // 控制速率
-        }
-    }
-
-    private static void sleep(Integer seconds) {
-        try {
-            TimeUnit.SECONDS.sleep(seconds);
-        } catch (InterruptedException e) {
-            log.error("睡眠，抛出异常：", e);
+            pod.setErrorInfo("调用异常->" + e.getLocalizedMessage());
         }
     }
 

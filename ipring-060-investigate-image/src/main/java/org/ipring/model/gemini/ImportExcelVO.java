@@ -97,38 +97,26 @@ public class ImportExcelVO {
     private String answer;
 
     @ExcelColumn(18)
-    @ApiModelProperty(value = "回答1")
-    private String q1;
+    @ApiModelProperty(value = "错误信息")
+    private String errorInfo;
 
     @ExcelColumn(19)
+    @ApiModelProperty(value = "回答1-运输标签")
+    private String shippingLabelQuestion;
+
+    @ExcelColumn(20)
     @ApiModelProperty(value = "回答2")
     private String q2;
 
-    @ExcelColumn(20)
+    @ExcelColumn(21)
     @ApiModelProperty(value = "回答3")
     private String q3;
 
-    @ExcelColumn(21)
-    @ApiModelProperty(value = "回答4")
-    private String q4;
-
     @ExcelColumn(22)
-    @ApiModelProperty(value = "回答5")
-    private String q5;
-
-    @ExcelColumn(23)
-    @ApiModelProperty(value = "回答6")
-    private String q6;
-
-    @ExcelColumn(24)
-    @ApiModelProperty(value = "回答7")
-    private String q7;
-
-    @ExcelColumn(25)
     @ApiModelProperty(value = "含有二维码的图片链接为")
     private String qrCodeUrl;
 
-    @ExcelColumn(26)
+    @ExcelColumn(23)
     @ApiModelProperty(value = "二维码识别结果是否匹配")
     private String qrCodeFlag;
 
@@ -145,7 +133,9 @@ public class ImportExcelVO {
         COMMON("通用提问问题", ComConstants.systemSetup, ComConstants.en2_classifyQuestion, ComConstants.en2_classifyQuestion_jsonResponseFormat),
 
 
-        Q_0221("0221通用问题", ComConstants.systemSetup2, ComConstants.Q_0221_THREE_PROD, ComConstants.ONE_Q_jsonResponseFormat)
+        Q_0221("0221通用问题", "", ComConstants.Q_0221_THREE_PROD, ComConstants.ONE_Q_jsonResponseFormat),
+        Q_0319_MS("0319微软优化提示词", "", ComConstants.Q_0319_MS, ComConstants.Q_0319_ONE_Q_jsonResponseFormat),
+        ;
         ;
 
         private final String text;
