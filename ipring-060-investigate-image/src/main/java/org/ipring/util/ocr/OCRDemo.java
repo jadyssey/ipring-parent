@@ -5,18 +5,15 @@ import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import net.sourceforge.tess4j.Word;
-import org.ipring.util.OpenCVLoader;
 import org.ipring.util.WeChatQRCodeTool;
 import org.opencv.core.*;
 import org.opencv.dnn.Dnn;
 import org.opencv.dnn.Net;
-import org.opencv.imgcodecs.Imgcodecs;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,8 +26,7 @@ public class OCRDemo {
     @SneakyThrows
     public static void main(String[] args) {
 
-        OpenCVLoader.loadOpenCV();
-        File imageFile = new File("D:\\img\\test-2.jpg");
+        File imageFile = new File("D:\\img\\test-3.jpg");
         BufferedImage bufferedImage = ImageIO.read(imageFile);
         int cvtype = CvType.CV_8UC3;
         if (bufferedImage.getType() == BufferedImage.TYPE_BYTE_GRAY) {

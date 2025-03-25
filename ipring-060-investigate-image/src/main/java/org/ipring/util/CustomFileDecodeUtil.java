@@ -26,11 +26,6 @@ public class CustomFileDecodeUtil {
     private static final int BIGGER_TIMES = 2;
     private static final String TEMP_PATH = "D:\\img\\" + "temp.jpg";
 
-    static {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        // 打印OpenCV版本信息以确认加载成功
-//        System.out.println("OpenCV version: " + Core.VERSION);
-    }
 
     /**
      * 解析读取二维码

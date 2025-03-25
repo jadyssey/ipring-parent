@@ -1,6 +1,5 @@
 package org.ipring.controller;
 
-import cn.hutool.extra.qrcode.QrCodeUtil;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +16,11 @@ import org.ipring.model.delivery.AmazonBatchFileVO;
 import org.ipring.model.delivery.ImgDownloadExcelVO;
 import org.ipring.model.delivery.ReasonDownloadExcelVO;
 import org.ipring.model.enums.NonComplianceReason;
-import org.ipring.util.*;
-import org.opencv.core.Core;
+import org.ipring.util.HttpUtils;
+import org.ipring.util.JsonUtils;
+import org.ipring.util.WeChatQRCodeTool;
+import org.ipring.util.qr.ImageHandlerUtil;
+import org.ipring.util.qr.QrDecodeUtil;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -33,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -62,21 +63,23 @@ public class PodHandlerController {
     @StlApiOperation(title = "pod图片二维码识别", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
     public Return<ImgDecodeResp> imageDecode(@RequestParam String imageUrl) throws IOException {
         BufferedImage bufferedImage = ImageIO.read(new URL(imageUrl));
+        log.info("读取图片成功");
 
-        // 2. 获取工具实例（自动初始化 OpenCV 和模型）
-        WeChatQRCodeTool tool = WeChatQRCodeTool.getInstance();
-        // 3. 解码二维码
-        String weChatResult = tool.decode(bufferedImage);
-        // 对比谷歌二维码识别
-        String googleZxing = QrCodeUtil.decode(bufferedImage);
-        String customDecode = CustomDecodeUtil.decode(bufferedImage);
+        // // 2. 获取工具实例（自动初始化 OpenCV 和模型）
+        // WeChatQRCodeTool tool = WeChatQRCodeTool.getInstance();
+        // // 3. 解码二维码
+        // String weChatResult = tool.decode(bufferedImage);
+        // // 对比谷歌二维码识别
+        // String googleZxing = QrCodeUtil.decode(bufferedImage);
+        // String customDecode = CustomDecodeUtil.decode(bufferedImage);
+        // 优化的工具类
+        String decode = QrDecodeUtil.decode(bufferedImage);
         ImgDecodeResp resp = new ImgDecodeResp();
-        resp.setWeChatQRCodeTool(weChatResult);
-        resp.setGoogleZxing(googleZxing);
-        resp.setCustomDecodeUtil(customDecode);
+        // resp.setWeChatQRCodeTool(weChatResult);
+        // resp.setGoogleZxing(googleZxing);
+        // resp.setCustomDecodeUtil(customDecode);
 
-//        String decode = CustomFileDecodeUtil.decode("D:\\img");
-//        resp.setCustomDecodeUtilV2(decode);
+        resp.setCustomDecodeUtilV2(decode);
         return ReturnFactory.success(resp);
     }
 
@@ -88,8 +91,6 @@ public class PodHandlerController {
         if (bufferedImage.getType() == BufferedImage.TYPE_BYTE_GRAY) {
             cvtype = CvType.CV_8UC1;
         }
-        OpenCVLoader.loadOpenCV();
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         Mat image = WeChatQRCodeTool.bufImg2Mat(bufferedImage, bufferedImage.getType(), cvtype);
         Mat qrCodeAndCut = ImageHandlerUtil.findQRCodeAndCut(image);

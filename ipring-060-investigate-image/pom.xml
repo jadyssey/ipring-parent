@@ -26,13 +26,11 @@
             <version>3.5.3</version>
         </dependency>
 
-        <!-- 加载lib目录下的opencv包 -->
+        <!-- 加载opencv包 需要推到远程仓库 -->
         <dependency>
             <groupId>org.opencv</groupId>
             <artifactId>opencv</artifactId>
             <version>4.5.3</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/opencv-453.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -159,6 +157,7 @@
                     <include>application.yml</include>
                     <include>bootstrap.properties</include>
                     <include>**/*.*</include>
+                    <include>natives/**</include>
                 </includes>
             </resource>
         </resources>

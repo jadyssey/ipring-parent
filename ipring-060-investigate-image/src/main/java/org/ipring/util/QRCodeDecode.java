@@ -23,11 +23,6 @@ public class QRCodeDecode {
     // 图像处理后的图片存放地址
     private static final String PATH = "D:\\output\\cc.jpg";
 
-    static {
-        // 加载Opencv的dll文件
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-    }
-
     public static void main(String[] args) {
         decode("D:\\img");
     }
@@ -123,7 +118,6 @@ public class QRCodeDecode {
         Mat src = Imgcodecs.imread(filePath, 1);
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         List<MatOfPoint> markContours = new ArrayList<MatOfPoint>();
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         /** 图片太小就放大 **/
         if (src.width() * src.height() < 90000) {
             Imgproc.resize(src, src, new Size(800, 600));

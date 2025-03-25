@@ -1,7 +1,6 @@
 package org.ipring.util;
 
 
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
@@ -23,8 +22,6 @@ public class WeChatQRCodeTool {
     private static volatile org.opencv.wechat_qrcode.WeChatQRCode detector;
 
     private WeChatQRCodeTool() {
-        OpenCVLoader.loadOpenCV();
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         // 微信提供的4个模型配置文件放在resource/wechatqrcode文件夹里,　　　　　　//下载地址：WeChatCV/opencv_3rdparty: OpenCV - 3rdparty (github.com)
         ClassLoader cl = WeChatQRCodeTool.class.getClassLoader();
         URL detectprototxt = cl.getResource("wechatqrcode/detect.prototxt");

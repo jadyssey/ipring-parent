@@ -29,6 +29,7 @@ import org.ipring.model.gemini.ImportExcelVO;
 import org.ipring.model.gpt.ChatGPTResponse;
 import org.ipring.util.CustomDecodeUtil;
 import org.ipring.util.JsonUtils;
+import org.ipring.util.qr.QrDecodeUtil;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -154,9 +155,9 @@ public class GPTController {
         return ReturnFactory.success(pod);
     }
 
-    @PostMapping("/4o-mini/import")
+    @PostMapping("/4o-mini/import-thread")
     @StlApiOperation(title = "4o-mini 导入数据批量调用", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
-    public List<ImportExcelVO> importExcel(@RequestParam(name = "qr", required = false) String qr, @RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, @RequestParam String fileName, HttpServletResponse response) {
+    public List<ImportExcelVO> importExcelThread(@RequestParam(name = "qr", required = false) String qr, @RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, @RequestParam String fileName, HttpServletResponse response) {
         List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
         long start = System.currentTimeMillis();
         log.info("图像识别元数据，总计{}条", podList.size());
@@ -173,6 +174,24 @@ public class GPTController {
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 log.error("多线程报错，", e);
             }
+        }
+        String answerAll = podList.stream().map(ImportExcelVO::getAnswer).collect(Collectors.joining("##"));
+        log.info("识别结束，开始写入本地文件：{}", answerAll);
+        SXSSFWorkbook sxssfWorkbook = ExcelOperateUtils.exportToBigDataFile(podList);
+        String fileNameResp = writeLocalPath("gpt_" + fileName, sxssfWorkbook);
+        log.info("识别结束，写入本地文件成功 {}, 耗时：{}", fileNameResp, System.currentTimeMillis() - start);
+        return podList;
+    }
+
+    @PostMapping("/4o-mini/import")
+    @StlApiOperation(title = "4o-mini 导入数据批量调用", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
+    public List<ImportExcelVO> importExcel(@RequestParam(name = "qr", required = false) String qr, @RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, @RequestParam String fileName, HttpServletResponse response) {
+        List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
+        long start = System.currentTimeMillis();
+        log.info("图像识别元数据，总计{}条", podList.size());
+        for (int i = 0; i < podList.size(); i++) {
+            ImportExcelVO pod = podList.get(i);
+            imageHandle(qr, model, supplier, pod, i);
         }
         String answerAll = podList.stream().map(ImportExcelVO::getAnswer).collect(Collectors.joining("##"));
         log.info("识别结束，开始写入本地文件：{}", answerAll);
@@ -211,7 +230,7 @@ public class GPTController {
                     try {
                         BufferedImage bufferedImage = ImageIO.read(new URL(imgUrl));
                         long start = System.currentTimeMillis();
-                        String decodeWaybillNo = CustomDecodeUtil.decode(bufferedImage);
+                        String decodeWaybillNo = QrDecodeUtil.decode(bufferedImage);
                         long end = System.currentTimeMillis();
 //                        log.info("图片二维码识别速度：{}", end - start); // 平均0.5s一个
                         if (pod.getWaybillNo().equalsIgnoreCase(decodeWaybillNo)) {
@@ -232,7 +251,7 @@ public class GPTController {
                     } catch (Exception e) {
                         // 记录异常日志，可以根据实际需求调整处理方式
                         // 未识别到二维码也会到这里来
-                        // log.error("Failed to decode QR code from URL: " + imgUrl, e);
+                         log.error("Failed to decode QR code from URL: " + imgUrl, e);
                     }
                 }
                 sw.stop();

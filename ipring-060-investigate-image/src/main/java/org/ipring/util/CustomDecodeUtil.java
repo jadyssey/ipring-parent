@@ -9,7 +9,6 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.utils.Converters;
 
 import java.awt.image.BufferedImage;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,13 +22,6 @@ public class CustomDecodeUtil {
 
     private static final int BIGGER_TIMES = 2;
     private static final String TEMP_PATH = "D:\\img\\tmp\\" + "temp.jpg";
-
-    static {
-        OpenCVLoader.loadOpenCV();
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        // 打印OpenCV版本信息以确认加载成功
-//        System.out.println("OpenCV version: " + Core.VERSION);
-    }
 
     /**
      * 解析读取二维码
@@ -79,64 +71,68 @@ public class CustomDecodeUtil {
 
 
     /**
-     * 扫描整个目录中的文件
+     * 多轮识别
      */
-    public static String decode(BufferedImage bufferedImage) throws MalformedURLException {
-        int cvtype = CvType.CV_8UC3;
-        if (bufferedImage.getType() == BufferedImage.TYPE_BYTE_GRAY) {
-            cvtype = CvType.CV_8UC1;
-        }
-        Mat image = WeChatQRCodeTool.bufImg2Mat(bufferedImage, bufferedImage.getType(), cvtype);
-        WeChatQRCodeTool weChatQRCodeTool = WeChatQRCodeTool.getInstance();
-        // 1. 第一次识别
-        String qrCode = decodeQRcode(weChatQRCodeTool, image);
-        if (StringUtils.isNotBlank(qrCode)) {
-            return qrCode;
-        }
-        /**
-         * 对图像进行处理，定位图像中的二维码，进行截取
-         */
-        List<Mat> qRcodeAndCut = findQRCodeAndCut(image);
-        if (CollectionUtil.isEmpty(qRcodeAndCut)) return null;
+    public static String decode(BufferedImage bufferedImage) {
+        Mat image = null;
+        Mat mat = null;
+        Mat mat2 = null;
+        CLAHE clahe = null;
+        try {
+            int cvtype = CvType.CV_8UC3;
+            if (bufferedImage.getType() == BufferedImage.TYPE_BYTE_GRAY) {
+                cvtype = CvType.CV_8UC1;
+            }
+            image = WeChatQRCodeTool.bufImg2Mat(bufferedImage, bufferedImage.getType(), cvtype);
+            WeChatQRCodeTool weChatQRCodeTool = WeChatQRCodeTool.getInstance();
 
-        Mat mat = qRcodeAndCut.get(0);
-        // 2. 第二次识别
-        qrCode = decodeQRcode(weChatQRCodeTool, mat);
-        if (StringUtils.isNotBlank(qrCode)) {
+            // 第一次识别
+            String qrCode = decodeQRcode(weChatQRCodeTool, image);
+            if (StringUtils.isNotBlank(qrCode)) {
+                return qrCode;
+            }
+
+            List<Mat> qRcodeAndCut = findQRCodeAndCut(image);
+            if (CollectionUtil.isEmpty(qRcodeAndCut)) return null;
+
+            mat = qRcodeAndCut.get(0);
+            // 释放列表中其他未使用的 Mat
+            for (int i = 1; i < qRcodeAndCut.size(); i++) {
+                qRcodeAndCut.get(i).release();
+            }
+
+            // 第二次识别
+            qrCode = decodeQRcode(weChatQRCodeTool, mat);
+            if (StringUtils.isNotBlank(qrCode)) {
+                return qrCode;
+            }
+
+            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
+            Imgproc.blur(mat, mat, new Size(3, 3));
+            Imgproc.medianBlur(mat, mat, 5);
+
+            mat2 = new Mat();
+            Imgproc.threshold(mat, mat2, 205, 255, Imgproc.THRESH_OTSU);
+
+            // 第三次识别
+            qrCode = decodeQRcode(weChatQRCodeTool, mat2);
+            if (StringUtils.isNotBlank(qrCode)) {
+                return qrCode;
+            }
+
+            clahe = Imgproc.createCLAHE(2, new Size(8, 8));
+            clahe.apply(mat, mat);
+
+            // 第四次识别
+            qrCode = decodeQRcode(weChatQRCodeTool, mat);
             return qrCode;
+        } finally {
+            // 确保所有资源最终被释放
+            if (image != null) image.release();
+            if (mat != null) mat.release();
+            if (mat2 != null) mat2.release();
+            if (clahe != null) clahe.collectGarbage();
         }
-        /**
-         * 对图形进行数值优化
-         */
-        // 彩色图转灰度图
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
-        // 对图像进行平滑处理
-        Imgproc.blur(mat, mat, new Size(3, 3));
-        // 中值去噪
-        Imgproc.medianBlur(mat, mat, 5);
-        // 这里定义一个新的Mat对象，主要是为了保留原图，未下次处理做准备
-        Mat mat2 = new Mat();
-        // 根据 OTSU 算法进行二值化
-        Imgproc.threshold(mat, mat2, 205, 255, Imgproc.THRESH_OTSU);
-        // 生成二值化后的图像 mat2
-        // Imgcodecs.imwrite(TEMP_PATH, mat2);
-        // 3. 第三次识别
-        qrCode = decodeQRcode(weChatQRCodeTool, mat2);
-        if (StringUtils.isNotBlank(qrCode)) {
-            return qrCode;
-        }
-        /**
-         * 限制对比度的自适应直方图均衡化
-         */
-        CLAHE clahe = Imgproc.createCLAHE(2, new Size(8, 8));
-        clahe.apply(mat, mat);
-        // Imgcodecs.imwrite(TEMP_PATH, mat);
-        // 4. 第四次识别
-        qrCode = decodeQRcode(weChatQRCodeTool, mat);
-        if (StringUtils.isNotBlank(qrCode)) {
-            return qrCode;
-        }
-        return null;
     }
 
 

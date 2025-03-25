@@ -197,6 +197,8 @@ public interface ComConstants {
             "  - q3: 步骤1、2、3都满足且内容完整无缺失的快递面单\n";
 
     String Q_0319_MS = "Identify an image that contains a shipping label affixed to the surface of a parcel. The image should be clear and legible, with no significant noise or blurriness. The shipping label must include the recipient's address and at least one barcode or QR code. shippingLabelQuestion: The output should indicate whether the image meets all the specified criteria？";
+    String Q_0321 = "Please analyze the provided image to determine whether there is a package present and check if a shipping label is attached to the package. A shipping label is usually affixed to the package's surface and typically contains a QR code or barcode, along with recipient address information.\n" +
+            "shippingLabelQuestion: Does the provided image contain a shipping label?";
     String Q_0319_ONE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"shippingLabelQuestion\": {\"type\": \"boolean\"}},\"required\": [\"shippingLabelQuestion\"],\"additionalProperties\": false}";
 
 

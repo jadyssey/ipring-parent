@@ -135,6 +135,7 @@ public class ImportExcelVO {
 
         Q_0221("0221通用问题", "", ComConstants.Q_0221_THREE_PROD, ComConstants.ONE_Q_jsonResponseFormat),
         Q_0319_MS("0319微软优化提示词", "", ComConstants.Q_0319_MS, ComConstants.Q_0319_ONE_Q_jsonResponseFormat),
+        Q_0321("0321自行优化", "", ComConstants.Q_0321, ComConstants.Q_0319_ONE_Q_jsonResponseFormat),
         ;
         ;
 
