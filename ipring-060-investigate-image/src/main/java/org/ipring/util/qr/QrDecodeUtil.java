@@ -4,7 +4,6 @@ import cn.hutool.extra.qrcode.QrCodeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.opencv.core.Mat;
-import org.opencv.imgproc.CLAHE;
 
 import java.awt.image.BufferedImage;
 
@@ -20,7 +19,6 @@ public class QrDecodeUtil {
         Mat image = null;
         Mat mat = null;
         Mat mat2 = null;
-        CLAHE clahe = null;
         try {
 
             image = WeChatQRUtil.bufferedImageToMat(bufferedImage);
@@ -32,7 +30,6 @@ public class QrDecodeUtil {
                 return qrCode;
             }
             log.info("初次识别失败，开始定位二维码");
-
             mat = ImageHandlerUtil.findQRCodeAndCut(image);
             if (mat == null) {
                 log.debug("无法定位和识别到二维码");
@@ -43,7 +40,7 @@ public class QrDecodeUtil {
             if (StringUtils.isNotBlank(qrCode)) {
                 return qrCode;
             }
-
+            log.info("二次识别失败，开始处理图片");
             mat2 = ImageHandlerUtil.processAndThresholdImage(mat);
             // 第三次识别
             qrCode = multiDecodeQRCode(mat2);
@@ -51,9 +48,10 @@ public class QrDecodeUtil {
                 return qrCode;
             }
 
-            ImageHandlerUtil.createCLAHE(mat);
+            // ImageHandlerUtil.createCLAHE(mat);
             // 第四次识别
-            qrCode = multiDecodeQRCode(mat);
+            // qrCode = multiDecodeQRCode(mat);
+            log.info("多次都无法识别到有效二维码");
             return qrCode;
         } catch (Exception e) {
             log.error("识别报错：", e);
@@ -63,7 +61,6 @@ public class QrDecodeUtil {
             if (image != null) image.release();
             if (mat != null) mat.release();
             if (mat2 != null) mat2.release();
-            if (clahe != null) clahe.collectGarbage();
         }
     }
 

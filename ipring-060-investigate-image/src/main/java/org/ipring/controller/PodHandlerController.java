@@ -1,8 +1,10 @@
 package org.ipring.controller;
 
+import cn.hutool.extra.qrcode.QrCodeUtil;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.ipring.anno.StlApiOperation;
 import org.ipring.enums.subcode.SystemServiceCode;
@@ -16,7 +18,9 @@ import org.ipring.model.delivery.AmazonBatchFileVO;
 import org.ipring.model.delivery.ImgDownloadExcelVO;
 import org.ipring.model.delivery.ReasonDownloadExcelVO;
 import org.ipring.model.enums.NonComplianceReason;
+import org.ipring.model.gemini.ImportExcelVO;
 import org.ipring.util.HttpUtils;
+import org.ipring.util.ImageDownloader;
 import org.ipring.util.JsonUtils;
 import org.ipring.util.WeChatQRCodeTool;
 import org.ipring.util.qr.ImageHandlerUtil;
@@ -25,10 +29,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,13 +37,15 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -58,7 +61,6 @@ import java.util.stream.Collectors;
 public class PodHandlerController {
     private final DeliveryGateway deliveryGateway;
     private final ThreadPoolTaskExecutor commonThreadPool;
-
     @PostMapping("/img-qr")
     @StlApiOperation(title = "pod图片二维码识别", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
     public Return<ImgDecodeResp> imageDecode(@RequestParam String imageUrl) throws IOException {
@@ -81,6 +83,67 @@ public class PodHandlerController {
 
         resp.setCustomDecodeUtilV2(decode);
         return ReturnFactory.success(resp);
+    }
+
+    private static final String Img_path = "imgs";
+
+    @PostMapping("/img/download")
+    @StlApiOperation(title = "下载图片功能")
+    public Return<String> downloadImg(@RequestParam("file") MultipartFile file) {
+        List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
+        podList.forEach(pod -> {
+            pod.getImgToImgList().forEach(img -> {
+                commonThreadPool.execute(() -> ImageDownloader.downloadImage(img, Img_path));
+            });
+        });
+        return ReturnFactory.success();
+    }
+
+    @PostMapping("/qr/test-characteristic")
+    @StlApiOperation(title = "测试二维码识别性能")
+    public Return<Map<String, String>> imageDecode(@RequestBody(required = false) List<String> imageUrlList, @RequestParam String img_path, @RequestParam Integer decodeType) {
+        File file = new File(img_path);
+        File[] vouchers = file.listFiles();
+        assert vouchers != null;
+        List<Future<String>> submitList = new ArrayList<>();
+        List<String> hasContentList = new ArrayList<>();
+        long start = System.currentTimeMillis();
+        for (File fileImg : vouchers) {
+            Future<String> submit = commonThreadPool.submit(() -> {
+                BufferedImage bufferedImage;
+                try {
+                    bufferedImage = ImageIO.read(new File(fileImg.getAbsolutePath()));
+                } catch (IOException e) {
+                    log.error("文件读取失败");
+                    return null;
+                }
+                if (decodeType == 1) {
+                    String decode = QrDecodeUtil.decode(bufferedImage);
+                    log.info("QrDecodeUtil 识别结果：{}", decode);
+                    return decode;
+                } else {
+                    String decode = QrCodeUtil.decode(bufferedImage);
+                    log.info("QrCodeUtil 识别结果：{}", decode);
+                    return decode;
+                }
+            });
+            submitList.add(submit);
+        }
+        for (Future<String> future : submitList) {
+            try {
+                String decode = future.get(30, TimeUnit.SECONDS);
+                if (StringUtils.isNotBlank(decode)) hasContentList.add(decode);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                log.error("多线程报错，", e);
+            }
+        }
+        long end = System.currentTimeMillis();
+        Map<String, String> map = new HashMap<>();
+        map.put("毫秒耗时", String.valueOf(end - start));
+        map.put("秒耗时", String.valueOf((end - start) / 1000));
+        map.put("识别有内容占总数比", String.valueOf((double) hasContentList.size() / vouchers.length));
+
+        return ReturnFactory.success(map);
     }
 
     @PostMapping("/img-process")

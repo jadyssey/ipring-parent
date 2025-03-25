@@ -6,10 +6,10 @@ spring:
 #    password: Root@123
 ipring:
   task-pool:
-    core-size: 10
-    max-size: 10
+    core-size: 40
+    max-size: 40
     keep-alive: 60
-    queue-capacity: 5
+    queue-capacity: 20
 azure:
   openai:
     api-key:

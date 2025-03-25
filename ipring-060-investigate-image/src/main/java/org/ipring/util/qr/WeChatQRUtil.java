@@ -228,7 +228,7 @@ public class WeChatQRUtil {
     /**
      * 核心识别方法[1,3](@ref)
      */
-    private String detectAndDecode(Mat image) {
+    private synchronized String detectAndDecode(Mat image) {
         try {
             List<String> results = detector.detectAndDecode(image);
             if (results.isEmpty()) return null;

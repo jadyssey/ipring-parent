@@ -65,6 +65,7 @@ public class ImageHandlerUtil {
             return result;
         } finally {
             srcGray.release();
+            captureResp.stream().skip(1).forEach(Mat::release);
         }
     }
 
@@ -149,13 +150,38 @@ public class ImageHandlerUtil {
      * @return 截取区域
      */
     private static Mat captureBySinglePoint(MatOfPoint contour, Mat src) {
+        // 1. 校验原图有效性
+        if (src.empty()) {
+            throw new IllegalArgumentException("原图为空");
+        }
+
+        // 2. 计算定位角中心点
         Point centerPoint = calcCenter(contour);
-        int width = 200;
-        Rect roi = createROI(centerPoint, width);
+
+        // 3. 动态计算ROI宽度（基于图像尺寸和定位角大小）
+        int imgWidth = src.cols();
+        int imgHeight = src.rows();
+
+        // 方案一：基于定位角外接矩形动态计算宽度
+        Rect boundRect = Imgproc.boundingRect(contour);
+        int dynamicWidth = (int) (boundRect.width * 4); // 根据实际需求调整倍数
+
+        // 方案二：限制默认宽度不超过图像安全范围
+        int safeWidth = Math.min(200, Math.min(imgWidth, imgHeight) / 2);
+        int width = Math.max(dynamicWidth, safeWidth); // 取合理值
+
+        // 4. 创建受边界保护的ROI
+        Rect roi = createROI(centerPoint, width, imgWidth, imgHeight);
+        if (roi.width <= 0 || roi.height <= 0) {
+            throw new IllegalArgumentException("ROI区域无效: " + roi);
+        }
+
+        // 5. 截取并放大ROI
         Mat roiMat = new Mat(src, roi);
         Imgproc.resize(roiMat, roiMat, new Size(BIGGER_TIMES * width, BIGGER_TIMES * width));
         return roiMat;
     }
+
 
     /**
      * 针对检测到两个定位角时，根据两点中点进行截取
@@ -166,21 +192,44 @@ public class ImageHandlerUtil {
      * @return 截取区域
      */
     private static Mat captureByTwoPoints(MatOfPoint contour1, MatOfPoint contour2, Mat src) {
+        // 校验原图有效性
+        if (src.empty()) {
+            throw new IllegalArgumentException("原图为空");
+        }
+
         Point p1 = calcCenter(contour1);
         Point p2 = calcCenter(contour2);
         Point centerPoint = new Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
-        double width = Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y) + 50;
-        Rect roi = createROI(centerPoint, width);
+
+        // 改用欧氏距离计算定位角间距
+        double distance = Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+        double width = distance * 1.2; // 增加20%余量
+
+        // 获取原图尺寸
+        int imgWidth = src.cols();
+        int imgHeight = src.rows();
+
+        Rect roi = createROI(centerPoint, width, imgWidth, imgHeight);
+        if (roi.width <= 0 || roi.height <= 0) {
+            throw new IllegalArgumentException("ROI区域无效");
+        }
+
         Mat roiMat = new Mat(src, roi);
         Imgproc.resize(roiMat, roiMat, new Size(BIGGER_TIMES * width, BIGGER_TIMES * width));
         return roiMat;
     }
 
-    private static Rect createROI(Point centerPoint, double width) {
-        return new Rect(
-                Math.max((int) (centerPoint.x - width), 0),
-                Math.max((int) (centerPoint.y - width), 0),
-                (int) (2 * width), (int) (2 * width));
+    private static Rect createROI(Point center, double width, int imgW, int imgH) {
+        // 限制ROI不超过图像边界
+        int halfSize = (int) Math.min(width, Math.min(center.x, center.y));
+        int x = (int) Math.max(center.x - halfSize, 0);
+        int y = (int) Math.max(center.y - halfSize, 0);
+
+        // 计算实际可用尺寸
+        int w = (int) Math.min(2 * halfSize, imgW - x);
+        int h = (int) Math.min(2 * halfSize, imgH - y);
+
+        return new Rect(x, y, w, h);
     }
 
     /**

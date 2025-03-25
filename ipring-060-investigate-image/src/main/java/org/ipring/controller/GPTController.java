@@ -34,6 +34,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
@@ -155,6 +156,7 @@ public class GPTController {
         return ReturnFactory.success(pod);
     }
 
+    @ApiIgnore
     @PostMapping("/4o-mini/import-thread")
     @StlApiOperation(title = "4o-mini 导入数据批量调用", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
     public List<ImportExcelVO> importExcelThread(@RequestParam(name = "qr", required = false) String qr, @RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, @RequestParam String fileName, HttpServletResponse response) {
@@ -277,8 +279,8 @@ public class GPTController {
                     // pod.setMatchingRate(StringMatchUtils.matchingRate(questionnaire.getQ2(), pod.getWaybillNo()));
 
                     // 后置二维码识别 todo
-                    pod.setQrCodeFlag("-");
                     if (StringUtils.isNotBlank(pod.getShippingLabelQuestion()) && !pod.getShippingLabelQuestion().equalsIgnoreCase("TRUE") && !"before".equalsIgnoreCase(chatBody.getQr())) {
+                        pod.setQrCodeFlag("-");
                         log.info("第{}条，二维码识别开始", i);
                         for (String imgUrl : chatBody.getImageList()) {
                             try {
