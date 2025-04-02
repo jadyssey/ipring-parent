@@ -232,7 +232,7 @@ public class GPTController {
                     try {
                         BufferedImage bufferedImage = ImageIO.read(new URL(imgUrl));
                         long start = System.currentTimeMillis();
-                        String decodeWaybillNo = QrDecodeUtil.decode(bufferedImage);
+                        String decodeWaybillNo = QrCodeUtil.decode(bufferedImage);
                         long end = System.currentTimeMillis();
 //                        log.info("图片二维码识别速度：{}", end - start); // 平均0.5s一个
                         if (pod.getWaybillNo().equalsIgnoreCase(decodeWaybillNo)) {

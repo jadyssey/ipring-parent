@@ -1,0 +1,19 @@
+server:
+  port: 8021
+spring:
+  profiles:
+    active: dev
+  messages:
+    basename: messages/messages
+  jackson:
+    deserialization:
+      fail_on_unknown_properties: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+ipring:
+  swagger:
+    enable: true
+    name: "JVM"
+    version: V1.0.0

@@ -19,10 +19,7 @@ import org.ipring.model.delivery.ImgDownloadExcelVO;
 import org.ipring.model.delivery.ReasonDownloadExcelVO;
 import org.ipring.model.enums.NonComplianceReason;
 import org.ipring.model.gemini.ImportExcelVO;
-import org.ipring.util.HttpUtils;
-import org.ipring.util.ImageDownloader;
-import org.ipring.util.JsonUtils;
-import org.ipring.util.WeChatQRCodeTool;
+import org.ipring.util.*;
 import org.ipring.util.qr.ImageHandlerUtil;
 import org.ipring.util.qr.QrDecodeUtil;
 import org.opencv.core.CvType;
@@ -61,6 +58,13 @@ import java.util.stream.Collectors;
 public class PodHandlerController {
     private final DeliveryGateway deliveryGateway;
     private final ThreadPoolTaskExecutor commonThreadPool;
+
+    @PostMapping("/empty")
+    @StlApiOperation(title = "空接口", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
+    public Return<String> empty(@RequestParam String imageUrl) throws IOException {
+        return ReturnFactory.success(UUIDUtil.getLcDefaultLenUuidStr());
+    }
+
     @PostMapping("/img-qr")
     @StlApiOperation(title = "pod图片二维码识别", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
     public Return<ImgDecodeResp> imageDecode(@RequestParam String imageUrl) throws IOException {
@@ -141,8 +145,9 @@ public class PodHandlerController {
         Map<String, String> map = new HashMap<>();
         map.put("毫秒耗时", String.valueOf(end - start));
         map.put("秒耗时", String.valueOf((end - start) / 1000));
+        map.put("识别图片总数", String.valueOf(vouchers.length));
+        map.put("成功读取二维码图片总数", String.valueOf(hasContentList.size()));
         map.put("识别有内容占总数比", String.valueOf((double) hasContentList.size() / vouchers.length));
-
         return ReturnFactory.success(map);
     }
 
@@ -249,7 +254,7 @@ public class PodHandlerController {
         log.info("下载结束，写入本地文件成功 {}", fileName);
     }
 
-    private static String writeLocalPath(String namePrefix, SXSSFWorkbook workbook) {
+    public static String writeLocalPath(String namePrefix, SXSSFWorkbook workbook) {
         String name = namePrefix + System.currentTimeMillis();
         try (FileOutputStream outputStream = new FileOutputStream(name + ".xlsx")) {
             workbook.write(outputStream);

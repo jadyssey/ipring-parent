@@ -36,35 +36,35 @@
 
 
     <!--按照每天生成所有日志文件-->
-    <appender name="LOG_ALL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!--<appender name="LOG_ALL" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${logDir}/${appName}-all.log</file>
-        <!--滚动策略-->
+        &lt;!&ndash;滚动策略&ndash;&gt;
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <!--日志文件输出的文件名-->
+            &lt;!&ndash;日志文件输出的文件名&ndash;&gt;
             <fileNamePattern>${logDir}/${appName}-all.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <!--日志文件大小-->
+            &lt;!&ndash;日志文件大小&ndash;&gt;
             <maxFileSize>100MB</maxFileSize>
-            <!--日志文件保留天数-->
+            &lt;!&ndash;日志文件保留天数&ndash;&gt;
             <maxHistory>15</maxHistory>
         </rollingPolicy>
-        <!--encoder 默认配置为PatternLayoutEncoder-->
+        &lt;!&ndash;encoder 默认配置为PatternLayoutEncoder&ndash;&gt;
         <encoder>
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
             <charset>utf-8</charset>
         </encoder>
-    </appender>
+    </appender>-->
 
 
     <springProfile name="dev">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="LOG_ALL" />
+            <!--<appender-ref ref="LOG_ALL" />-->
         </root>
     </springProfile>
     <springProfile name="test,prod">
         <root level="INFO">
             <appender-ref ref="STDOUT"/>
-            <appender-ref ref="LOG_ALL" />
+            <!--<appender-ref ref="LOG_ALL" />-->
         </root>
     </springProfile>
 </configuration>
