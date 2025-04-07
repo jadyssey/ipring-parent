@@ -17,9 +17,9 @@ public class ChatBody {
      * 1-chatgpt
      * 2-azure
      */
-    private Integer supplier;
+    // private Integer supplier;
 
-    private String systemSetup;
+    // private String systemSetup;
 
     private String text;
     private String jsonResponseFormat;

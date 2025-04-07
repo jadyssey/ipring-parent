@@ -93,9 +93,9 @@ public class GPTController {
         ChatMessage chatMessage = new ChatMessage(ChatMessageRole.USER.value(), requests);
         messages.add(chatMessage);
         chatCompletionRequest.setMessages(messages);
-        if (Objects.nonNull(chatBody.getSupplier()) && chatBody.getSupplier().equals(1)) {
-            return chatGptGateway.completions(chatCompletionRequest);
-        }
+        // if (Objects.nonNull(chatBody.getSupplier()) && chatBody.getSupplier().equals(1)) {
+        //     return chatGptGateway.completions(chatCompletionRequest);
+        // }
         return chatGptGateway.azureCompletions(chatCompletionRequest);
     }
 
@@ -157,7 +157,7 @@ public class GPTController {
     }
 
     @ApiIgnore
-    @PostMapping("/4o-mini/import-thread")
+    @PostMapping("/gpt/import-thread")
     @StlApiOperation(title = "4o-mini 导入数据批量调用", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
     public List<ImportExcelVO> importExcelThread(@RequestParam(name = "qr", required = false) String qr, @RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, @RequestParam String fileName, HttpServletResponse response) {
         List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
@@ -185,7 +185,7 @@ public class GPTController {
         return podList;
     }
 
-    @PostMapping("/4o-mini/import")
+    @PostMapping("/gpt/import")
     @StlApiOperation(title = "4o-mini 导入数据批量调用", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
     public List<ImportExcelVO> importExcel(@RequestParam(name = "qr", required = false) String qr, @RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, @RequestParam String fileName, HttpServletResponse response) {
         List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
@@ -208,12 +208,12 @@ public class GPTController {
         ChatBody chatBody = new ChatBody();
         chatBody.setQr(qr);
         chatBody.setModel(model);
-        chatBody.setSupplier(supplier);
+        // chatBody.setSupplier(supplier);
         List<String> imgList = pod.getImgToImgList().stream().filter(StringUtils::isNotBlank).collect(Collectors.toList());
         Collections.reverse(imgList);
         chatBody.setImageList(imgList);
 
-        chatBody.setSystemSetup(signType.getSystemSetup());
+        // chatBody.setSystemSetup(signType.getSystemSetup());
         // String question = String.format(signType.getQuestion(), (pod.getAddress().replace(" ", "").length()/3) * 2);
         String question = signType.getQuestion().replace("%s", String.valueOf(pod.getWaybillNo().length()));
         chatBody.setText(question);

@@ -25,8 +25,8 @@ public class OCRDemo {
 
     @SneakyThrows
     public static void main(String[] args) {
-
-        File imageFile = new File("D:\\img\\test-3.jpg");
+        File imageFile = new File("D:\\img\\imgs\\1742435645554E7221798-2879-484A-A010-2013B1C95E0D-14226-00000CA07E517101.jpg");
+        /*
         BufferedImage bufferedImage = ImageIO.read(imageFile);
         int cvtype = CvType.CV_8UC3;
         if (bufferedImage.getType() == BufferedImage.TYPE_BYTE_GRAY) {
@@ -48,7 +48,7 @@ public class OCRDemo {
             Mat rect = outs.get(1).row(i);
             // 解析检测结果，提取文本区域
             // ...
-        }
+        }*/
 
         ITesseract instance = new Tesseract();
 

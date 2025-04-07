@@ -52,10 +52,10 @@ public class OpenAIService {
         Optional.ofNullable(chatBody.getImageUrl()).filter(StringUtils::isNotBlank).ifPresent(imageList::add);
 
         List<ChatRequestMessage> chatMessages = new ArrayList<>();
-        if (StringUtils.isNotBlank(chatBody.getSystemSetup())) {
+        // if (StringUtils.isNotBlank(chatBody.getSystemSetup())) {
             // 添加系统消息
-            chatMessages.add(new ChatRequestSystemMessage(chatBody.getSystemSetup()));
-        }
+            // chatMessages.add(new ChatRequestSystemMessage(chatBody.getSystemSetup()));
+        // }
 
         // 创建包含文本和图片的用户消息列表
         List<ChatMessageContentItem> contentItems = new ArrayList<>();
