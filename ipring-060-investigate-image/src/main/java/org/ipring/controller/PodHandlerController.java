@@ -19,6 +19,7 @@ import org.ipring.model.delivery.ImgDownloadExcelVO;
 import org.ipring.model.delivery.ReasonDownloadExcelVO;
 import org.ipring.model.enums.NonComplianceReason;
 import org.ipring.model.gemini.ImportExcelVO;
+import org.ipring.model.gpt.ImportExcelV2VO;
 import org.ipring.util.*;
 import org.ipring.util.qr.ImageHandlerUtil;
 import org.ipring.util.qr.QrDecodeUtil;
@@ -38,6 +39,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -203,6 +206,40 @@ public class PodHandlerController {
         log.info("下载结束，写入本地文件成功 {}", fileName);
     }
 
+    @PostMapping("/temp-url-convert")
+    @StlApiOperation(title = "pod图片地址转换--模型直出", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
+    public void modelTempImportExcelAndExport(@RequestParam("file") MultipartFile file, HttpServletResponse response, @RequestParam String nation, @RequestParam String fileName) {
+        List<ImportExcelV2VO> podList = ExcelOperateUtils.importToList(file, ImportExcelV2VO.class);
+        String secretKey = HttpUtils.getHeader("Authorization");
+        log.info("开始转换模型，并调用下载图片");
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        List<Future<?>> submitList = new ArrayList<>();
+        for (int row = 0; row < podList.size(); row++) {
+            int finalRow = row;
+            Future<?> submit = commonThreadPool.submit(() -> {
+                try {
+                    RequestContextHolder.setRequestAttributes(requestAttributes);
+                    ImportExcelV2VO imgDownloadExcelVO = podList.get(finalRow);
+                    imageConvertV2(imgDownloadExcelVO, secretKey, finalRow, nation);
+                } finally {
+                    RequestContextHolder.resetRequestAttributes();
+                }
+            });
+            submitList.add(submit);
+        }
+        try {
+            for (Future<?> future : submitList) {
+                future.get();
+            }
+        } catch (Exception e) {
+            log.error("多线程报错，", e);
+        }
+        log.info("开始下载");
+        SXSSFWorkbook sxssfWorkbook = ExcelOperateUtils.exportToBigDataFile(podList);
+        String fileNameResp = writeLocalPath("img_cov_" + fileName, sxssfWorkbook);
+        log.info("下载结束，写入本地文件成功 {}", fileNameResp);
+    }
+
     private void imageConvert(List<ImgDownloadExcelVO> podList, String auth, int row, String nation) {
         ImgDownloadExcelVO imgDownloadExcelVO = podList.get(row);
         List<String> imgList = Arrays.asList(imgDownloadExcelVO.getImages().split(","));
@@ -236,6 +273,37 @@ public class PodHandlerController {
         }
     }
 
+    private void imageConvertV2(ImportExcelV2VO importExcelV2VO, String auth, int row, String nation) {
+        AmazonBatchFileVO amazonBatchFileVO = new AmazonBatchFileVO();
+        amazonBatchFileVO.setFileKeyList(importExcelV2VO.getPhotographImg());
+        amazonBatchFileVO.setAuthorization(auth);
+        ZtReturn<List<String>> listReturn = new ZtReturn<>();
+        if (nation.equals("us")) {
+            listReturn = deliveryGateway.usBatchDownloadImg(amazonBatchFileVO);
+        } else if (nation.equals("fr")) {
+            listReturn = deliveryGateway.frBatchDownloadImg(amazonBatchFileVO);
+        }
+        if (listReturn.success() && listReturn.hashData()) {
+            importExcelV2VO.setPhotographImg(listReturn.getData().stream().collect(Collectors.joining(",")));
+        } else {
+            log.error("第 {} 行，图片下载失败，{}", row, JsonUtils.toJson(listReturn));
+        }
+
+        amazonBatchFileVO.setFileKeyList(importExcelV2VO.getReadyDeliverImg());
+        amazonBatchFileVO.setAuthorization(auth);
+        ZtReturn<List<String>> listReturn2 = new ZtReturn<>();
+        if (nation.equals("us")) {
+            listReturn2 = deliveryGateway.usBatchDownloadImg(amazonBatchFileVO);
+        } else if (nation.equals("fr")) {
+            listReturn2 = deliveryGateway.frBatchDownloadImg(amazonBatchFileVO);
+        }
+        if (listReturn2.success() && listReturn2.hashData()) {
+            importExcelV2VO.setReadyDeliverImg(listReturn2.getData().stream().collect(Collectors.joining(",")));
+        } else {
+            log.error("第 {} 行，图片下载失败，{}", row, JsonUtils.toJson(listReturn));
+        }
+    }
+
     @PostMapping("/reason-convert")
     @StlApiOperation(title = "pod不合规原因转换", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
     public void reasonConvert(@RequestParam("file") MultipartFile file, HttpServletResponse response) {
@@ -255,7 +323,9 @@ public class PodHandlerController {
     }
 
     public static String writeLocalPath(String namePrefix, SXSSFWorkbook workbook) {
-        String name = namePrefix + System.currentTimeMillis();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-HH-mm-ss");
+        String currentTime = dtf.format(LocalDateTime.now());
+        String name = namePrefix + currentTime;
         try (FileOutputStream outputStream = new FileOutputStream(name + ".xlsx")) {
             workbook.write(outputStream);
         } catch (IOException e) {

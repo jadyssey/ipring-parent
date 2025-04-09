@@ -27,6 +27,7 @@ import org.ipring.model.common.ReturnFactory;
 import org.ipring.model.delivery.Questionnaire;
 import org.ipring.model.gemini.ImportExcelVO;
 import org.ipring.model.gpt.ChatGPTResponse;
+import org.ipring.model.gpt.ImportExcelV2VO;
 import org.ipring.util.CustomDecodeUtil;
 import org.ipring.util.JsonUtils;
 import org.ipring.util.qr.QrDecodeUtil;
@@ -176,24 +177,6 @@ public class GPTController {
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 log.error("多线程报错，", e);
             }
-        }
-        String answerAll = podList.stream().map(ImportExcelVO::getAnswer).collect(Collectors.joining("##"));
-        log.info("识别结束，开始写入本地文件：{}", answerAll);
-        SXSSFWorkbook sxssfWorkbook = ExcelOperateUtils.exportToBigDataFile(podList);
-        String fileNameResp = writeLocalPath("gpt_" + fileName, sxssfWorkbook);
-        log.info("识别结束，写入本地文件成功 {}, 耗时：{}", fileNameResp, System.currentTimeMillis() - start);
-        return podList;
-    }
-
-    @PostMapping("/gpt/import")
-    @StlApiOperation(title = "4o-mini 导入数据批量调用", subCodeType = SystemServiceCode.SystemApi.class, response = Return.class)
-    public List<ImportExcelVO> importExcel(@RequestParam(name = "qr", required = false) String qr, @RequestParam(name = "model", required = false) String model, @RequestParam(required = false) Integer supplier, @RequestParam("file") MultipartFile file, @RequestParam String fileName, HttpServletResponse response) {
-        List<ImportExcelVO> podList = ExcelOperateUtils.importToList(file, ImportExcelVO.class);
-        long start = System.currentTimeMillis();
-        log.info("图像识别元数据，总计{}条", podList.size());
-        for (int i = 0; i < podList.size(); i++) {
-            ImportExcelVO pod = podList.get(i);
-            imageHandle(qr, model, supplier, pod, i);
         }
         String answerAll = podList.stream().map(ImportExcelVO::getAnswer).collect(Collectors.joining("##"));
         log.info("识别结束，开始写入本地文件：{}", answerAll);

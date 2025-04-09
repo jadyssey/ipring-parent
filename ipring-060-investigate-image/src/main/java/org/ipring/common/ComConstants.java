@@ -202,9 +202,20 @@ public interface ComConstants {
     String Q_0319_ONE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"shippingLabelQuestion\": {\"type\": \"boolean\"}},\"required\": [\"shippingLabelQuestion\"],\"additionalProperties\": false}";
 
 
+    /**
+     * 图片分类提问 01
+     */
+    String question_img_classification_01 = "";
+
     String FIVE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"number\"},\"q2\": {\"type\": \"number\"},\"q3\": {\"type\": \"number\"},\"q4\": {\"type\": \"number\"},\"q5\": {\"type\": \"number\"}},\"required\": [\"q1\", \"q2\", \"q3\", \"q4\", \"q5\"],\"additionalProperties\": false}";
     String FOUR_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"boolean\"},\"q2\": {\"type\": \"string\"},\"q3\": {\"type\": \"string\"},\"q4\": {\"type\": \"string\"}},\"required\": [\"q1\", \"q2\", \"q3\", \"q4\"],\"additionalProperties\": false}";
     String THREE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"boolean\"},\"q2\": {\"type\": \"string\"},\"q3\": {\"type\": \"string\"}},\"required\": [\"q1\", \"q2\", \"q3\"],\"additionalProperties\": false}";
     String ONE_Q_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"q1\": {\"type\": \"boolean\"}},\"required\": [\"q1\"],\"additionalProperties\": false}";
+
+
+    /**
+     * 图片分类提问响应格式
+     */
+    String question_img_classification_01_jsonResponseFormat = "{\"type\": \"object\",\"properties\": {\"shippingLabelQuestion\": {\"type\": \"boolean\"},\"doorNum\": {\"type\": \"string\"}},\"required\": [\"shippingLabelQuestion\",\"doorNum\"],\"additionalProperties\": false}";
 
 }
