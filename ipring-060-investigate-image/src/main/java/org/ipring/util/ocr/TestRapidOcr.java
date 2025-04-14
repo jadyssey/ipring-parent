@@ -13,7 +13,7 @@ public class TestRapidOcr {
         ParamConfig paramConfig = ParamConfig.getDefaultConfig();
         paramConfig.setDoAngle(true);
         paramConfig.setMostAngle(true);
-        String imgPath = getResourcePath("/1743989834206ED6E08C5-69C9-4861-A3FD-8F29651BF9D8-34182-000005A69010A486.jpg");
+        String imgPath = getResourcePath("/1744168184433ABB58ABA-690F-415B-A048-D5D7DE997CDF.jpg");
         InferenceEngine engine1 = InferenceEngine.getInstance(Model.ONNX_PPOCR_V3);
         InferenceEngine engine2 = InferenceEngine.getInstance(Model.ONNX_PPOCR_V4);
         OcrResult ONNXResult1 = engine1.runOcr(imgPath);

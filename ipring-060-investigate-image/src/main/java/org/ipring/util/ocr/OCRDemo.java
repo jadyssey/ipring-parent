@@ -9,6 +9,7 @@ import org.ipring.util.WeChatQRCodeTool;
 import org.opencv.core.*;
 import org.opencv.dnn.Dnn;
 import org.opencv.dnn.Net;
+import org.springframework.scheduling.support.CronSequenceGenerator;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 
@@ -50,7 +52,7 @@ public class OCRDemo {
             // ...
         }*/
 
-        ITesseract instance = new Tesseract();
+        /*ITesseract instance = new Tesseract();
 
         // 动态获取资源路径（适用于开发环境）
         instance.setDatapath("D:\\git\\myCode\\ipring-parent\\ipring-060-investigate-image\\src\\main\\resources\\tessdata");
@@ -69,6 +71,6 @@ public class OCRDemo {
             System.out.println(result);
         } catch (TesseractException e) {
             System.err.println(e.getMessage());
-        }
+        }*/
     }
 }
