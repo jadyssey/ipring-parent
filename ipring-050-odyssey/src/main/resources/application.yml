@@ -1,0 +1,19 @@
+server:
+  port: 8050
+spring:
+  profiles:
+    active: dev
+  messages:
+    basename: messages/messages
+  jackson:
+    deserialization:
+      fail_on_unknown_properties: false
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+ipring:
+  swagger:
+    enable: true
+    name: "odyssey"
+    version: V1.0.0

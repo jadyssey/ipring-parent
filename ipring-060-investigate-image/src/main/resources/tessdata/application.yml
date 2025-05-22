@@ -1,0 +1,116 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /
+  tomcat:
+    uri-encoding: UTF-8
+    max-threads: 1024
+    min-spare-threads: 30
+    connection-timeout: 180000
+  max-http-header-size: 102400
+
+spring:
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: true
+        reset-enable: false
+        login-username: rabee
+        login-password: MT9fUPv1mDrUPx96
+        allow:
+        url-pattern: /druid/*
+  messages:
+    basename: i18n/messages
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      max-file-size: 300MB
+      max-request-size: 300MB
+  devtools:
+    restart:
+      enabled: true
+  application:
+    name: cirro-admin
+
+mybatis:
+  typeAliasesPackage: com.cds.**.domain
+  mapperLocations: classpath*:mapper/**/*Mapper.xml
+  configLocation: classpath:mybatis/mybatis-config.xml
+
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
+swagger:
+  enabled: true
+  pathMapping: /
+
+xss:
+  enabled: true
+  excludes: /system/notice/*
+  urlPatterns:
+    - /system/*
+    - /monitor/*
+    - /tool/*
+
+zt:
+  log:
+    sla:
+      enable: true
+    domain: dbu
+    sys-name: dbu-mod-delivery
+    audit:
+      enable: true
+
+log:
+  desensitize:
+    enabled: true
+    package-prefixes: com.cds
+    strategies:
+      name:
+        - username
+        - accountNo
+        - name
+        - frName
+        - toName
+        - shipperName
+        - consigneeName
+      phoneNumber:
+        - phone
+        - mobile
+        - frPhone
+        - toPhone
+        - shipperPhone
+        - consigneePhone
+      password:
+        - password
+      address:
+        - address
+      email:
+        - email
+        - toEmail
+        - frEmail
+        - shipperEmail
+        - consigneeEmail
+      idCard:
+        - idCard
+
+app-courier-register-postId: 39
+app-msg:
+  send-url: http://10.100.4.72:8098
+  template:
+    code: zh-T42290,en-T84519
+
+task-auth:
+  token: d03ff6a877a16e32
+  enable: true
+
+waybill-auth:
+  token: d03ff6a877a16e32
+  enable: true
+
+systemConfig:
+  color: 255,72,0

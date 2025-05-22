@@ -34,7 +34,7 @@ public class ImportExcelV2VO {
     private String address;
 
     @ExcelColumn(2)
-    @ApiModelProperty(value = "收件地外门牌")
+    @ApiModelProperty(value = "收件地门牌")
     private String doorNumberExe;
 
     @ExcelColumn(3)
@@ -42,11 +42,11 @@ public class ImportExcelV2VO {
     private String signType;
 
     @ExcelColumn(4)
-    @ApiModelProperty(value = "妥投拍照图片地址")
+    @ApiModelProperty(value = "拍照图片")
     private String photographImg;
 
     @ExcelColumn(5)
-    @ApiModelProperty(value = "妥投位置图片地址")
+    @ApiModelProperty(value = "位置图片")
     private String readyDeliverImg;
 
     @ExcelColumn(6)
@@ -94,12 +94,12 @@ public class ImportExcelV2VO {
     private String q3;
 
     @ExcelColumn(18)
-    @ApiModelProperty(value = "二维码识别结果是否匹配")
-    private String qrCodeFlag;
+    @ApiModelProperty(value = "街道号是否匹配")
+    private String streetFlag;
 
     @ExcelColumn(19)
-    @ApiModelProperty(value = "含有二维码的图片链接为")
-    private String qrCodeUrl;
+    @ApiModelProperty(value = "ocr识别内容")
+    private String ocrContent;
 
 
     @Getter

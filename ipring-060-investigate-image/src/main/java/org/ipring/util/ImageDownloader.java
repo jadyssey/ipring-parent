@@ -7,7 +7,7 @@ import java.net.URI;
 import java.net.URL;
 
 public class ImageDownloader {
-    public static void downloadImage(String imageUrl, String imgPath) {
+    public static File downloadImage(String imageUrl, String imgPath) {
         try {
             // 解析 URL 获取文件名
             URL url = new URL(imageUrl);
@@ -28,12 +28,14 @@ public class ImageDownloader {
                 File file = new File(savePath);
                 ImageIO.write(bufferedImage, formatName, file);
                 System.out.println("图片已保存到：" + savePath);
+                return file;
             } else {
                 System.out.println("无法读取图片内容");
             }
         } catch (Exception e) {
             System.out.println("下载失败：" + e.getMessage());
         }
+        return null;
     }
 
     public static void main(String[] args) {

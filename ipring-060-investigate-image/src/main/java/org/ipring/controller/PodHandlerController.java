@@ -284,7 +284,7 @@ public class PodHandlerController {
             listReturn = deliveryGateway.frBatchDownloadImg(amazonBatchFileVO);
         }
         if (listReturn.success() && listReturn.hashData()) {
-            importExcelV2VO.setPhotographImg(listReturn.getData().stream().collect(Collectors.joining(",")));
+            importExcelV2VO.setPhotographImg(String.join(",", listReturn.getData()));
         } else {
             log.error("第 {} 行，图片下载失败，{}", row, JsonUtils.toJson(listReturn));
         }
@@ -298,7 +298,7 @@ public class PodHandlerController {
             listReturn2 = deliveryGateway.frBatchDownloadImg(amazonBatchFileVO);
         }
         if (listReturn2.success() && listReturn2.hashData()) {
-            importExcelV2VO.setReadyDeliverImg(listReturn2.getData().stream().collect(Collectors.joining(",")));
+            importExcelV2VO.setReadyDeliverImg(String.join(",", listReturn2.getData()));
         } else {
             log.error("第 {} 行，图片下载失败，{}", row, JsonUtils.toJson(listReturn));
         }
