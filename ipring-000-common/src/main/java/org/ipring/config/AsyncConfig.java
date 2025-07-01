@@ -51,7 +51,7 @@ public class AsyncConfig implements AsyncConfigurer {
         //设置线程池中任务的等待时间，如果超过这个时候还没有销毁就强制销毁，以确保应用最后能够被关闭，而不是阻塞住
         executor.setAwaitTerminationSeconds(30);
         // 增加 CustomTaskDecorator 属性的配置
-        // executor.setTaskDecorator(new CustomTaskDecorator());
+        executor.setTaskDecorator(new CustomTaskDecorator());
 
         // rejection-policy：当pool已经达到max size的时候，如何处理新任务
         // CALLER_RUNS：不在新线程中执行任务，而是由调用者所在的线程来执行
