@@ -5,6 +5,7 @@
       <directory url="file://$PROJECT_DIR$/ipring-015-dubbo/src/main/resources/archetype-resources" includeSubdirectories="true" />
       <directory url="file://$PROJECT_DIR$/ipring-015-dubbo/ipring-dubbo-provide/src/main/resources/archetype-resources" includeSubdirectories="true" />
       <directory url="file://$PROJECT_DIR$/ipring-060-investigate-image/src/main/resources/archetype-resources" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/ipring-013-jacg/src/main/resources/archetype-resources" includeSubdirectories="true" />
     </excludeFromCompile>
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
@@ -27,6 +28,7 @@
         <module name="ipring-888-markdown" />
         <module name="ipring-099-redis" />
         <module name="ipring-004-socket" />
+        <module name="ipring-013-jacg" />
         <module name="ipring-010-validation" />
         <module name="ipring-002-mq" />
       </profile>
@@ -42,6 +44,7 @@
       <module name="ipring-010-validation" options="-parameters" />
       <module name="ipring-011-framework" options="-parameters" />
       <module name="ipring-012-docker" options="-parameters" />
+      <module name="ipring-013-jacg" options="-parameters" />
       <module name="ipring-020-juc" options="-parameters" />
       <module name="ipring-021-jvm" options="-parameters" />
       <module name="ipring-030-workflow" options="-parameters" />

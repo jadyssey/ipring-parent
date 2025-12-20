@@ -31,4 +31,5 @@ build/
 !**/src/test/**/build/
 
 *.log
+/logs
 /*.xlsx

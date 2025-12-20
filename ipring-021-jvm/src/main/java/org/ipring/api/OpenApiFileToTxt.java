@@ -16,7 +16,7 @@ import java.nio.file.Paths;
  */
 public class OpenApiFileToTxt {
     public static void main(String[] args) {
-        String openApiFilePath = "C:\\Users\\14308\\Downloads\\openapi.json"; // OpenAPI文件路径
+        String openApiFilePath = "D:\\appData\\openapi.json"; // OpenAPI文件路径
         String txtFilePath = "paths_from_file.txt"; // 输出TXT路径
 
         try {

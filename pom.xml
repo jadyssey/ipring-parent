@@ -22,6 +22,7 @@
         <module>ipring-003-zmq</module>
         <module>ipring-004-socket</module>
         <module>ipring-010-validation</module>
+        <module>ipring-013-jacg</module>
         <module>ipring-020-juc</module>
         <module>ipring-050-odyssey</module>
         <module>ipring-100-mysql</module>

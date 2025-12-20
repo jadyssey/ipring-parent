@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="OFF">
+    <Properties>
+        <!-- 日志目录 -->
+        <Property name="LOG_DIR">./logs</Property>
+        <Property name="LOG_FILE">app</Property>
+        <!-- 极简日志格式（控制台/文件共用，减少解析开销） -->
+        <property name="LOG_PATTERN"
+                  value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p [%c{36}:%L] - %m%n"/>
+    </Properties>
+
+    <Appenders>
+        <!-- 1. 控制台Appender：仅输出INFO及以上级别 -->
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <!-- 过滤器：只保留INFO/WARN/ERROR，丢弃DEBUG -->
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <!-- 极简格式，减少CPU开销 -->
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <!-- 控制台也关闭立即刷盘（异步批量输出，提升性能） -->
+            <ImmediateFlush>false</ImmediateFlush>
+        </Console>
+
+        <!-- 2. 滚动文件Appender（生产核心，高性能配置） -->
+        <RollingFile name="RollingFileAppender"
+                     fileName="${LOG_DIR}/${LOG_FILE}.log"
+                     filePattern="${LOG_DIR}/${LOG_FILE}-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <!-- 触发滚动：单文件100MB，每天分割 -->
+            <Policies>
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+            <!-- 保留30天日志 -->
+            <DefaultRolloverStrategy max="30"/>
+            <!-- IO优化：8KB缓冲，关闭立即刷盘 -->
+            <FileAppendOptions bufferSize="8192" immediateFlush="false"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <!--
+        &lt;!&ndash; 第三方框架日志：WARN级别，仅输出到文件（避免控制台冗余） &ndash;&gt;
+        <Logger name="org.springframework" level="WARN" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="RollingFileAppender"/>
+        </Logger>
+        <Logger name="com.baomidou.mybatisplus" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="RollingFileAppender"/>
+        </Logger>
+        -->
+
+        <!-- 根Logger：默认INFO级别，输出到控制台+文件 -->
+        <Root level="INFO">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="RollingFileAppender"/>
+        </Root>
+    </Loggers>
+</Configuration>
