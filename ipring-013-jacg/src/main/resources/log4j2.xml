@@ -23,7 +23,7 @@
         <!-- 2. 滚动文件Appender（生产核心，高性能配置） -->
         <RollingFile name="RollingFileAppender"
                      fileName="${LOG_DIR}/${LOG_FILE}.log"
-                     filePattern="${LOG_DIR}/${LOG_FILE}-%d{yyyy-MM-dd}-%i.log.gz">
+                     filePattern="${LOG_DIR}/${LOG_FILE}-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout pattern="${LOG_PATTERN}"/>
             <!-- 触发滚动：单文件100MB，每天分割 -->
             <Policies>

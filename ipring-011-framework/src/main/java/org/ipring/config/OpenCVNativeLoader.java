@@ -1,7 +1,6 @@
 package org.ipring.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.opencv.core.Core;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -184,24 +183,24 @@ public class OpenCVNativeLoader {
         } else if (osName.contains("win")) {
             try {
                 // 1. 从资源目录读取DLL文件
-                String libName = Core.NATIVE_LIBRARY_NAME + ".dll";
-                InputStream inputStream = getClass().getClassLoader()
-                        .getResourceAsStream(Win_NATIVE_LIB_DIR + libName);
-                if (inputStream == null) {
-                    throw new RuntimeException("opencv文件未找到");
-                }
-
+                // String libName = Core.NATIVE_LIBRARY_NAME + ".dll";
+                // InputStream inputStream = getClass().getClassLoader()
+                //         .getResourceAsStream(Win_NATIVE_LIB_DIR + libName);
+                // if (inputStream == null) {
+                //     throw new RuntimeException("opencv文件未找到");
+                // }
+                //
                 // 创建临时文件（需保留.so扩展名）
-                String[] split = libName.split("\\.");
-                Path tempFile = Files.createTempFile(split[0], "." + split[1]);
-                tempFile.toFile().deleteOnExit(); // JVM退出时删除
-
+                // String[] split = libName.split("\\.");
+                // Path tempFile = Files.createTempFile(split[0], "." + split[1]);
+                // tempFile.toFile().deleteOnExit(); // JVM退出时删除
+                //
                 // 复制资源内容到临时文件
-                Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
-                inputStream.close();
+                // Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+                // inputStream.close();
 
                 // 4. 加载临时DLL文件
-                System.load(tempFile.toAbsolutePath().toString());
+                // System.load(tempFile.toAbsolutePath().toString());
             } catch (Exception e) {
                 throw new RuntimeException("加载OpenCV DLL失败", e);
             }

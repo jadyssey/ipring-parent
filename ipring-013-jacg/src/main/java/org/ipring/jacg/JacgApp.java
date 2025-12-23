@@ -15,6 +15,8 @@ import org.ipring.jacg.process.CallChainProcessor;
 import org.ipring.jacg.process.SimpleCallChainProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.List;
 import java.util.Map;
@@ -23,8 +25,13 @@ import java.util.Map;
  * @author liuguangjin
  * @date 2025/12/13
  **/
-
+@SpringBootApplication
 public class JacgApp {
+
+    public static void main(String[] args) {
+        SpringApplication.run(JacgApp.class, args);
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(AbstractRunner.class);
 
     public static void main1(String[] args) {
@@ -32,25 +39,25 @@ public class JacgApp {
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
         javaCG2ConfigureWrapper.setOtherConfigList(
                 JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR,
-                "D:\\git\\usCode\\dbu-mod-task\\dbu-mod-task-provider\\target\\dbu-mod-task.jar"
+                "D:\\git\\usCode\\dbu-mod-delivery\\cirro-admin\\target\\dbu-mod-delivery.jar"
         );
 
         ConfigureWrapper configureWrapper = getConfigureWrapper();
-        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_DETAIL,  OutputDetailEnum.ODE_0.getDetail());
-        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_GEN_STACK_OTHER_FORMS,   Boolean.TRUE.toString());
+        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_DETAIL,  OutputDetailEnum.ODE_2.getDetail());
+        // configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_GEN_STACK_OTHER_FORMS,   Boolean.TRUE.toString());
 
         boolean success = new RunnerWriteDb(javaCG2ConfigureWrapper, configureWrapper).run();
         System.out.println("success = " + success);
     }
 
 
-    public static void main(String[] args) {
+   /* public static void main2(String[] args) {
         run();
         ConfigureWrapper configureWrapper = getConfigureWrapper();
-        configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLEE, "com.zt.dbu.mod.task.service.mapper.HubAssignTaskMapper:findInfoById");
+        configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLEE, "com.cds.apple.mapper.HubAssignTaskMapper:findInfoById");
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_RETURN_IN_MEMORY,  Boolean.TRUE.toString());
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_DETAIL,  OutputDetailEnum.ODE_2.getDetail());
-        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_GEN_STACK_OTHER_FORMS,   Boolean.TRUE.toString());
+        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_GEN_CALL_GRAPH_DEPTH_LIMIT,   "15");
 
         RunnerGenAllGraph4Callee runnerGenAllGraph4Callee = new RunnerGenAllGraph4Callee(configureWrapper);
         boolean run = runnerGenAllGraph4Callee.run();
@@ -63,7 +70,7 @@ public class JacgApp {
             }
         });
         logger.info("runnerGenAllGraph4Callee.run = {}", run);
-    }
+    }*/
 
     private static ConfigureWrapper getConfigureWrapper() {
         ConfigureWrapper configureWrapper = new ConfigureWrapper();

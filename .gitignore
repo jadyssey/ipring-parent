@@ -33,3 +33,5 @@ build/
 *.log
 /logs
 /*.xlsx
+*.md
+*.txt

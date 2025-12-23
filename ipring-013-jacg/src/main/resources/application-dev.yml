@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://10.100.12.227:63307/a_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+    username: rabee_dev
+    password: K5qHHrqF26qxmm2jLJ
+ipring:
+  task-pool:
+    core-size: 40
+    max-size: 40
+    keep-alive: 60
+    queue-capacity: 20
