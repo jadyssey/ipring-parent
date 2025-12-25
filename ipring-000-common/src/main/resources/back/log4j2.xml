@@ -6,7 +6,7 @@
         <Property name="LOG_FILE">app</Property>
         <!-- 极简日志格式（控制台/文件共用，减少解析开销） -->
         <property name="LOG_PATTERN"
-                  value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p [%c{36}:%L] - %m%n"/>
+                  value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p [%c{36}:%L] -- %m%n"/>
     </Properties>
 
     <Appenders>

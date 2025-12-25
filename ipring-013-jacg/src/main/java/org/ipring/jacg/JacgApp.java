@@ -4,27 +4,21 @@ import com.adrninistrator.jacg.common.enums.OutputDetailEnum;
 import com.adrninistrator.jacg.conf.ConfigureWrapper;
 import com.adrninistrator.jacg.conf.enums.ConfigDbKeyEnum;
 import com.adrninistrator.jacg.conf.enums.ConfigKeyEnum;
-import com.adrninistrator.jacg.conf.enums.OtherConfigFileUseSetEnum;
-import com.adrninistrator.jacg.dto.methodcall.MethodCallLineData4Ee;
-import com.adrninistrator.jacg.runner.RunnerGenAllGraph4Callee;
 import com.adrninistrator.jacg.runner.RunnerWriteDb;
 import com.adrninistrator.jacg.runner.base.AbstractRunner;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseListEnum;
-import org.ipring.jacg.process.CallChainProcessor;
-import org.ipring.jacg.process.SimpleCallChainProcessor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * @author liuguangjin
  * @date 2025/12/13
  **/
+@Slf4j
 @SpringBootApplication
 public class JacgApp {
 
@@ -32,7 +26,6 @@ public class JacgApp {
         SpringApplication.run(JacgApp.class, args);
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractRunner.class);
 
     public static void main(String[] args) {
         run();
@@ -62,9 +55,12 @@ public class JacgApp {
     }
 
     public static void run() {
+
         // 必须调用具体的日志方法，且级别≥配置的Root级别（如DEBUG）
-        logger.debug("DEBUG级日志（测试）");
-        logger.info("INFO级日志（业务）");
-        logger.error("ERROR级日志（异常）");
+        log.trace("TRACE 级别日志"); // 仅 com.example.Main 会输出（级别为 TRACE）
+        log.debug("DEBUG 级别日志"); // com.example 包下会输出（级别为 DEBUG）
+        log.info("INFO 级别日志");   // 全局输出（根日志为 INFO）
+        log.warn("WARN 级别日志");
+        log.error("ERROR 级别日志");
     }
 }
