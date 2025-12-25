@@ -6,7 +6,6 @@ import com.adrninistrator.jacg.dto.methodcall.MethodCallLineData4Ee;
 import com.adrninistrator.jacg.util.JACGJsonUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.ipring.jacg.mapper.ClassAnnotationMapper;
@@ -22,18 +21,12 @@ public class SimpleCallChainProcessor {
 
     private final ClassAnnotationMapper classAnnotationMapper;
 
-
-
-    private static final String SPLIT = "&";
+    public static final String SPLIT = "&";
     private static final List<String> CONTROLLER_ANNOTATION_LIST = Arrays.asList("org.springframework.web.bind.annotation.PostMapping", "org.springframework.web.bind.annotation.GetMapping", "org.springframework.web.bind.annotation.PutMapping", "org.springframework.web.bind.annotation.DeleteMapping");
 
     private static final String REQUEST_ANNO = "org.springframework.web.bind.annotation.RequestMapping";
     private static final String ANNO_VALUE = "value";
     private static final String PACKAGE = "com.cds";
-
-    // 类和方法名分隔符号
-    private static final String CONTROLLER_SPLIT = ":";
-    private static final Gson gson = new Gson();
 
     public List<String> extractLeafPathsByModel(List<MethodCallLineData4Ee> methodCallLineData4Ees) {
         List<String> result = new ArrayList<>();
@@ -45,21 +38,7 @@ public class SimpleCallChainProcessor {
 
             // 解析层级和内容
             int level = line.getMethodCallLevel();
-            String content = line.getActualFullMethod().trim();
-            if (!CollectionUtils.isEmpty(line.getMethodAnnotationMap())) {
-                String uri = CONTROLLER_ANNOTATION_LIST.stream().map(anno -> Optional.ofNullable(line.getMethodAnnotationMap())
-                        .map(map -> map.get(anno)).map(map -> AnnotationAttributesParseUtil.getAttributeValueFromMap(map, ANNO_VALUE, ListStringAnnotationAttribute.class))
-                        .map(ListStringAnnotationAttribute::getAttributeList).filter(CollectionUtils::isNotEmpty).map(list -> String.join(",", list)).orElse(null)).filter(Objects::nonNull).collect(Collectors.joining(","));
-                if (StringUtils.isNotBlank(uri)) {
-                    content = formatPath(uri);
-                    JacgClassAnnotationPO jacgClassAnnotationPO = classAnnotationMapper.selectByClassAndAnno(line.getCallerSimpleClassName(), REQUEST_ANNO);
-                    if (Objects.nonNull(jacgClassAnnotationPO)) {
-                        List<String> attrValue = JACGJsonUtil.getObjFromJsonStr(jacgClassAnnotationPO.getAttributeValue(), new TypeReference<List<String>>() {
-                        });
-                        content = formatPath(attrValue.stream().findFirst().orElse("")) + formatPath(uri);
-                    }
-                }
-            }
+            String content = getContent(line);
 
             // 调整栈大小
             while (stack.size() > level) {
@@ -87,6 +66,32 @@ public class SimpleCallChainProcessor {
         }
 
         return result;
+    }
+
+    /**
+     * 自定义content逻辑
+     *
+     * @param line
+     * @return
+     */
+    private String getContent(MethodCallLineData4Ee line) {
+        String content = line.getActualFullMethod().trim();
+        if (!CollectionUtils.isEmpty(line.getMethodAnnotationMap())) {
+            String uri = CONTROLLER_ANNOTATION_LIST.stream().map(anno -> Optional.ofNullable(line.getMethodAnnotationMap())
+                    .map(map -> map.get(anno)).map(map -> AnnotationAttributesParseUtil.getAttributeValueFromMap(map, ANNO_VALUE, ListStringAnnotationAttribute.class))
+                    .map(ListStringAnnotationAttribute::getAttributeList).filter(CollectionUtils::isNotEmpty).map(list -> String.join(",", list)).orElse(null)).filter(Objects::nonNull).collect(Collectors.joining(","));
+            if (StringUtils.isNotBlank(uri)) {
+                content = formatPath(uri);
+                JacgClassAnnotationPO jacgClassAnnotationPO = classAnnotationMapper.selectByClassAndAnno(line.getCallerSimpleClassName(), REQUEST_ANNO);
+                if (Objects.nonNull(jacgClassAnnotationPO)) {
+                    List<String> attrValue = JACGJsonUtil.getObjFromJsonStr(jacgClassAnnotationPO.getAttributeValue(), new TypeReference<List<String>>() {
+                    });
+                    content = formatPath(attrValue.stream().findFirst().orElse("")) + formatPath(uri);
+                }
+            }
+        }
+        content = content.replaceFirst(":", "#");
+        return content;
     }
 
 

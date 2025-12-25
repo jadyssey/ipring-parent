@@ -7,19 +7,32 @@ import com.adrninistrator.jacg.conf.enums.ConfigKeyEnum;
 import com.adrninistrator.jacg.conf.enums.OtherConfigFileUseSetEnum;
 import com.adrninistrator.jacg.dto.methodcall.MethodCallLineData4Ee;
 import com.adrninistrator.jacg.runner.RunnerGenAllGraph4Callee;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.ipring.anno.StlApiOperation;
+import org.ipring.excel.ExcelOperateUtils;
+import org.ipring.jacg.model.ApmUriVO;
+import org.ipring.jacg.model.CalleeExcelVO;
 import org.ipring.jacg.process.SimpleCallChainProcessor;
+import org.ipring.model.common.Return;
+import org.ipring.model.common.ReturnFactory;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Optional;
 /**
  * @author liuguangjin
  * @date 2025/12/23
@@ -37,24 +50,46 @@ public class AnalysisController {
 
     @PostMapping("/runnerGenAllGraph4Callee")
     @StlApiOperation(title = "向上调用链")
-    public void similarity() {
+    public Return<String> similarity(@RequestParam String excelName, @RequestParam String mapperName, @RequestParam(required = false) String depthLimit) {
         ConfigureWrapper configureWrapper = getConfigureWrapper();
-        configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLEE, "com.cds.apple.mapper.HubAssignTaskMapper:findInfoById");
+        configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLEE, mapperName);
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_RETURN_IN_MEMORY, Boolean.TRUE.toString());
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_DETAIL, OutputDetailEnum.ODE_2.getDetail());
-        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_GEN_CALL_GRAPH_DEPTH_LIMIT, "15");
+        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_GEN_CALL_GRAPH_DEPTH_LIMIT, Optional.ofNullable(depthLimit).filter(StringUtils::isNotBlank).orElse("15"));
 
         RunnerGenAllGraph4Callee runnerGenAllGraph4Callee = new RunnerGenAllGraph4Callee(configureWrapper);
         boolean run = runnerGenAllGraph4Callee.run();
         Map<String, List<MethodCallLineData4Ee>> allMethodCallLineData4EeMap = runnerGenAllGraph4Callee.getAllMethodCallLineData4EeMap();
+        List<CalleeExcelVO> calleeExcelList = new ArrayList<>();
         allMethodCallLineData4EeMap.forEach((key, list) -> {
             List<String> result = simpleCallChainProcessor.extractLeafPathsByModel(list);
-            System.out.println("叶子节点的完整路径:");
             for (String chain : result) {
-                System.out.println(chain);
+                calleeExcelList.add(CalleeExcelVO.of(chain));
             }
         });
+        SXSSFWorkbook sxssfWorkbook = ExcelOperateUtils.exportToBigDataFile(calleeExcelList);
+        String fileNameResp = writeLocalPath("Callee_" + excelName, sxssfWorkbook);
         log.info("runnerGenAllGraph4Callee.run = {}", run);
+        if (run) {
+            return ReturnFactory.success(fileNameResp);
+        }
+        return ReturnFactory.error();
+    }
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    @PostMapping("/apmApi")
+    @StlApiOperation(title = "apm解析")
+    @SneakyThrows
+    public Return<String> apmApi(@RequestBody ApmUriVO apm) {
+        // 解析JSON到List<ApiMetric>
+        List<ApmUriVO> metricList = OBJECT_MAPPER.readValue(apm.getName(), new TypeReference<List<ApmUriVO>>() {
+        });
+        System.out.println("接口地址如下");
+        metricList.stream().filter(metric -> !metric.getName().contains(".")).forEach(metric -> {
+            System.out.println(metric.getName().replace("SpringController", ""));
+        });
+        return ReturnFactory.success();
     }
 
     private static ConfigureWrapper getConfigureWrapper() {
@@ -67,5 +102,24 @@ public class AnalysisController {
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USERNAME, "rabee_dev");
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_PASSWORD, "K5qHHrqF26qxmm2jLJ");
         return configureWrapper;
+    }
+
+    public static String writeLocalPath(String namePrefix, SXSSFWorkbook workbook) {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-HH-mm-ss");
+        String currentTime = dtf.format(LocalDateTime.now());
+        String name = namePrefix + currentTime;
+        try (FileOutputStream outputStream = new FileOutputStream(name + ".xlsx")) {
+            workbook.write(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            // 关闭 SXSSFWorkbook，释放资源
+            try {
+                workbook.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return name;
     }
 }

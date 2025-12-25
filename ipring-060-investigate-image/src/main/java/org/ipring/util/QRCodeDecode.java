@@ -3,11 +3,6 @@ package org.ipring.util;
 import cn.hutool.extra.qrcode.BufferedImageLuminanceSource;
 import com.google.zxing.*;
 import com.google.zxing.common.HybridBinarizer;
-import org.opencv.core.*;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.CLAHE;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.utils.Converters;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -18,7 +13,7 @@ import java.util.*;
 public class QRCodeDecode {
 
     // 定位后截取出来的二维码图片放大倍数
-    private static final int TIMES = 4;
+    /*private static final int TIMES = 4;
 
     // 图像处理后的图片存放地址
     private static final String PATH = "D:\\output\\cc.jpg";
@@ -27,9 +22,9 @@ public class QRCodeDecode {
         decode("D:\\img");
     }
 
-    /**
+    *//**
      * @param directoryPath 要进行二维码识别的图片所在文件夹目录路径
-     */
+     *//*
     public static void decode(String directoryPath) {
         int sum = 0;        // 统计本次识别的总张数
         int count = 0;        // 统计识别成功的张数
@@ -40,18 +35,18 @@ public class QRCodeDecode {
         File[] vouchers = file.listFiles();
         for (File voucher : vouchers) {
             sum++;
-            /**
+            *//**
              * 第一次识别，直接识别，若失败，则进行图像二维码定位处理
-             */
+             *//*
             String qRcode = decodeQRcode(voucher.getAbsolutePath());
             if (qRcode == null || "0".equals(qRcode)) {
                 // 对图像进行处理，定位图像中的二维码，将其截取出来
                 findQRcodeAndCut(voucher.getAbsolutePath());
                 File file1 = new File(PATH);
                 if (file1.exists()) {
-                    /**
+                    *//**
                      * 第二次识别，若失败，则将定位后截取的二维码图片进行二值化处理再识别
-                     */
+                     *//*
                     qRcode = decodeQRcode(PATH);
                     if (qRcode == null || "".equals(qRcode)) {
                         Mat mat = Imgcodecs.imread(PATH, 1);
@@ -67,18 +62,18 @@ public class QRCodeDecode {
                         Imgproc.threshold(mat, mat2, 205, 255, Imgproc.THRESH_OTSU);
                         // 生成二值化后的图像
                         Imgcodecs.imwrite(PATH, mat2);
-                        /**
+                        *//**
                          * 第三次识别，若失败，则将图像进行限制对比度的自适应直方图均衡化处理
-                         */
+                         *//*
                         qRcode = decodeQRcode(PATH);
                         if (qRcode == null || "".equals(qRcode)) {
                             // 限制对比度的自适应直方图均衡化
                             CLAHE clahe = Imgproc.createCLAHE(2, new Size(8, 8));
                             clahe.apply(mat, mat);
                             Imgcodecs.imwrite(PATH, mat);
-                            /**
+                            *//**
                              * 第四次识别，失败就标红打印失败的图片名称
-                             */
+                             *//*
                             qRcode = decodeQRcode(PATH);
                             if (qRcode == null || "".equals(qRcode)) {
                                 System.err.println(voucher.getName());
@@ -118,7 +113,7 @@ public class QRCodeDecode {
         Mat src = Imgcodecs.imread(filePath, 1);
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         List<MatOfPoint> markContours = new ArrayList<MatOfPoint>();
-        /** 图片太小就放大 **/
+        *//** 图片太小就放大 **//*
         if (src.width() * src.height() < 90000) {
             Imgproc.resize(src, src, new Size(800, 600));
         }
@@ -137,23 +132,23 @@ public class QRCodeDecode {
             double w = rotRect.size.width;
             double h = rotRect.size.height;
             double rate = Math.max(w, h) / Math.min(w, h);
-            /***
+            *//***
              * 长短轴比小于1.3，总面积大于60
-             */
+             *//*
             if (rate < 1.3 && w < src_gray.cols() / 4 && h < src_gray.rows() / 4
                     && Imgproc.contourArea(contours.get(i)) > 60) {
-                /***
+                *//***
                  * 计算层数，二维码角框有五层轮廓（有说六层），这里不计自己这一层，有4个以上子轮廓则标记这一点
-                 */
+                 *//*
                 double[] ds = hierarchy.get(0, i);
                 if (ds != null && ds.length > 3) {
                     int count = 0;
-                    if (ds[3] == -1) {/** 最外层轮廓排除 */
+                    if (ds[3] == -1) {*//** 最外层轮廓排除 *//*
                         continue;
                     }
-                    /***
+                    *//***
                      * 计算所有子轮廓数量
-                     */
+                     *//*
                     while ((int) ds[2] != -1) {
                         ++count;
                         ds = hierarchy.get(0, (int) ds[2]);
@@ -165,11 +160,11 @@ public class QRCodeDecode {
             }
         }
 
-        /***
+        *//***
          * 二维码有三个角轮廓，正常需要定位三个角才能确定坐标，但由于公司使用的凭证干扰因素较少，故当识别到两个点的时候也将二维码定位出来；
          * 当识别到三个点时,根据三个点定位可以确定二维码位置和形状，根据三个点组成三角形形状最大角角度判断是不是二维码的三个角
          * 当识别到两个点时，取两个点中间点，往四周扩散截取 当小于两个点时，直接返回
-         */
+         *//*
         if (markContours.size() == 0) {
         } else if (markContours.size() == 1) {
             capture(markContours.get(0), src);
@@ -194,12 +189,12 @@ public class QRCodeDecode {
         }
     }
 
-    /**
+    *//**
      * 针对对比度不高的图片，只能识别到一个角的，直接以该点为中心截取
      *
      * @param matOfPoint
      * @param src
-     */
+     *//*
     private static void capture(MatOfPoint matOfPoint, Mat src) {
         Point centerPoint = centerCal(matOfPoint);
         int width = 200;
@@ -213,12 +208,12 @@ public class QRCodeDecode {
         Imgcodecs.imwrite(PATH, dstRoi);
     }
 
-    /**
+    *//**
      * 当只识别到二维码的两个定位点时，根据两个点的中点进行定位
      *
      * @param threePointList
      * @param src
-     */
+     *//*
     private static void capture(List<MatOfPoint> threePointList, Mat src) {
         Point p1 = centerCal(threePointList.get(0));
         Point p2 = centerCal(threePointList.get(1));
@@ -236,13 +231,13 @@ public class QRCodeDecode {
     }
 
 
-    /**
+    *//**
      * 对图片进行矫正，裁剪
      *
      * @param contours
      * @param src
      * @param idx
-     */
+     *//*
     private static void capture(List<MatOfPoint> contours, Mat src, String idx) {
         Point[] pointthree = new Point[3];
         for (int i = 0; i < 3; i++) {
@@ -255,9 +250,9 @@ public class QRCodeDecode {
         ca[1] = pointthree[1].y - pointthree[0].y;
         cb[0] = pointthree[2].x - pointthree[0].x;
         cb[1] = pointthree[2].y - pointthree[0].y;
-        /*
+        *//*
          * angle1，angle2，angle3分别对应识别到的二维码定位角的三个点所组成三角形的三个角
-         */
+         *//*
         double angle1 = 180 / 3.1415 * Math.acos((ca[0] * cb[0] + ca[1] * cb[1])
                 / (Math.sqrt(ca[0] * ca[0] + ca[1] * ca[1]) * Math.sqrt(cb[0] * cb[0] + cb[1] * cb[1])));
         double ccw1;
@@ -364,12 +359,12 @@ public class QRCodeDecode {
         Imgcodecs.imwrite(PATH, dstRoi);
     }
 
-    /**
+    *//**
      * 将Mat转换为流,为了方便测试，代码中没有将Mat转换成流进行识别，若有需要，可以不落地文件
      *
      * @param m
      * @return
-     */
+     *//*
     public static BufferedImage toBufferedImage(Mat m) {
         int type = BufferedImage.TYPE_BYTE_GRAY;
 
@@ -388,12 +383,12 @@ public class QRCodeDecode {
         return image;
     }
 
-    /**
+    *//**
      * 获取轮廓的中心坐标
      *
      * @param matOfPoint
      * @return
-     */
+     *//*
     private static Point centerCal(MatOfPoint matOfPoint) {
         double centerx = 0, centery = 0;
         MatOfPoint2f mat2f = new MatOfPoint2f(matOfPoint.toArray());
@@ -406,7 +401,7 @@ public class QRCodeDecode {
         return point;
     }
 
-    /**
+    *//**
      * 解析读取二维码
      * 先使用ZXING二维码识别，若失败，使用OPENCV自带的二维码识别
      * 个人测试，两者的识别率差不多，都不尽人意，但一起使用还是可以略微提高一点识别率，毕竟实现算法不一样
@@ -415,7 +410,7 @@ public class QRCodeDecode {
      * @param qrCodePath 二维码图片路径
      * @return 成功返回二维码识别结果，失败返回null
      * @throws Exception
-     */
+     *//*
     public static String decodeQRcode(String qrCodePath) {
 
 		String qrCodeText = null;
@@ -432,6 +427,6 @@ public class QRCodeDecode {
 			// qrCodeText = detector.detectAndDecode(Imgcodecs.imread(qrCodePath, 1));
 		}
 		return qrCodeText;
-    }
+    }*/
 }
 

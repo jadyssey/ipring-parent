@@ -3,10 +3,6 @@ package org.ipring.util;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.extra.qrcode.QrCodeUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.opencv.core.*;
-import org.opencv.imgproc.CLAHE;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.utils.Converters;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -20,38 +16,38 @@ import java.util.Objects;
  */
 public class CustomDecodeUtil {
 
-    private static final int BIGGER_TIMES = 2;
+    /*private static final int BIGGER_TIMES = 2;
     private static final String TEMP_PATH = "D:\\img\\tmp\\" + "temp.jpg";
 
-    /**
+    *//**
      * 解析读取二维码
      * 先使用ZXING二维码识别，若失败，使用OPENCV自带的二维码识别
      * 但不进行图像优化效果都不怎么好）
      *
      * @param matImg 二维码图片数据
      * @return 成功返回二维码识别结果，失败返回null
-     */
+     *//*
     public static String decodeQRcode(WeChatQRCodeTool weChatQRCodeTool, Mat matImg) {
         String qrCodeText = null;
         BufferedImage bufferedImage = mat2img(matImg);
         qrCodeText = QrCodeUtil.decode(bufferedImage);
-        /*try {
+        *//*try {
             // 将 BufferedImage 转换为 BinaryBitmap
             LuminanceSource source = new BufferedImageLuminanceSource(bufferedImage);
             BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(source));
             Result result = new MultiFormatReader().decode(binaryBitmap);
         } catch (Exception e) {
             qrCodeText = weChatQRCodeTool.decode(bufferedImage);
-        }*/
+        }*//*
         if (StringUtils.isBlank(qrCodeText)) {
             qrCodeText = weChatQRCodeTool.decode(bufferedImage);
         }
         return qrCodeText;
     }
 
-    /**
+    *//**
      * Mat转换为BufferedImage
-     */
+     *//*
     public static BufferedImage mat2img(Mat mat) {
         int dataSize = mat.cols() * mat.rows() * (int) mat.elemSize();
         byte[] data = new byte[dataSize];
@@ -70,9 +66,9 @@ public class CustomDecodeUtil {
     }
 
 
-    /**
+    *//**
      * 多轮识别
-     */
+     *//*
     public static String decode(BufferedImage bufferedImage) {
         Mat image = null;
         Mat mat = null;
@@ -136,11 +132,11 @@ public class CustomDecodeUtil {
     }
 
 
-    /**
+    *//**
      * 二维码识别与截取
      *
      * @param src
-     */
+     *//*
     public static List<Mat> findQRCodeAndCut(Mat src) {
         List<Mat> captureResp = new ArrayList<>();
 
@@ -189,11 +185,11 @@ public class CustomDecodeUtil {
             }
         }
 
-        /***
+        *//***
          * 二维码有三个角轮廓，正常需要定位三个角才能确定坐标，但在这里当识别到两个点的时候也将二维码定位出来：
          *  当识别到三个点时,根据三个点定位可以确定二维码位置和形状，根据三个点组成三角形形状最大角角度判断是不是二维码的三个角
          *  当识别到两个点时，取两个点中间点，往四周扩散截取 当小于两个点时，直接返回
-         */
+         *//*
         if (markContours.size() == 0) {
             return captureResp;
         } else if (markContours.size() == 1) {
@@ -221,12 +217,12 @@ public class CustomDecodeUtil {
         return captureResp;
     }
 
-    /**
+    *//**
      * 针对对比度不高的图片，只能识别到一个角的，直接以该点为中心截取
      *
      * @param matOfPoint
      * @param src
-     */
+     *//*
     private static Mat capture(MatOfPoint matOfPoint, Mat src) {
         Point centerPoint = centerCal(matOfPoint);
         int width = 200;
@@ -241,12 +237,12 @@ public class CustomDecodeUtil {
         return dstRoi;
     }
 
-    /**
+    *//**
      * 当只识别到二维码的两个定位点时，根据两个点的中点进行定位
      *
      * @param threePointList
      * @param src
-     */
+     *//*
     private static Mat capture(List<MatOfPoint> threePointList, Mat src) {
         Point p1 = centerCal(threePointList.get(0));
         Point p2 = centerCal(threePointList.get(1));
@@ -266,13 +262,13 @@ public class CustomDecodeUtil {
     }
 
 
-    /**
+    *//**
      * 对图片进行矫正，裁剪
      *
      * @param contours
      * @param src
      * @param idx
-     */
+     *//*
     private static Mat capture(List<MatOfPoint> contours, Mat src, String idx) {
         Point[] pointthree = new Point[3];
         for (int i = 0; i < 3; i++) {
@@ -390,12 +386,12 @@ public class CustomDecodeUtil {
         return dstRoi;
     }
 
-    /**
+    *//**
      * 获取轮廓的中心坐标
      *
      * @param matOfPoint
      * @return
-     */
+     *//*
     private static Point centerCal(MatOfPoint matOfPoint) {
         double centerx = 0, centery = 0;
         MatOfPoint2f mat2f = new MatOfPoint2f(matOfPoint.toArray());
@@ -406,5 +402,5 @@ public class CustomDecodeUtil {
         centery = ((vertices[0].y + vertices[1].y) / 2 + (vertices[2].y + vertices[3].y) / 2) / 2;
         Point point = new Point(centerx, centery);
         return point;
-    }
+    }*/
 }
