@@ -48,6 +48,15 @@ public class AnalysisController {
 
     private final SimpleCallChainProcessor simpleCallChainProcessor;
 
+    @GetMapping("/logTest")
+    public void logTest() {
+        log.trace("TRACE 级别日志");
+        log.debug("DEBUG 级别日志");
+        log.info("INFO 级别日志");
+        log.warn("WARN 级别日志");
+        log.error("ERROR 级别日志");
+    }
+
     @PostMapping("/runnerGenAllGraph4Callee")
     @StlApiOperation(title = "向上调用链")
     public Return<String> similarity(@RequestParam String excelName, @RequestParam String mapperName, @RequestParam(required = false) String depthLimit) {
