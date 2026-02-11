@@ -26,7 +26,7 @@ public class SimpleCallChainProcessor {
 
     private static final String REQUEST_ANNO = "org.springframework.web.bind.annotation.RequestMapping";
     private static final String ANNO_VALUE = "value";
-    private static final String PACKAGE = "com.cds";
+    public static final String PACKAGE = "com.cds";
 
     public List<String> extractLeafPathsByModel(List<MethodCallLineData4Ee> methodCallLineData4Ees) {
         List<String> result = new ArrayList<>();

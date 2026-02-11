@@ -4,6 +4,7 @@ import com.adrninistrator.jacg.common.enums.OutputDetailEnum;
 import com.adrninistrator.jacg.conf.ConfigureWrapper;
 import com.adrninistrator.jacg.conf.enums.ConfigDbKeyEnum;
 import com.adrninistrator.jacg.conf.enums.ConfigKeyEnum;
+import com.adrninistrator.jacg.el.enums.ElConfigEnum;
 import com.adrninistrator.jacg.runner.RunnerWriteDb;
 import com.adrninistrator.jacg.runner.base.AbstractRunner;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
@@ -22,12 +23,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class JacgApp {
 
-    public static void main1(String[] args) {
+    public static void main(String[] args) {
         SpringApplication.run(JacgApp.class, args);
     }
 
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
         run();
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
         javaCG2ConfigureWrapper.setOtherConfigList(
@@ -51,6 +52,10 @@ public class JacgApp {
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_URL, "jdbc:mysql://10.100.12.227:63307/a_jacg_task?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true");
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USERNAME, "rabee_dev");
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_PASSWORD, "K5qHHrqF26qxmm2jLJ");
+        configureWrapper.setElConfigText(
+                ElConfigEnum.ECE_GEN_ALL_CALL_GRAPH_IGNORE_METHOD_CALL,
+                "!er_package_name.startsWith('com.cds')"
+        );
         return configureWrapper;
     }
 

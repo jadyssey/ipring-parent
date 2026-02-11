@@ -6,6 +6,7 @@ import com.adrninistrator.jacg.conf.enums.ConfigDbKeyEnum;
 import com.adrninistrator.jacg.conf.enums.ConfigKeyEnum;
 import com.adrninistrator.jacg.conf.enums.OtherConfigFileUseSetEnum;
 import com.adrninistrator.jacg.dto.methodcall.MethodCallLineData4Ee;
+import com.adrninistrator.jacg.el.enums.ElConfigEnum;
 import com.adrninistrator.jacg.runner.RunnerGenAllGraph4Callee;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,6 +66,8 @@ public class AnalysisController {
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_RETURN_IN_MEMORY, Boolean.TRUE.toString());
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_DETAIL, OutputDetailEnum.ODE_2.getDetail());
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_GEN_CALL_GRAPH_DEPTH_LIMIT, Optional.ofNullable(depthLimit).filter(StringUtils::isNotBlank).orElse("15"));
+        // configureWrapper.setElConfigText(ElConfigEnum.ECE_GEN_ALL_CALL_GRAPH_IGNORE_METHOD_CALL, "ee_package_name != 'com.cds'");
+
 
         RunnerGenAllGraph4Callee runnerGenAllGraph4Callee = new RunnerGenAllGraph4Callee(configureWrapper);
         boolean run = runnerGenAllGraph4Callee.run();

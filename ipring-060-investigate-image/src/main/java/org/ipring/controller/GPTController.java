@@ -268,8 +268,8 @@ public class GPTController {
                         for (String imgUrl : chatBody.getImageList()) {
                             try {
                                 BufferedImage bufferedImage = ImageIO.read(new URL(imgUrl));
-                                String decodeWaybillNo = CustomDecodeUtil.decode(bufferedImage);
-                                if (pod.getWaybillNo().equalsIgnoreCase(decodeWaybillNo)) {
+                                // String decodeWaybillNo = CustomDecodeUtil.decode(bufferedImage);
+                                /*if (pod.getWaybillNo().equalsIgnoreCase(decodeWaybillNo)) {
                                     pod.setQrCodeUrl(imgUrl);
                                     pod.setQrCodeFlag("TRUE");
                                     break;
@@ -280,7 +280,7 @@ public class GPTController {
                                     pod.setQrCodeUrl(decodeWaybillNo + "#" + imgUrl);
                                 } else {
                                     pod.setQrCodeFlag("FALSE");
-                                }
+                                }*/
                             } catch (Exception e) {
                                 pod.setQrCodeFlag("ERROR");
                                 // 记录异常日志，可以根据实际需求调整处理方式

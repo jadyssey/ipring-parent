@@ -18,7 +18,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
-@Configuration
+// @Configuration
 @Slf4j
 public class OpenCVNativeLoader {
 
