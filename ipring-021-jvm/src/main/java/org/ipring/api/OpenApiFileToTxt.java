@@ -14,15 +14,21 @@ import java.nio.file.Paths;
 /**
  * 解析OpenApi文件并输出所有接口URI
  */
+
+/**
+ * 解析JSON数组，提取所有接口name字段并输出到TXT
+ */
 public class OpenApiFileToTxt {
     public static void main(String[] args) {
-        String openApiFilePath = "D:\\appData\\openapi.json"; // OpenAPI文件路径
-        String txtFilePath = "paths_from_file.txt"; // 输出TXT路径
+        // 你的JSON文件路径
+        String jsonFilePath = "D:\\downloads\\response-api.json";
+        // 输出文件路径
+        String txtFilePath = "paths_from_file.txt";
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = objectMapper.readTree(new File(openApiFilePath));
-            JsonNode pathsNode = rootNode.path("paths");
+            // 读取根节点（JSON数组）
+            JsonNode rootArray = objectMapper.readTree(new File(jsonFilePath));
 
             try (BufferedWriter writer = new BufferedWriter(
                     new OutputStreamWriter(
@@ -30,21 +36,21 @@ public class OpenApiFileToTxt {
                             StandardCharsets.UTF_8
                     )
             )) {
-                writer.write("从OpenAPI文件解析的paths路径：");
+                writer.write("从JSON文件解析的接口URI：");
                 writer.newLine();
                 writer.write("-------------------------------");
                 writer.newLine();
 
-                pathsNode.fields().forEachRemaining(entry -> {
-                    try {
-                        writer.write(entry.getKey());
-                        writer.newLine();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
+                // 遍历数组每一项
+                for (JsonNode node : rootArray) {
+                    // 提取 name 字段
+                    String name = node.path("name").asText();
+                    if (name.contains(".") || name.contains("*") || name.startsWith("URI")) continue;
+                    writer.write(name);
+                    writer.newLine();
+                }
 
-                System.out.println("路径已写入TXT：" + txtFilePath);
+                System.out.println("解析完成！接口URI已写入文件：" + txtFilePath);
             }
 
         } catch (IOException e) {

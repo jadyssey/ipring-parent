@@ -23,17 +23,17 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class JacgApp {
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
         SpringApplication.run(JacgApp.class, args);
     }
 
 
-    public static void main1(String[] args) {
+    public static void main(String[] args) {
         run();
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
         javaCG2ConfigureWrapper.setOtherConfigList(
                 JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR,
-                "D:\\git\\usCode\\dbu-mod-task\\dbu-mod-task-provider\\target\\dbu-mod-task.jar"
+                "D:\\git\\usCode\\dbu-mod-delivery\\cirro-admin\\target\\dbu-mod-delivery.jar"
         );
 
         ConfigureWrapper configureWrapper = getConfigureWrapper();
@@ -49,13 +49,13 @@ public class JacgApp {
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_THREAD_NUM, "50");
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USE_H2, Boolean.FALSE.toString());
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_DRIVER_NAME, "com.mysql.cj.jdbc.Driver");
-        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_URL, "jdbc:mysql://10.100.12.227:63307/a_jacg_task?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true");
+        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_URL, "jdbc:mysql://10.100.12.227:63307/a_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true");
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USERNAME, "rabee_dev");
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_PASSWORD, "K5qHHrqF26qxmm2jLJ");
-        configureWrapper.setElConfigText(
-                ElConfigEnum.ECE_GEN_ALL_CALL_GRAPH_IGNORE_METHOD_CALL,
-                "!er_package_name.startsWith('com.cds')"
-        );
+        // configureWrapper.setElConfigText(
+        //         ElConfigEnum.ECE_GEN_ALL_CALL_GRAPH_IGNORE_METHOD_CALL,
+        //         "!er_package_name.startsWith('com.cds')"
+        // );
         return configureWrapper;
     }
 
