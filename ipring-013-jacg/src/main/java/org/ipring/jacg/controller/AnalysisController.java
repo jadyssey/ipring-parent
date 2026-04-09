@@ -6,9 +6,7 @@ import com.adrninistrator.jacg.conf.enums.ConfigDbKeyEnum;
 import com.adrninistrator.jacg.conf.enums.ConfigKeyEnum;
 import com.adrninistrator.jacg.conf.enums.OtherConfigFileUseSetEnum;
 import com.adrninistrator.jacg.dto.methodcall.MethodCallLineData4Ee;
-import com.adrninistrator.jacg.el.enums.ElConfigEnum;
 import com.adrninistrator.jacg.runner.RunnerGenAllGraph4Callee;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +28,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+
 /**
  * @author liuguangjin
  * @date 2025/12/23
@@ -60,7 +56,7 @@ public class AnalysisController {
 
     @PostMapping("/runnerGenAllGraph4Callee")
     @StlApiOperation(title = "向上调用链")
-    public Return<String> similarity(@RequestParam String excelName, @RequestParam String mapperName, @RequestParam(required = false) String depthLimit) {
+    public Return<String> similarity(@RequestParam String excelName, @RequestBody Set<String> mapperName, @RequestParam(required = false) String depthLimit) {
         ConfigureWrapper configureWrapper = getConfigureWrapper();
         configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLEE, mapperName);
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_RETURN_IN_MEMORY, Boolean.TRUE.toString());
@@ -93,14 +89,17 @@ public class AnalysisController {
     @PostMapping("/apmApi")
     @StlApiOperation(title = "apm解析")
     @SneakyThrows
-    public Return<String> apmApi(@RequestBody ApmUriVO apm) {
+    public Return<String> apmApi(@RequestBody List<ApmUriVO> apm) {
         // 解析JSON到List<ApiMetric>
-        List<ApmUriVO> metricList = OBJECT_MAPPER.readValue(apm.getName(), new TypeReference<List<ApmUriVO>>() {
+        long now = System.currentTimeMillis();
+        log.info("{} apm 解析接口如下", now);
+        apm.stream()
+            .filter(metric -> !metric.getName().contains(".") && !metric.getName().startsWith("URI") && !metric.getName().startsWith("NormalizedUri"))
+            .forEach(metric -> {
+                String name = metric.getName().replace("SpringController", "").replace(" (POST)", "").replace(" (PUT)", "").replace(" (DELETE)", "");
+                System.out.println(name);
         });
-        System.out.println("接口地址如下");
-        metricList.stream().filter(metric -> !metric.getName().contains(".")).forEach(metric -> {
-            System.out.println(metric.getName().replace("SpringController", ""));
-        });
+        log.info("{} apm 解析接口如下", now);
         return ReturnFactory.success();
     }
 

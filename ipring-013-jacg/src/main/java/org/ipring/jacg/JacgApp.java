@@ -23,12 +23,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class JacgApp {
 
-    public static void main1(String[] args) {
+    public static void main(String[] args) {
         SpringApplication.run(JacgApp.class, args);
     }
 
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
         run();
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
         javaCG2ConfigureWrapper.setOtherConfigList(
