@@ -2,6 +2,7 @@ package org.ipring.jacg.process;
 
 import com.adrninistrator.jacg.annotation.util.AnnotationAttributesParseUtil;
 import com.adrninistrator.jacg.dto.annotation.ListStringAnnotationAttribute;
+import com.adrninistrator.jacg.dto.annotation.StringAnnotationAttribute;
 import com.adrninistrator.jacg.dto.methodcall.MethodCallLineData4Ee;
 import com.adrninistrator.jacg.util.JACGJsonUtil;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -23,6 +24,7 @@ public class SimpleCallChainProcessor {
 
     public static final String SPLIT = "&";
     private static final List<String> CONTROLLER_ANNOTATION_LIST = Arrays.asList("org.springframework.web.bind.annotation.RequestMapping", "org.springframework.web.bind.annotation.PostMapping", "org.springframework.web.bind.annotation.GetMapping", "org.springframework.web.bind.annotation.PutMapping", "org.springframework.web.bind.annotation.DeleteMapping");
+    private static final List<String> JOB_ANNOTATION_LIST = Arrays.asList("com.zt.digital.common.job.annotation.ZtJob");
 
     private static final String REQUEST_ANNO = "org.springframework.web.bind.annotation.RequestMapping";
     private static final String ANNO_VALUE = "value";
@@ -32,11 +34,22 @@ public class SimpleCallChainProcessor {
         List<String> result = new ArrayList<>();
         Stack<CallNode> stack = new Stack<>();
 
+        int lastLevel = 0;
+        boolean lastPass = false;
         for (MethodCallLineData4Ee line : methodCallLineData4Ees) {
             if (Objects.isNull(line)) continue;
-            if (!line.getActualFullMethod().startsWith(PACKAGE)) continue;
+            if (!line.getActualFullMethod().startsWith(PACKAGE)) {
+                lastPass = true;
+                continue;
+            }
+            if (lastPass && lastLevel + 1 < line.getMethodCallLevel()) {
+                // 上一次是被抛弃的，且当前层级不是上一次的下层
+                continue;
+            }
 
             // 解析层级和内容
+            lastPass = true;
+            lastLevel = line.getMethodCallLevel();
             int level = line.getMethodCallLevel();
             String content = getContent(line);
 
@@ -80,12 +93,23 @@ public class SimpleCallChainProcessor {
             String uri = CONTROLLER_ANNOTATION_LIST.stream().map(anno -> Optional.ofNullable(line.getMethodAnnotationMap())
                     .map(map -> map.get(anno)).map(map -> AnnotationAttributesParseUtil.getAttributeValueFromMap(map, ANNO_VALUE, ListStringAnnotationAttribute.class))
                     .map(ListStringAnnotationAttribute::getAttributeList).filter(CollectionUtils::isNotEmpty).map(list -> String.join(",", list)).orElse(null)).filter(Objects::nonNull).collect(Collectors.joining(","));
-            content = formatPath(uri);
-            JacgClassAnnotationPO jacgClassAnnotationPO = classAnnotationMapper.selectByClassAndAnno(line.getCallerSimpleClassName(), REQUEST_ANNO);
-            if (Objects.nonNull(jacgClassAnnotationPO)) {
-                List<String> attrValue = JACGJsonUtil.getObjFromJsonStr(jacgClassAnnotationPO.getAttributeValue(), new TypeReference<List<String>>() {
-                });
-                content = formatPath(attrValue.stream().findFirst().orElse("")) + formatPath(uri);
+            // 存在注解但是没有配置value
+            boolean havingMapping = CONTROLLER_ANNOTATION_LIST.stream().anyMatch(anno -> Objects.nonNull(Optional.ofNullable(line.getMethodAnnotationMap()).map(map -> map.get(anno)).orElse(null)));
+            if (StringUtils.isNotBlank(uri) || havingMapping) {
+                content = formatPath(uri);
+                JacgClassAnnotationPO jacgClassAnnotationPO = classAnnotationMapper.selectByClassAndAnno(line.getCallerSimpleClassName(), REQUEST_ANNO);
+                if (Objects.nonNull(jacgClassAnnotationPO)) {
+                    List<String> attrValue = JACGJsonUtil.getObjFromJsonStr(jacgClassAnnotationPO.getAttributeValue(), new TypeReference<List<String>>() {
+                    });
+                    content = formatPath(attrValue.stream().findFirst().orElse("")) + formatPath(uri);
+                }
+            }
+
+            String jobName = JOB_ANNOTATION_LIST.stream().map(anno -> Optional.ofNullable(line.getMethodAnnotationMap())
+                    .map(map -> map.get(anno)).map(map -> AnnotationAttributesParseUtil.getAttributeValueFromMap(map, ANNO_VALUE, StringAnnotationAttribute.class))
+                    .map(StringAnnotationAttribute::getAttributeString).filter(StringUtils::isNotEmpty).map(list -> String.join(",", list)).orElse(null)).filter(Objects::nonNull).collect(Collectors.joining(","));
+            if (StringUtils.isNotBlank(jobName)) {
+                content = "@ZtJob(\"" + jobName + "\")";
             }
         }
         content = content.replaceFirst(":", "#");
