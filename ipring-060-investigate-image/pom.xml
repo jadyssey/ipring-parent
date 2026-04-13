@@ -149,11 +149,11 @@
 
 
         <!-- 加载opencv包 需要推到远程仓库 -->
-        <dependency>
+        <!-- <dependency>
             <groupId>org.opencv</groupId>
             <artifactId>opencv</artifactId>
             <version>4.5.3</version>
-        </dependency>
+        </dependency> -->
 
         <dependency>
             <groupId>org.bytedeco</groupId>

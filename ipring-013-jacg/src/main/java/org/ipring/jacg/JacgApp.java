@@ -9,6 +9,7 @@ import com.adrninistrator.jacg.runner.RunnerWriteDb;
 import com.adrninistrator.jacg.runner.base.AbstractRunner;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseListEnum;
+import com.adrninistrator.javacg2.el.enums.CommonElAllowedVariableEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,10 +53,11 @@ public class JacgApp {
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_URL, "jdbc:mysql://10.100.12.227:63307/a_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true");
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USERNAME, "rabee_dev");
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_PASSWORD, "K5qHHrqF26qxmm2jLJ");
-        // configureWrapper.setElConfigText(
-        //         ElConfigEnum.ECE_GEN_ALL_CALL_GRAPH_IGNORE_METHOD_CALL,
-        //         "!er_package_name.startsWith('com.cds')"
-        // );
+        // 排除非项目包路径的调用分析
+        configureWrapper.setElConfigText(
+                ElConfigEnum.ECE_GEN_ALL_CALL_GRAPH_IGNORE_METHOD_CALL,
+                "!string.startsWith(" + CommonElAllowedVariableEnum.EAVE_MC_EE_PACKAGE_NAME.getVariableName() + ", 'com.cds')"
+        );
         return configureWrapper;
     }
 
