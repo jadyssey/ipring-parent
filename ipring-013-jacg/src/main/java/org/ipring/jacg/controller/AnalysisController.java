@@ -1,5 +1,6 @@
 package org.ipring.jacg.controller;
 
+import cn.hutool.json.JSONUtil;
 import com.adrninistrator.jacg.common.enums.OutputDetailEnum;
 import com.adrninistrator.jacg.conf.ConfigureWrapper;
 import com.adrninistrator.jacg.conf.enums.ConfigDbKeyEnum;
@@ -10,7 +11,6 @@ import com.adrninistrator.jacg.runner.RunnerGenAllGraph4Callee;
 import com.adrninistrator.jacg.runner.RunnerWriteDb;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseListEnum;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -21,6 +21,7 @@ import org.ipring.anno.StlApiOperation;
 import org.ipring.excel.ExcelOperateUtils;
 import org.ipring.jacg.model.ApmUriVO;
 import org.ipring.jacg.model.CalleeExcelVO;
+import org.ipring.jacg.model.ResponseDTO;
 import org.ipring.jacg.process.SimpleCallChainProcessor;
 import org.ipring.model.common.Return;
 import org.ipring.model.common.ReturnFactory;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author liuguangjin
@@ -48,15 +50,6 @@ public class AnalysisController {
 
     private final SimpleCallChainProcessor simpleCallChainProcessor;
 
-    @GetMapping("/logTest")
-    public void logTest() {
-        log.trace("TRACE 级别日志");
-        log.debug("DEBUG 级别日志");
-        log.info("INFO 级别日志");
-        log.warn("WARN 级别日志");
-        log.error("ERROR 级别日志");
-    }
-
     @PostMapping("/runnerGenAllGraph4Callee")
     @StlApiOperation(title = "向上调用链")
     public Return<String> similarity(@RequestParam String dbName, @RequestParam String excelName, @RequestBody Set<String> mapperName, @RequestParam(required = false) String depthLimit) {
@@ -66,7 +59,6 @@ public class AnalysisController {
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_DETAIL, OutputDetailEnum.ODE_2.getDetail());
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_GEN_CALL_GRAPH_DEPTH_LIMIT, Optional.ofNullable(depthLimit).filter(StringUtils::isNotBlank).orElse("15"));
         // configureWrapper.setElConfigText(ElConfigEnum.ECE_GEN_ALL_CALL_GRAPH_IGNORE_METHOD_CALL, "ee_package_name != 'com.cds'");
-
 
         RunnerGenAllGraph4Callee runnerGenAllGraph4Callee = new RunnerGenAllGraph4Callee(configureWrapper);
         boolean run = runnerGenAllGraph4Callee.run();
@@ -79,50 +71,12 @@ public class AnalysisController {
             }
         });
         SXSSFWorkbook sxssfWorkbook = ExcelOperateUtils.exportToBigDataFile(calleeExcelList);
-        String fileNameResp = writeLocalPath("Callee_" + excelName, sxssfWorkbook);
+        String fileNameResp = writeLocalPath("Callee_" + dbName + "&" + excelName, sxssfWorkbook);
         log.info("runnerGenAllGraph4Callee.run = {}", run);
         if (run) {
             return ReturnFactory.success(fileNameResp);
         }
         return ReturnFactory.error();
-    }
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-    @PostMapping("/apmApi")
-    @StlApiOperation(title = "apm解析")
-    @SneakyThrows
-    public Return<String> apmApi(@RequestBody List<ApmUriVO> apm) {
-        // 解析JSON到List<ApiMetric>
-        long now = System.currentTimeMillis();
-        log.info("{} apm 解析接口如下", now);
-        apm.stream()
-            .filter(metric -> !metric.getName().contains(".") && !metric.getName().startsWith("URI") && !metric.getName().startsWith("NormalizedUri"))
-            .forEach(metric -> {
-                String name = metric.getName().replace("SpringController", "").replace(" (POST)", "").replace(" (PUT)", "").replace(" (DELETE)", "");
-                System.out.println(name);
-        });
-        log.info("{} apm 解析接口如下", now);
-        return ReturnFactory.success();
-    }
-
-    public static String writeLocalPath(String namePrefix, SXSSFWorkbook workbook) {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-HH-mm-ss");
-        String currentTime = dtf.format(LocalDateTime.now());
-        String name = namePrefix + currentTime;
-        try (FileOutputStream outputStream = new FileOutputStream(name + ".xlsx")) {
-            workbook.write(outputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            // 关闭 SXSSFWorkbook，释放资源
-            try {
-                workbook.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return name;
     }
 
     @PostMapping("/runJar")
@@ -144,6 +98,56 @@ public class AnalysisController {
         return ReturnFactory.success();
     }
 
+    @PostMapping("/apmApi")
+    @StlApiOperation(title = "apm解析")
+    @SneakyThrows
+    public Return<String> apmApi(@RequestBody List<ApmUriVO> apm) {
+        // 解析JSON到List<ApiMetric>
+        long now = System.currentTimeMillis();
+        log.info("{} apm 解析接口如下", now);
+        apm.stream()
+                .filter(metric -> !metric.getName().contains(".") && !metric.getName().startsWith("URI") && !metric.getName().startsWith("NormalizedUri"))
+                .forEach(metric -> {
+                    String name = metric.getName().replace("SpringController", "").replace(" (POST)", "").replace(" (PUT)", "").replace(" (DELETE)", "");
+                    System.out.println(name);
+                });
+        log.info("{} apm 解析接口如下", now);
+        return ReturnFactory.success();
+    }
+
+    @PostMapping("/apmDatabase")
+    @StlApiOperation(title = "apm数据表响应解析")
+    public Return<String> apmDatabase(@RequestBody List<ApmUriVO> apm) {
+        // 解析JSON到List<ApiMetric>
+        long now = System.currentTimeMillis();
+        log.info("{} apm 解析如下", now);
+        apm.forEach(metric -> System.out.println(metric.getName()));
+        log.info("{} apm 解析如下", now);
+        return ReturnFactory.success();
+    }
+
+    /**
+     * 解析接口，只返回 topic 名称列表
+     */
+    @PostMapping("/rocketmq/parse/topics")
+    @StlApiOperation(title = "解析rocketMq Consumer消费组订阅topic接口返回模型 /consumer/consumerConnection.query")
+    public List<String> parseTopics(@RequestBody String jsonResponse) {
+        try {
+            // 1. 解析 JSON
+            ResponseDTO response = JSONUtil.toBean(jsonResponse, ResponseDTO.class);
+            // 2. 提取所有 topic 名称
+            List<String> topicNameList = response.getData().getSubscriptionTable().values().stream()
+                    .map(ResponseDTO.SubscriptionDTO::getTopic)
+                    .collect(Collectors.toList());
+            log.info("解析结果如下：");
+            topicNameList.forEach(System.out::println);
+            log.info("解析结果如上：");
+            return topicNameList;
+        } catch (Exception e) {
+            throw new RuntimeException("解析失败：" + e.getMessage());
+        }
+    }
+
     public static ConfigureWrapper getConfigureWrapper(String dbName) {
         ConfigureWrapper configureWrapper = new ConfigureWrapper();
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_DB_INSERT_BATCH_SIZE, "1000");
@@ -161,8 +165,26 @@ public class AnalysisController {
         return configureWrapper;
     }
 
-    public static void run() {
+    public static String writeLocalPath(String namePrefix, SXSSFWorkbook workbook) {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-HH-mm-ss");
+        String currentTime = dtf.format(LocalDateTime.now());
+        String name = namePrefix + currentTime;
+        try (FileOutputStream outputStream = new FileOutputStream(name + ".xlsx")) {
+            workbook.write(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            // 关闭 SXSSFWorkbook，释放资源
+            try {
+                workbook.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return name;
+    }
 
+    public static void run() {
         // 必须调用具体的日志方法，且级别≥配置的Root级别（如DEBUG）
         log.trace("TRACE 级别日志"); // 仅 com.example.Main 会输出（级别为 TRACE）
         log.debug("DEBUG 级别日志"); // com.example 包下会输出（级别为 DEBUG）
