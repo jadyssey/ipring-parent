@@ -31,6 +31,13 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
+        <!-- Java 生态最成熟的 SQL 解析库 -->
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>4.9</version>
+        </dependency>
+
         <!-- Log4j2 核心 + SLF4J 桥接（统一日志门面） -->
         <!-- <dependency>
             <groupId>org.apache.logging.log4j</groupId>

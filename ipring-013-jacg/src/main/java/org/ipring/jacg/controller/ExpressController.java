@@ -3,16 +3,13 @@ package org.ipring.jacg.controller;
 import com.alibaba.fastjson.JSONObject;
 import org.ipring.jacg.model.ApiResult;
 import org.ipring.jacg.model.ExpressStatus;
-import org.ipring.util.JsonUtils;
+import org.ipring.jacg.process.SqlTableExtractor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -51,5 +48,40 @@ public class ExpressController {
         }
         uriList.forEach(System.out::println);
         return uriList;
+    }
+
+
+    /**
+     * select CONCAT("@", mapper_class_name,":",sql_id,"&",formated_sql) from jacg_mybatis_ms_formated_sql_jacg
+     * 查出来的数据丢进来分析
+     *
+     * @param sqlStr
+     * @return
+     */
+    @PostMapping("/extract/tagble")
+    public HashMap<String, String> extractTable(@RequestBody String sqlStr) {
+        List<String> waybillTableList = Arrays.asList("airwaybillno_detail", "airwaybillno_info", "airwaybillno_operate_log", "airwaybillno_sync", "mis_waybill_error_address", "mis_waybill_error_address_feedback", "mis_waybill_error_address_log", "mis_waybill_error_address_send_log", "mis_waybill_expand", "mis_waybill_goods", "mis_waybill_hub_change_log", "mis_waybill_info", "mis_waybill_init_metrics", "mis_waybill_item", "mis_waybill_label", "mis_waybill_label_print_record", "mis_waybill_lifecycle_history", "mis_waybill_operate_historial", "mis_waybill_return", "mis_waybill_return_structured_address", "mis_waybill_sorting_no_ref_mapping", "mis_waybill_structured_address", "receive_waybill_info", "route_location_log", "third_party_history", "third_party_labels", "third_party_waybills", "waybill_check_against_items", "third_barn_order_info");
+
+        List<String> sqlList = new ArrayList<>(Arrays.asList(sqlStr.split("@")));
+        Set<String> allTableList = new HashSet<>();
+        HashMap<String, String> tableMap = new HashMap<>();
+        for (String sql : sqlList) {
+            String[] split = sql.split("&");
+            if (split.length != 2) {
+                continue;
+            }
+            List<String> tableNameList = SqlTableExtractor.extractTableNamesV2(split[1]);
+            allTableList.addAll(tableNameList);
+            for (String table : tableNameList) {
+                if (waybillTableList.contains(table.toLowerCase())) {
+                    tableMap.put(split[0], String.join(",", tableNameList));
+                    break;
+                }
+            }
+        }
+        allTableList.forEach(System.out::println);
+        System.out.println(" =================================================");
+        tableMap.keySet().forEach(System.out::println);
+        return tableMap;
     }
 }
