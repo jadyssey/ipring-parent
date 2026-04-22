@@ -28,7 +28,8 @@ public class SimpleCallChainProcessor {
 
     private static final String REQUEST_ANNO = "org.springframework.web.bind.annotation.RequestMapping";
     private static final String ANNO_VALUE = "value";
-    public static final String PACKAGE = "com.cds";
+    public static final String PACKAGE_1 = "com.cds";
+    public static final String PACKAGE_2 = "com.zt";
 
     public List<String> extractLeafPathsByModel(List<MethodCallLineData4Ee> methodCallLineData4Ees) {
         List<String> result = new ArrayList<>();
@@ -37,7 +38,7 @@ public class SimpleCallChainProcessor {
         int lastLevel = 0;
         for (MethodCallLineData4Ee line : methodCallLineData4Ees) {
             if (Objects.isNull(line)) continue;
-            if (!line.getActualFullMethod().startsWith(PACKAGE)) {
+            if (!line.getActualFullMethod().startsWith(PACKAGE_1) && !line.getActualFullMethod().startsWith(PACKAGE_2)) {
                 continue;
             }
             if (lastLevel + 1 < line.getMethodCallLevel()) {

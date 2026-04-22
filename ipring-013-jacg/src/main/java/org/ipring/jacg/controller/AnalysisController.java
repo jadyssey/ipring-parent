@@ -1,5 +1,6 @@
 package org.ipring.jacg.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
 import com.adrninistrator.jacg.common.enums.OutputDetailEnum;
 import com.adrninistrator.jacg.conf.ConfigureWrapper;
@@ -7,10 +8,12 @@ import com.adrninistrator.jacg.conf.enums.ConfigDbKeyEnum;
 import com.adrninistrator.jacg.conf.enums.ConfigKeyEnum;
 import com.adrninistrator.jacg.conf.enums.OtherConfigFileUseSetEnum;
 import com.adrninistrator.jacg.dto.methodcall.MethodCallLineData4Ee;
+import com.adrninistrator.jacg.el.enums.ElConfigEnum;
 import com.adrninistrator.jacg.runner.RunnerGenAllGraph4Callee;
 import com.adrninistrator.jacg.runner.RunnerWriteDb;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseListEnum;
+import com.adrninistrator.javacg2.el.enums.CommonElAllowedVariableEnum;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -21,6 +24,7 @@ import org.ipring.anno.StlApiOperation;
 import org.ipring.excel.ExcelOperateUtils;
 import org.ipring.jacg.model.ApmUriVO;
 import org.ipring.jacg.model.CalleeExcelVO;
+import org.ipring.jacg.model.MetricResponse;
 import org.ipring.jacg.model.ResponseDTO;
 import org.ipring.jacg.process.SimpleCallChainProcessor;
 import org.ipring.model.common.Return;
@@ -54,7 +58,9 @@ public class AnalysisController {
     @StlApiOperation(title = "向上调用链")
     public Return<String> similarity(@RequestParam String dbName, @RequestParam String excelName, @RequestBody Set<String> mapperName, @RequestParam(required = false) String depthLimit) {
         ConfigureWrapper configureWrapper = getConfigureWrapper(dbName);
-        configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLEE, mapperName);
+        if (CollectionUtil.isNotEmpty(mapperName)) {
+            configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLEE, mapperName);
+        }
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_RETURN_IN_MEMORY, Boolean.TRUE.toString());
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_DETAIL, OutputDetailEnum.ODE_2.getDetail());
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_GEN_CALL_GRAPH_DEPTH_LIMIT, Optional.ofNullable(depthLimit).filter(StringUtils::isNotBlank).orElse("15"));
@@ -70,6 +76,7 @@ public class AnalysisController {
                 calleeExcelList.add(CalleeExcelVO.of(chain));
             }
         });
+        if (CollectionUtil.isEmpty(calleeExcelList)) return ReturnFactory.error();
         SXSSFWorkbook sxssfWorkbook = ExcelOperateUtils.exportToBigDataFile(calleeExcelList);
         String fileNameResp = writeLocalPath("Callee_" + dbName + "&" + excelName, sxssfWorkbook);
         log.info("runnerGenAllGraph4Callee.run = {}", run);
@@ -81,12 +88,12 @@ public class AnalysisController {
 
     @PostMapping("/runJar")
     @StlApiOperation(title = "分析jar包初始化到数据库")
-    public Return<String> runJar(@RequestParam String dbName) {
+    public Return<String> runJar(@RequestParam String dbName, @RequestParam(required = false) String jarPath) {
         run();
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
         javaCG2ConfigureWrapper.setOtherConfigList(
                 JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR,
-                "D:\\git\\usCode\\dbu-mod-gofodelivery\\dbu-mod-gofodelivery-provider\\target\\dbu-mod-gofodelivery.jar"
+                Optional.ofNullable(jarPath).orElse("D:\\git\\usCode\\dbu-mod-waybill\\dbu-mod-waybill-provider\\target\\dbu-mod-waybill.jar")
         );
 
         ConfigureWrapper configureWrapper = getConfigureWrapper(dbName);
@@ -148,6 +155,31 @@ public class AnalysisController {
         }
     }
 
+    /**
+     * 提取所有 topic 名称
+     */
+    @PostMapping("/grafana/topic")
+    public List<String> extractTopics(@RequestBody String json) {
+        try {
+            // 解析JSON
+            MetricResponse response = JSONUtil.toBean(json, MetricResponse.class);
+
+            // 提取所有topic
+            List<String> topicNameList = response.getData().getResult().stream()
+                    .filter(resultDTO -> !"0".equals(resultDTO.getValue().get(1)))
+                    .map(MetricResponse.ResultDTO::getMetric)
+                    .map(MetricResponse.MetricDTO::getTopic)
+                    .collect(Collectors.toList());
+            log.info("解析结果如下：");
+            topicNameList.forEach(System.out::println);
+            log.info("解析结果如上：");
+            return topicNameList;
+        } catch (Exception e) {
+            throw new RuntimeException("解析失败：" + e.getMessage());
+        }
+    }
+
+
     public static ConfigureWrapper getConfigureWrapper(String dbName) {
         ConfigureWrapper configureWrapper = new ConfigureWrapper();
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_DB_INSERT_BATCH_SIZE, "1000");
@@ -158,10 +190,10 @@ public class AnalysisController {
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USERNAME, "rabee_dev");
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_PASSWORD, "K5qHHrqF26qxmm2jLJ");
         // 排除非项目包路径的调用分析
-        // configureWrapper.setElConfigText(
-        //         ElConfigEnum.ECE_GEN_ALL_CALL_GRAPH_IGNORE_METHOD_CALL,
-        //         "!string.startsWith(" + CommonElAllowedVariableEnum.EAVE_MC_EE_PACKAGE_NAME.getVariableName() + ", 'com.cds')"
-        // );
+        /*configureWrapper.setElConfigText(
+                ElConfigEnum.ECE_GEN_ALL_CALL_GRAPH_IGNORE_METHOD_CALL,
+                "!string.startsWith(" + CommonElAllowedVariableEnum.EAVE_MC_EE_PACKAGE_NAME.getVariableName() + ", 'com.cds')" + " && !string.startsWith(" + CommonElAllowedVariableEnum.EAVE_MC_EE_PACKAGE_NAME.getVariableName() + ", 'com.zt')"
+        );*/
         return configureWrapper;
     }
 
