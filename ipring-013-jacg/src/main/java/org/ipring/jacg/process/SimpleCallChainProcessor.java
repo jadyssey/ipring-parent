@@ -26,7 +26,7 @@ public class SimpleCallChainProcessor {
     private static final List<String> CONTROLLER_ANNOTATION_LIST = Arrays.asList("org.springframework.web.bind.annotation.RequestMapping", "org.springframework.web.bind.annotation.PostMapping", "org.springframework.web.bind.annotation.GetMapping", "org.springframework.web.bind.annotation.PutMapping", "org.springframework.web.bind.annotation.DeleteMapping");
     private static final List<String> JOB_ANNOTATION_LIST = Arrays.asList("com.zt.digital.common.job.annotation.ZtJob");
 
-    private static final String REQUEST_ANNO = "org.springframework.web.bind.annotation.RequestMapping";
+    public static final String REQUEST_ANNO = "org.springframework.web.bind.annotation.RequestMapping";
     private static final String ANNO_VALUE = "value";
     public static final String PACKAGE_1 = "com.cds";
     public static final String PACKAGE_2 = "com.zt";
@@ -115,7 +115,7 @@ public class SimpleCallChainProcessor {
     }
 
 
-    public static List<String> extractLeafPaths(List<String> input) {
+    /*public static List<String> extractLeafPaths(List<String> input) {
         List<String> result = new ArrayList<>();
         Stack<CallNode> stack = new Stack<>();
 
@@ -162,7 +162,7 @@ public class SimpleCallChainProcessor {
         }
 
         return result;
-    }
+    }*/
 
     private static void savePath(Stack<CallNode> stack, List<String> result) {
         List<String> path = new ArrayList<>();
@@ -224,8 +224,8 @@ public class SimpleCallChainProcessor {
                 "[3]#      HubAssignTaskController:taskMergingCrossArea"
         );
 
-        List<String> leafPaths = extractLeafPaths(input);
-        System.out.println("叶子节点路径:");
-        leafPaths.forEach(System.out::println);
+        // List<String> leafPaths = extractLeafPaths(input);
+        // System.out.println("叶子节点路径:");
+        // leafPaths.forEach(System.out::println);
     }
 }

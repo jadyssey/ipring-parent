@@ -1,21 +1,22 @@
 package org.ipring.jacg.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import lombok.RequiredArgsConstructor;
+import org.ipring.jacg.mapper.ClassAnnotationMapper;
+import org.ipring.jacg.mapper.po.JacgClassAnnotationPO;
 import org.ipring.jacg.model.ApiResult;
 import org.ipring.jacg.model.ExpressStatus;
+import org.ipring.jacg.process.SimpleCallChainProcessor;
 import org.ipring.jacg.process.SqlTableExtractor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/express")
 public class ExpressController {
-
     /**
      * 接收原始JSON，解析并返回 itemCode + itemValue 列表
      */
@@ -84,4 +85,7 @@ public class ExpressController {
         tableMap.keySet().forEach(System.out::println);
         return tableMap;
     }
+
+
+
 }

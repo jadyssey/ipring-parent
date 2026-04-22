@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://10.100.12.227:63307/a_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+    url: jdbc:mysql://10.100.12.227:63307/a_jacg_gofodelivery?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
     username: rabee_dev
     password: K5qHHrqF26qxmm2jLJ
 ipring:
@@ -10,3 +10,7 @@ ipring:
     max-size: 40
     keep-alive: 60
     queue-capacity: 20
+logging:
+  level:
+    # your mapper 包路径 → 改成你自己的
+    org.ipring.jacg.mapper: debug

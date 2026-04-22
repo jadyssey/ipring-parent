@@ -8,12 +8,10 @@ import com.adrninistrator.jacg.conf.enums.ConfigDbKeyEnum;
 import com.adrninistrator.jacg.conf.enums.ConfigKeyEnum;
 import com.adrninistrator.jacg.conf.enums.OtherConfigFileUseSetEnum;
 import com.adrninistrator.jacg.dto.methodcall.MethodCallLineData4Ee;
-import com.adrninistrator.jacg.el.enums.ElConfigEnum;
 import com.adrninistrator.jacg.runner.RunnerGenAllGraph4Callee;
 import com.adrninistrator.jacg.runner.RunnerWriteDb;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseListEnum;
-import com.adrninistrator.javacg2.el.enums.CommonElAllowedVariableEnum;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -21,7 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.ipring.anno.StlApiOperation;
+import org.ipring.enums.subcode.SystemServiceCode;
 import org.ipring.excel.ExcelOperateUtils;
+import org.ipring.jacg.mapper.ClassAnnotationMapper;
+import org.ipring.jacg.mapper.po.JacgClassAnnotationPO;
 import org.ipring.jacg.model.ApmUriVO;
 import org.ipring.jacg.model.CalleeExcelVO;
 import org.ipring.jacg.model.MetricResponse;
@@ -32,8 +33,11 @@ import org.ipring.model.common.ReturnFactory;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sql.DataSource;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -53,10 +57,26 @@ import java.util.stream.Collectors;
 public class AnalysisController {
 
     private final SimpleCallChainProcessor simpleCallChainProcessor;
+    private final ClassAnnotationMapper classAnnotationMapper;
+    // 注入数据源
+    private final DataSource dataSource;
+
+    @PostMapping("/test")
+    public JacgClassAnnotationPO test(@RequestParam String tableName) {
+        String currentDatabase = getCurrentDatabase();
+        // 当前mapper走的是配置文件的数据源
+        JacgClassAnnotationPO jacgClassAnnotationPO = classAnnotationMapper.selectByClassAndAnno(tableName, SimpleCallChainProcessor.REQUEST_ANNO);
+        return jacgClassAnnotationPO;
+    }
 
     @PostMapping("/runnerGenAllGraph4Callee")
     @StlApiOperation(title = "向上调用链")
     public Return<String> similarity(@RequestParam String dbName, @RequestParam String excelName, @RequestBody Set<String> mapperName, @RequestParam(required = false) String depthLimit) {
+        String currentDatabase = getCurrentDatabase();
+        if (!StringUtils.equalsIgnoreCase(currentDatabase, dbName)) {
+            // classAnnotationMapper需要和工具用的同一套数据源才能查到对应的数据
+            return ReturnFactory.info(SystemServiceCode.SystemApi.PARAM_ERROR);
+        }
         ConfigureWrapper configureWrapper = getConfigureWrapper(dbName);
         if (CollectionUtil.isNotEmpty(mapperName)) {
             configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLEE, mapperName);
@@ -101,8 +121,8 @@ public class AnalysisController {
         // configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_GEN_STACK_OTHER_FORMS,   Boolean.TRUE.toString());
 
         boolean success = new RunnerWriteDb(javaCG2ConfigureWrapper, configureWrapper).run();
-        System.out.println("success = " + success);
-        return ReturnFactory.success();
+        System.out.println("success = " + success + ", " + dbName + ", " + jarPath);
+        return ReturnFactory.success(dbName + "&" + jarPath);
     }
 
     @PostMapping("/apmApi")
@@ -225,4 +245,12 @@ public class AnalysisController {
         log.error("ERROR 级别日志");
     }
 
+    public String getCurrentDatabase() {
+        try (Connection conn = dataSource.getConnection()) {
+            // 获取 catalog，MySQL 里就是当前库名
+            return conn.getCatalog();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

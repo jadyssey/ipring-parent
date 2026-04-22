@@ -24,15 +24,19 @@ public class CalleeExcelVO {
     private String type;
 
     @ExcelColumn(1)
+    @ApiModelProperty(value = "备注")
+    private String remark;
+
+    @ExcelColumn(2)
     @ApiModelProperty(value = "终点")
     private String target;
 
-    @ExcelColumn(2)
+    @ExcelColumn(3)
     @ApiModelProperty(value = "起点")
     private String sql;
 
     @ApiModelProperty(value = "中间链路集合，以“&”分隔")
-    @ExcelColumn(3)
+    @ExcelColumn(4)
     private String chain;
 
     public static CalleeExcelVO of(String chain) {
