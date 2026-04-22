@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.ipring.jacg.mapper.ClassAnnotationMapper;
 import org.ipring.jacg.mapper.po.JacgClassAnnotationPO;
+import org.ipring.jacg.model.ContentVO;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -27,12 +28,13 @@ public class SimpleCallChainProcessor {
     private static final List<String> JOB_ANNOTATION_LIST = Arrays.asList("com.zt.digital.common.job.annotation.ZtJob");
 
     public static final String REQUEST_ANNO = "org.springframework.web.bind.annotation.RequestMapping";
+    public static final String API_OPERATION = "io.swagger.annotations.ApiOperation";
     private static final String ANNO_VALUE = "value";
     public static final String PACKAGE_1 = "com.cds";
     public static final String PACKAGE_2 = "com.zt";
 
-    public List<String> extractLeafPathsByModel(List<MethodCallLineData4Ee> methodCallLineData4Ees) {
-        List<String> result = new ArrayList<>();
+    public List<ContentVO> extractLeafPathsByModel(List<MethodCallLineData4Ee> methodCallLineData4Ees) {
+        List<ContentVO> result = new ArrayList<>();
         Stack<CallNode> stack = new Stack<>();
 
         int lastLevel = 0;
@@ -49,7 +51,7 @@ public class SimpleCallChainProcessor {
             // 解析层级和内容
             lastLevel = line.getMethodCallLevel();
             int level = line.getMethodCallLevel();
-            String content = getContent(line);
+            ContentVO content = getContent(line);
 
             // 调整栈大小
             while (stack.size() > level) {
@@ -85,7 +87,8 @@ public class SimpleCallChainProcessor {
      * @param line
      * @return
      */
-    private String getContent(MethodCallLineData4Ee line) {
+    private ContentVO getContent(MethodCallLineData4Ee line) {
+        ContentVO contentVO = new ContentVO();
         String content = line.getActualFullMethod().trim();
         if (!CollectionUtils.isEmpty(line.getMethodAnnotationMap())) {
             String uri = CONTROLLER_ANNOTATION_LIST.stream().map(anno -> Optional.ofNullable(line.getMethodAnnotationMap())
@@ -94,6 +97,10 @@ public class SimpleCallChainProcessor {
             // 存在注解但是没有配置value
             boolean havingMapping = CONTROLLER_ANNOTATION_LIST.stream().anyMatch(anno -> Objects.nonNull(Optional.ofNullable(line.getMethodAnnotationMap()).map(map -> map.get(anno)).orElse(null)));
             if (StringUtils.isNotBlank(uri) || havingMapping) {
+                String apiRemark = Optional.ofNullable(line.getMethodAnnotationMap())
+                        .map(map -> map.get(API_OPERATION)).map(map -> AnnotationAttributesParseUtil.getAttributeValueFromMap(map, ANNO_VALUE, StringAnnotationAttribute.class))
+                        .map(StringAnnotationAttribute::getAttributeString).filter(StringUtils::isNotBlank).orElse(null);
+                contentVO.setRemark(apiRemark);
                 content = formatPath(uri);
                 JacgClassAnnotationPO jacgClassAnnotationPO = classAnnotationMapper.selectByClassAndAnno(line.getCallerSimpleClassName(), REQUEST_ANNO);
                 if (Objects.nonNull(jacgClassAnnotationPO)) {
@@ -111,7 +118,8 @@ public class SimpleCallChainProcessor {
             }
         }
         content = content.replaceFirst(":", "#");
-        return content;
+        contentVO.setContent(content);
+        return contentVO;
     }
 
 
@@ -164,17 +172,22 @@ public class SimpleCallChainProcessor {
         return result;
     }*/
 
-    private static void savePath(Stack<CallNode> stack, List<String> result) {
+    private static void savePath(Stack<CallNode> stack, List<ContentVO> result) {
         List<String> path = new ArrayList<>();
+        Set<String> remark = new HashSet<>();
         for (CallNode node : stack) {
             if (node.isLeaf) {
                 // 叶子节点放在首位
-                path.add(0, node.content);
+                path.add(0, node.contentVO.getContent());
+                remark.add(node.contentVO.getRemark());
                 break;
             }
-            path.add(node.content);
+            path.add(node.contentVO.getContent());
         }
-        result.add(String.join(SPLIT, path));
+        ContentVO resp = new ContentVO();
+        resp.setContent(String.join(SPLIT, path));
+        resp.setRemark(String.join(SPLIT, remark));
+        result.add(resp);
     }
 
     public static String formatPath(String path) {
@@ -200,12 +213,12 @@ public class SimpleCallChainProcessor {
 
     static class CallNode {
         int level;
-        String content;
+        ContentVO contentVO;
         boolean isLeaf = true;
 
-        CallNode(int level, String content) {
+        CallNode(int level, ContentVO contentVO) {
             this.level = level;
-            this.content = content;
+            this.contentVO = contentVO;
         }
     }
 

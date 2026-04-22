@@ -23,10 +23,7 @@ import org.ipring.enums.subcode.SystemServiceCode;
 import org.ipring.excel.ExcelOperateUtils;
 import org.ipring.jacg.mapper.ClassAnnotationMapper;
 import org.ipring.jacg.mapper.po.JacgClassAnnotationPO;
-import org.ipring.jacg.model.ApmUriVO;
-import org.ipring.jacg.model.CalleeExcelVO;
-import org.ipring.jacg.model.MetricResponse;
-import org.ipring.jacg.model.ResponseDTO;
+import org.ipring.jacg.model.*;
 import org.ipring.jacg.process.SimpleCallChainProcessor;
 import org.ipring.model.common.Return;
 import org.ipring.model.common.ReturnFactory;
@@ -91,8 +88,8 @@ public class AnalysisController {
         Map<String, List<MethodCallLineData4Ee>> allMethodCallLineData4EeMap = runnerGenAllGraph4Callee.getAllMethodCallLineData4EeMap();
         List<CalleeExcelVO> calleeExcelList = new ArrayList<>();
         allMethodCallLineData4EeMap.forEach((key, list) -> {
-            List<String> result = simpleCallChainProcessor.extractLeafPathsByModel(list);
-            for (String chain : result) {
+            List<ContentVO> result = simpleCallChainProcessor.extractLeafPathsByModel(list);
+            for (ContentVO chain : result) {
                 calleeExcelList.add(CalleeExcelVO.of(chain));
             }
         });

@@ -39,10 +39,12 @@ public class CalleeExcelVO {
     @ExcelColumn(4)
     private String chain;
 
-    public static CalleeExcelVO of(String chain) {
+    public static CalleeExcelVO of(ContentVO contentVO) {
         CalleeExcelVO resp = new CalleeExcelVO();
-        if (StringUtils.isBlank(chain)) return resp;
-        String[] chainStr = chain.split(SimpleCallChainProcessor.SPLIT);
+        String content = contentVO.getContent();
+        if (StringUtils.isBlank(content)) return resp;
+        resp.setRemark(contentVO.getRemark());
+        String[] chainStr = content.split(SimpleCallChainProcessor.SPLIT);
         if (chainStr.length == 1) {
             resp.setSql(chainStr[0]);
             resp.setType(TargetTypeEnum.NO_Target.getDescription());
