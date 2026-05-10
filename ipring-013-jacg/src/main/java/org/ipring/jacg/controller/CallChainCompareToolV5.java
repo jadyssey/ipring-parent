@@ -135,6 +135,13 @@ public class CallChainCompareToolV5 {
     private static long scanStartMillis = 0L;
 
     /**
+     * 记录本次运行中已展开过的函数唯一标识（全类名.方法名(参数类型)），
+     * 用于在对比结果中去重：同一个底层函数在多处被调用时，只展开一次，
+     * 后续调用点标记为 [duplicate] 并跳过，避免 diff 结果中重复列出相同差异。
+     */
+    private static final Set<String> expandedMethodKeys = new HashSet<>();
+
+    /**
      * 扫描配置工程、展开调用链并生成对比产物。
      */
     public static void main(String[] args) throws Exception {
@@ -231,6 +238,7 @@ public class CallChainCompareToolV5 {
         classImportOnDemandPackageMap.clear();
         simpleNameToFullClass.clear();
         mapperSqlMap.clear();
+        expandedMethodKeys.clear();
         scannedJavaFileCount = 0;
         scannedXmlFileCount = 0;
         scanStartMillis = System.currentTimeMillis();
@@ -481,6 +489,8 @@ public class CallChainCompareToolV5 {
 
     /**
      * 递归展开指定方法，输出方法签名、语句和下游调用。
+     * 基于函数唯一标识（全类名.方法名(参数类型)）实现去重：
+     * 同一底层函数在多处被调用时，第一次完整展开，后续仅输出 [duplicate] 标记。
      */
     static void expand(String className, String methodName, Integer argCount, List<String> argTypeHints, int level, PrintWriter writer) {
         String key = className + "." + methodName;
@@ -493,6 +503,16 @@ public class CallChainCompareToolV5 {
         if (method == null) {
             return;
         }
+
+        // 构建函数唯一标识：全类名.方法名(参数类型)
+        String methodIdentityKey = key + methodDisplay(method);
+
+        // 该函数已在此次运行中展开过 → 标记为重复，跳过展开
+        if (expandedMethodKeys.contains(methodIdentityKey)) {
+            write(writer, level, "[duplicate] " + shortName(className) + "." + methodDisplay(method));
+            return;
+        }
+        expandedMethodKeys.add(methodIdentityKey);
 
         write(writer, level, shortName(className) + "." + methodDisplay(method));
 
