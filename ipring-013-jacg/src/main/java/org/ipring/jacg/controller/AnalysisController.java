@@ -145,7 +145,7 @@ public class AnalysisController {
         // 解析JSON到List<ApiMetric>
         long now = System.currentTimeMillis();
         log.info("{} apm 解析如下", now);
-        apm.forEach(metric -> System.out.println(metric.getName()));
+        apm.stream().map(ApmUriVO::getName).sorted().forEach(System.out::println);
         log.info("{} apm 解析如下", now);
         return ReturnFactory.success();
     }
