@@ -23,6 +23,8 @@ public class MapperUnusedMethodDeleteToolV2 {
     private static final String JAVA_SUFFIX = ".java";
     private static final String XML_SUFFIX = ".xml";
 
+    private static final String ROOT_PATH = "D:\\git\\usCode\\dbu-mod-delivery";
+
     @Data
     static class RuntimeConfig {
         String projectRoot;
@@ -115,7 +117,7 @@ public class MapperUnusedMethodDeleteToolV2 {
     }
 
     public static void main(String[] args) throws Exception {
-        RuntimeConfig config = RuntimeConfig.of("D:\\project\\dbu-mod-waybill", "unused_mapper_methods.csv");
+        RuntimeConfig config = RuntimeConfig.of(ROOT_PATH, "unused_mapper_methods.csv");
         Path projectRoot = Paths.get(config.projectRoot).toAbsolutePath().normalize();
         Path csvPath = Paths.get(config.csvPath).toAbsolutePath().normalize();
 

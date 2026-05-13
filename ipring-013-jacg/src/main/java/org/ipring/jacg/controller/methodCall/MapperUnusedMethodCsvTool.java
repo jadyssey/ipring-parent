@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class MapperUnusedMethodCsvTool {
+    private static final String ROOT_PATH = "D:\\git\\usCode\\dbu-mod-delivery";
 
     private static final String JAVA_SUFFIX = ".java";
     private static final int SCAN_PROGRESS_INTERVAL = 200;
@@ -121,7 +122,7 @@ public class MapperUnusedMethodCsvTool {
     }
 
     public static void main(String[] args) throws Exception {
-        RuntimeConfig config = RuntimeConfig.of("D:\\project\\dbu-mod-waybill", "unused_mapper_methods.csv");
+        RuntimeConfig config = RuntimeConfig.of(ROOT_PATH, "unused_mapper_methods.csv");
         if (args != null && args.length > 0 && !JavaParseTextUtils.normalizeInlineWhitespace(args[0]).isEmpty()) {
             config.setProjectRoot(JavaParseTextUtils.normalizeInlineWhitespace(args[0]));
         }
