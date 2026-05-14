@@ -21,7 +21,20 @@ Usage:
   # 6. Delete after reviewing dry-run output and the JSON report.
   python -B scripts/dead_api_cleaner.py delete /api/a
 
-  # 7. Start the Web management page.
+  # 7. Analyze an unused @Service implementation method. The target class
+  #    must be annotated with @Service and its class name must end with Impl.
+  python -B scripts/dead_api_cleaner.py --impl-only com.cds.track.service.TrackServiceImpl#deliveryFailNum
+
+  # 8. Scan all @Service *Impl methods and list methods with no real callers.
+  python -B scripts/dead_api_cleaner.py --impl-only
+
+  # 9. Delete after reviewing the implementation-method dry-run output.
+  python -B scripts/dead_api_cleaner.py delete --impl-only com.cds.track.service.TrackServiceImpl#deliveryFailNum
+
+  # 10. Delete all scanned unused implementation methods after reviewing output.
+  python -B scripts/dead_api_cleaner.py delete --impl-only
+
+  # 11. Start the Web management page.
   python -B scripts/dead_api_cleaner_web.py --host 127.0.0.1 --port 8765
 
 Recommended workflow:
@@ -30,6 +43,9 @@ Recommended workflow:
   2. Run dry-run and review "Removable methods" and "Retained boundary methods".
   3. Run the delete command only after the plan is acceptable.
   4. Run project compilation/tests after deletion.
+  5. For implementation methods, prefer the Web "分析实现类" preview first,
+     then use the separate "删除实现类" button only after reviewing the full
+     deletion tree and retained boundary nodes.
 
 Safety model:
 
@@ -45,6 +61,8 @@ Safety model:
   - It never deletes enum methods/constants or JavaBean getter/setter methods.
   - It can also remove matching MyBatis XML statements for deleted mapper
     methods unless --no-delete-xml is used.
+  - With --impl-only it starts from @Service classes whose names end with Impl,
+    and applies the same downward call-chain and external-reference checks.
   - Path variables are matched by default, e.g. /foo/{id} matches /foo/123.
     Use --exact-route-match to disable this.
 
@@ -77,6 +95,14 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 JAVA_SUFFIX = ".java"
 XML_SUFFIX = ".xml"
+REFERENCE_SUFFIXES = (
+    ".java",
+    ".xml",
+    ".properties",
+    ".yml",
+    ".yaml",
+    ".sql",
+)
 
 SKIP_DIRS = {
     ".git",
@@ -195,6 +221,19 @@ class ClassInfo:
     constants: Dict[str, str] = field(default_factory=dict)
     methods: List[MethodInfo] = field(default_factory=list)
     route_paths: List[str] = field(default_factory=list)
+    unresolved_extends: List[str] = field(default_factory=list)
+    unresolved_implements: List[str] = field(default_factory=list)
+
+
+@dataclass
+class MyBatisStatementInfo:
+    namespace: str
+    statement_id: str
+    tag: str
+    path: Path
+    line: int
+    start: int
+    end: int
 
 
 @dataclass
@@ -202,6 +241,12 @@ class RouteMatch:
     requested_path: str
     method: MethodInfo
     matched_route: str
+
+
+@dataclass
+class ImplMethodMatch:
+    requested_target: str
+    method: MethodInfo
 
 
 @dataclass
@@ -214,6 +259,12 @@ class CleanupPlan:
     retain_reasons: Dict[str, List[str]]
     unresolved_paths: List[str]
     unresolved_suggestions: Dict[str, List[RouteMatch]] = field(default_factory=dict)
+    impl_roots: List[ImplMethodMatch] = field(default_factory=list)
+    unresolved_impl_methods: List[str] = field(default_factory=list)
+    impl_scan_all: bool = False
+    unused_mappers: Set[MethodKey] = field(default_factory=set)
+    mapper_retain_reasons: Dict[str, List[str]] = field(default_factory=dict)
+    unused_mapper_files: Set[str] = field(default_factory=set)
 
 
 @dataclass
@@ -223,6 +274,9 @@ class CleanupRunOptions:
     exact_route_match: bool = False
     max_depth: int = 80
     delete_xml: bool = True
+    scan_unused_mappers: bool = True
+    mapper_only: bool = False
+    impl_only: bool = False
     delete: bool = False
     report: str = "dead_api_cleanup_report.json"
     no_report: bool = False
@@ -472,6 +526,17 @@ def parse_string_literal(expr: str) -> Optional[str]:
         return body
 
 
+def iter_quoted_values(text: str) -> Iterable[str]:
+    for match in re.finditer(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', text):
+        raw = match.group(0)
+        body = raw[1:-1]
+        yield (
+            body.replace(r"\\", "\\")
+            .replace(r"\"", '"')
+            .replace(r"\'", "'")
+        )
+
+
 def find_matching(source: str, start: int, open_char: str, close_char: str) -> int:
     depth = 1
     i = start + 1
@@ -675,6 +740,7 @@ class JavaProjectAnalyzer:
         exact_route_match: bool = False,
         max_depth: int = 80,
         delete_xml: bool = True,
+        scan_unused_mappers: bool = True,
         verbose: bool = False,
     ) -> None:
         self.root = root.resolve()
@@ -682,6 +748,7 @@ class JavaProjectAnalyzer:
         self.exact_route_match = exact_route_match
         self.max_depth = max_depth
         self.delete_xml = delete_xml
+        self.scan_unused_mappers = scan_unused_mappers
         self.verbose = verbose
 
         self.classes: Dict[str, ClassInfo] = {}
@@ -698,6 +765,10 @@ class JavaProjectAnalyzer:
         self.incoming: Dict[MethodKey, Set[MethodKey]] = defaultdict(set)
         self.external_anchors: Dict[MethodKey, List[str]] = defaultdict(list)
         self.xml_namespaces: Dict[str, List[Path]] = defaultdict(list)
+        self.xml_statements: Dict[Tuple[str, str], List[MyBatisStatementInfo]] = defaultdict(list)
+        self.reference_texts: Optional[List[Tuple[Path, str]]] = None
+        self.mapper_reference_index: Optional[Dict[str, Set[Path]]] = None
+        self.dynamic_mapper_reference_index: Optional[Dict[str, Set[Path]]] = None
 
     def index(self) -> None:
         java_files = list(self.iter_files(JAVA_SUFFIX))
@@ -1116,6 +1187,11 @@ class JavaProjectAnalyzer:
                 resolved = self.resolve_type(item, cls)
                 if resolved:
                     self.interface_impls[resolved].add(cls.fqn)
+                else:
+                    cls.unresolved_implements.append(clean_type(item))
+            for item in cls.extends:
+                if not self.resolve_type(item, cls):
+                    cls.unresolved_extends.append(clean_type(item))
             if cls.name.endswith("Impl"):
                 base = cls.name[:-4]
                 for candidate in (base, f"I{base}"):
@@ -1137,6 +1213,9 @@ class JavaProjectAnalyzer:
         body = cls.masked[method.body_start + 1 : method.body_end]
         original_body = cls.source[method.body_start + 1 : method.body_end]
         type_scope = dict(cls.fields)
+        base_mapper_fqn = self.mybatis_plus_base_mapper_fqn(cls)
+        if base_mapper_fqn:
+            type_scope.setdefault("baseMapper", base_mapper_fqn)
         type_scope.update(method.params)
         type_scope.update(self.parse_local_vars(body))
         call_events: List[Tuple[int, MethodKey]] = []
@@ -1147,6 +1226,18 @@ class JavaProjectAnalyzer:
                     call_events.append((offset, key))
 
         dotted_spans: List[Tuple[int, int]] = []
+        if base_mapper_fqn:
+            for m in re.finditer(
+                r"\b(?:this\s*\.\s*)?getBaseMapper\s*\(\s*\)\s*\.\s*([A-Za-z_]\w*)\s*\(",
+                body,
+            ):
+                call_name = m.group(1)
+                if call_name in CALL_KEYWORDS:
+                    continue
+                dotted_spans.append((m.start(1), m.end(1)))
+                arg_types = self.infer_call_arg_types(original_body, m.end() - 1, type_scope)
+                add_call(m.start(), self.resolve_methods_with_impls(base_mapper_fqn, call_name, arg_types))
+
         for m in re.finditer(r"\b([A-Za-z_]\w*)\s*\.\s*([A-Za-z_]\w*)\s*\(", body):
             qualifier, call_name = m.group(1), m.group(2)
             dotted_spans.append((m.start(2), m.end(2)))
@@ -1198,6 +1289,23 @@ class JavaProjectAnalyzer:
                 ordered.append(key)
                 seen.add(key)
         return ordered
+
+    def mybatis_plus_base_mapper_fqn(self, cls: ClassInfo) -> Optional[str]:
+        for parent in cls.extends:
+            match = re.match(r"\s*([A-Za-z_][\w.]*)\s*<(.+)>\s*$", parent, flags=re.S)
+            if not match:
+                continue
+            parent_name = match.group(1)
+            if parent_name.split(".")[-1] != "ServiceImpl":
+                continue
+            args = split_top_level(match.group(2), ",")
+            if not args:
+                continue
+            mapper_type = clean_type(args[0])
+            mapper_fqn = self.resolve_type(mapper_type, cls)
+            if mapper_fqn:
+                return mapper_fqn
+        return None
 
     def infer_call_arg_types(
         self,
@@ -1395,6 +1503,189 @@ class JavaProjectAnalyzer:
             text = read_text(path)
             for m in re.finditer(r'\bnamespace\s*=\s*["\']([^"\']+)["\']', text):
                 self.xml_namespaces[m.group(1)].append(path)
+            namespace_match = re.search(r'\bnamespace\s*=\s*["\']([^"\']+)["\']', text)
+            if not namespace_match:
+                continue
+            namespace = namespace_match.group(1)
+            for statement in iter_mybatis_statements(text, namespace, path):
+                self.xml_statements[(namespace, statement.statement_id)].append(statement)
+
+    def build_unused_mapper_plan(self) -> Tuple[Set[MethodKey], Dict[str, List[str]]]:
+        unused: Set[MethodKey] = set()
+        retained: Dict[str, List[str]] = {}
+        for method in self.iter_mapper_methods():
+            reasons = self.mapper_retain_reasons(method)
+            if reasons:
+                retained[method.key.text()] = reasons
+            else:
+                unused.add(method.key)
+        return unused, retained
+
+    def iter_mapper_methods(self) -> Iterable[MethodInfo]:
+        for cls in self.classes.values():
+            if not self.is_mapper_class(cls):
+                continue
+            for method in cls.methods:
+                if method.is_constructor:
+                    continue
+                if self.deletion_guard_reason(method):
+                    continue
+                yield method
+
+    def is_mapper_class(self, cls: ClassInfo) -> bool:
+        if cls.kind != "interface":
+            return False
+        if cls.fqn in self.xml_namespaces:
+            return True
+        lowered_path = str(cls.path).replace("\\", "/").lower()
+        if "/mapper/" in lowered_path and cls.name.endswith("Mapper"):
+            return True
+        annotation_names = {
+            name for name, _ in extract_annotation_invocations(cls.annotations_text)
+        }
+        if "Mapper" in annotation_names:
+            return "mapstruct" not in cls.source.lower()
+        return False
+
+    def mapper_retain_reasons(self, method: MethodInfo) -> List[str]:
+        reasons: List[str] = []
+        if self.incoming.get(method.key):
+            reasons.extend(self.format_reasons(self.incoming[method.key], []))
+        anchors = self.external_anchors.get(method.key, [])
+        if anchors:
+            reasons.extend(f"anchor: {anchor}" for anchor in anchors)
+
+        references = self.find_external_mapper_references(method)
+        reasons.extend(references)
+
+        if self.has_dynamic_mapper_risk(method):
+            reasons.append("risk: possible dynamic or reflective mapper invocation")
+
+        return sorted(dict.fromkeys(reasons))
+
+    def find_external_mapper_references(self, method: MethodInfo) -> List[str]:
+        refs: List[str] = []
+        cls = self.classes.get(method.class_fqn)
+        simple_class = cls.name if cls else method.class_fqn.split(".")[-1]
+        keys = [
+            f"{method.class_fqn}.{method.name}",
+            f"{simple_class}.{method.name}",
+        ]
+        reference_index, _dynamic_index = self.get_mapper_reference_indexes()
+        paths: Set[Path] = set()
+        for key in keys:
+            paths.update(reference_index.get(key, set()))
+        for path in self.external_reference_paths(method, paths):
+            refs.append(f"reference: {relpath(path, self.root)}")
+        return refs[:8]
+
+    def has_dynamic_mapper_risk(self, method: MethodInfo) -> bool:
+        cls = self.classes.get(method.class_fqn)
+        simple_class = cls.name if cls else method.class_fqn.split(".")[-1]
+        risk_tokens = (
+            "selectOne(",
+            "selectList(",
+            "selectMap(",
+            "selectCursor(",
+            "insert(",
+            "update(",
+            "delete(",
+            "SqlSession",
+            "getMapper(",
+            "Class.forName(",
+            "ReflectionUtils",
+            "Method.invoke(",
+            "invoke(",
+        )
+        keys = (
+            f"{method.class_fqn}.{method.name}",
+            f"{simple_class}.{method.name}",
+            method.name,
+        )
+        _reference_index, dynamic_index = self.get_mapper_reference_indexes()
+        paths: Set[Path] = set()
+        for key in keys:
+            paths.update(dynamic_index.get(key, set()))
+        return bool(self.external_reference_paths(method, paths))
+
+    def external_reference_paths(
+        self, method: MethodInfo, paths: Iterable[Path]
+    ) -> List[Path]:
+        own_xml_paths = set(self.xml_namespaces.get(method.class_fqn, []))
+        return sorted(
+            {
+                path
+                for path in paths
+                if path != method.path and path not in own_xml_paths
+            },
+            key=lambda path: str(relpath(path, self.root)),
+        )
+
+    def get_mapper_reference_indexes(self) -> Tuple[Dict[str, Set[Path]], Dict[str, Set[Path]]]:
+        if self.mapper_reference_index is not None and self.dynamic_mapper_reference_index is not None:
+            return self.mapper_reference_index, self.dynamic_mapper_reference_index
+
+        reference_index: Dict[str, Set[Path]] = defaultdict(set)
+        dynamic_index: Dict[str, Set[Path]] = defaultdict(set)
+        risk_tokens = (
+            "selectOne(",
+            "selectList(",
+            "selectMap(",
+            "selectCursor(",
+            "insert(",
+            "update(",
+            "delete(",
+            "SqlSession",
+            "getMapper(",
+            "Class.forName(",
+            "ReflectionUtils",
+            "Method.invoke(",
+            "invoke(",
+        )
+        for path, text in self.get_reference_texts():
+            dynamic = any(token in text for token in risk_tokens)
+            for key in self.extract_mapper_reference_keys(text):
+                reference_index[key].add(path)
+                if dynamic:
+                    dynamic_index[key].add(path)
+            if dynamic:
+                for value in iter_quoted_values(text):
+                    if re.fullmatch(r"[A-Za-z_]\w*", value):
+                        dynamic_index[value].add(path)
+
+        self.mapper_reference_index = reference_index
+        self.dynamic_mapper_reference_index = dynamic_index
+        return reference_index, dynamic_index
+
+    @staticmethod
+    def extract_mapper_reference_keys(text: str) -> Set[str]:
+        keys: Set[str] = set()
+        for match in re.finditer(
+            r"\b([A-Za-z_][\w.]*Mapper)\s*\.\s*([A-Za-z_]\w*)\b",
+            text,
+        ):
+            owner = match.group(1)
+            name = match.group(2)
+            keys.add(f"{owner}.{name}")
+            keys.add(f"{owner.split('.')[-1]}.{name}")
+        for value in iter_quoted_values(text):
+            if re.fullmatch(r"[A-Za-z_][\w.]*Mapper\.[A-Za-z_]\w*", value):
+                owner, name = value.rsplit(".", 1)
+                keys.add(value)
+                keys.add(f"{owner.split('.')[-1]}.{name}")
+        return keys
+
+    def get_reference_texts(self) -> List[Tuple[Path, str]]:
+        if self.reference_texts is None:
+            items: List[Tuple[Path, str]] = []
+            for suffix in REFERENCE_SUFFIXES:
+                for path in self.iter_files(suffix):
+                    try:
+                        items.append((path, read_text(path)))
+                    except UnicodeDecodeError:
+                        continue
+            self.reference_texts = items
+        return self.reference_texts
 
     def iter_routes(self) -> Iterable[RouteMatch]:
         for cls in self.classes.values():
@@ -1487,6 +1778,13 @@ class JavaProjectAnalyzer:
             anchors = self.external_anchors.get(key, [])
             retain_reasons[key.text()] = self.format_reasons(external, anchors)
 
+        unused_mappers: Set[MethodKey] = set()
+        mapper_retain_reasons: Dict[str, List[str]] = {}
+        unused_mapper_files: Set[str] = set()
+        if self.scan_unused_mappers:
+            unused_mappers, mapper_retain_reasons = self.build_unused_mapper_plan()
+            unused_mapper_files = self.build_unused_mapper_file_plan(unused_mappers)
+
         return CleanupPlan(
             roots=roots,
             closure=closure,
@@ -1496,7 +1794,264 @@ class JavaProjectAnalyzer:
             retain_reasons=retain_reasons,
             unresolved_paths=unresolved,
             unresolved_suggestions=unresolved_suggestions,
+            unused_mappers=unused_mappers,
+            mapper_retain_reasons=mapper_retain_reasons,
+            unused_mapper_files=unused_mapper_files,
         )
+
+    def build_impl_method_plan(self, requested_targets: Sequence[str]) -> CleanupPlan:
+        scan_all = not any(str(target).strip() for target in requested_targets)
+        if scan_all:
+            impl_roots = self.locate_unreferenced_impl_methods()
+            unresolved: List[str] = []
+        else:
+            impl_roots, unresolved = self.locate_impl_methods(requested_targets)
+        root_keys = {match.method.key for match in impl_roots}
+        closure = self.reachable_closure(root_keys)
+        candidates = set(closure)
+        changed = True
+        while changed:
+            changed = False
+            for key in list(candidates):
+                outside_callers = self.incoming.get(key, set()) - candidates
+                anchored = bool(self.external_anchors.get(key))
+                if outside_callers or anchored:
+                    candidates.remove(key)
+                    changed = True
+
+        retained = closure - candidates
+        root_warnings: Dict[str, List[str]] = {}
+        for match in impl_roots:
+            key = match.method.key
+            external = self.incoming.get(key, set()) - candidates
+            anchors = self.external_anchors.get(key, [])
+            if key not in candidates or external or anchors:
+                root_warnings[key.text()] = self.format_reasons(external, anchors)
+
+        retain_reasons: Dict[str, List[str]] = {}
+        for key in retained:
+            external = self.incoming.get(key, set()) - candidates
+            anchors = self.external_anchors.get(key, [])
+            retain_reasons[key.text()] = self.format_reasons(external, anchors)
+
+        return CleanupPlan(
+            roots=[],
+            closure=closure,
+            removable=candidates,
+            retained=retained,
+            root_warnings=root_warnings,
+            retain_reasons=retain_reasons,
+            unresolved_paths=[],
+            unresolved_suggestions={},
+            impl_roots=impl_roots,
+            unresolved_impl_methods=unresolved,
+            impl_scan_all=scan_all,
+            unused_mappers=set(),
+            mapper_retain_reasons={},
+            unused_mapper_files=set(),
+        )
+
+    def locate_unreferenced_impl_methods(self) -> List[ImplMethodMatch]:
+        matches: List[ImplMethodMatch] = []
+        for cls in sorted(
+            self.classes.values(),
+            key=lambda item: (str(relpath(item.path, self.root)), item.fqn),
+        ):
+            if not self.is_service_impl_class(cls):
+                continue
+            for method in sorted(cls.methods, key=lambda item: (item.line, item.name, item.full_start)):
+                if not self.is_impl_scan_candidate(method):
+                    continue
+                if self.has_effective_impl_incoming_call(method.key):
+                    continue
+                matches.append(ImplMethodMatch(method.label, method))
+        return matches
+
+    def is_impl_scan_candidate(self, method: MethodInfo) -> bool:
+        if method.is_constructor:
+            return False
+        if method.body_start is None or method.body_end is None:
+            return False
+        if method.route_paths:
+            return False
+        if self.has_external_override_risk(method):
+            return False
+        if self.deletion_guard_reason(method):
+            return False
+        if method.annotation_names & ENTRYPOINT_ANNOTATIONS:
+            return False
+        if method.name in {"equals", "hashCode", "toString"}:
+            return False
+        return True
+
+    def has_external_override_risk(self, method: MethodInfo) -> bool:
+        if "Override" not in method.annotation_names:
+            return False
+        cls = self.classes.get(method.class_fqn)
+        if not cls:
+            return True
+        unresolved_types = cls.unresolved_extends + cls.unresolved_implements
+        if not unresolved_types:
+            return False
+        return any(self.looks_external_type(type_name, cls) for type_name in unresolved_types)
+
+    @staticmethod
+    def looks_external_type(type_name: str, cls: ClassInfo) -> bool:
+        simple = clean_type(type_name).split(".")[-1]
+        if not simple:
+            return False
+        if simple in {"Serializable", "Cloneable", "AutoCloseable", "Closeable", "Comparable", "Runnable"}:
+            return True
+        imported = cls.imports.get(simple)
+        if imported:
+            return not imported.startswith(cls.package.rsplit(".", 1)[0] + ".")
+        if "." in type_name:
+            return not type_name.startswith(cls.package.rsplit(".", 1)[0] + ".")
+        return False
+
+    def has_effective_impl_incoming_call(self, key: MethodKey) -> bool:
+        if self.has_real_incoming_call(key):
+            return True
+        for caller in self.incoming.get(key, set()):
+            if not self.is_interface_contract_pair(caller, key):
+                continue
+            if self.has_real_incoming_call(caller):
+                return True
+            if self.external_anchors.get(caller):
+                return True
+        return False
+
+    def has_real_incoming_call(self, key: MethodKey) -> bool:
+        return any(
+            not self.is_interface_contract_pair(caller, key)
+            for caller in self.incoming.get(key, set())
+        )
+
+    def is_interface_contract_pair(self, left: MethodKey, right: MethodKey) -> bool:
+        left_method = self.methods.get(left)
+        right_method = self.methods.get(right)
+        if not left_method or not right_method:
+            return False
+        left_cls = self.classes.get(left.class_fqn)
+        right_cls = self.classes.get(right.class_fqn)
+        if not left_cls or not right_cls:
+            return False
+        if left_method.name != right_method.name:
+            return False
+        if len(left_method.params) != len(right_method.params):
+            return False
+        if left_cls.kind == "interface" and right_cls.kind == "class":
+            return right.class_fqn in self.interface_impls.get(left.class_fqn, set())
+        if left_cls.kind == "class" and right_cls.kind == "interface":
+            return left.class_fqn in self.interface_impls.get(right.class_fqn, set())
+        return False
+
+    def locate_impl_methods(self, requested_targets: Sequence[str]) -> Tuple[List[ImplMethodMatch], List[str]]:
+        matches: List[ImplMethodMatch] = []
+        unresolved: List[str] = []
+        seen: Set[MethodKey] = set()
+        for raw_target in requested_targets:
+            target = raw_target.strip()
+            if not target:
+                continue
+            parsed = self.parse_impl_method_target(target)
+            if not parsed:
+                unresolved.append(target)
+                continue
+            class_name, method_name = parsed
+            class_fqn = self.resolve_class_name(class_name)
+            if not class_fqn:
+                unresolved.append(target)
+                continue
+            cls = self.classes.get(class_fqn)
+            if not cls or not self.is_service_impl_class(cls):
+                unresolved.append(target)
+                continue
+            methods = [
+                method
+                for method in self.methods_by_class.get(class_fqn, {}).get(method_name, [])
+                if not method.is_constructor and method.body_start is not None
+            ]
+            if not methods:
+                unresolved.append(target)
+                continue
+            for method in methods:
+                if method.key not in seen:
+                    matches.append(ImplMethodMatch(target, method))
+                    seen.add(method.key)
+        return matches, unresolved
+
+    @staticmethod
+    def parse_impl_method_target(target: str) -> Optional[Tuple[str, str]]:
+        normalized = target.strip()
+        if "#" in normalized:
+            owner, method = normalized.rsplit("#", 1)
+        elif "." in normalized:
+            owner, method = normalized.rsplit(".", 1)
+        else:
+            return None
+        owner = owner.strip()
+        method = method.strip()
+        method = re.sub(r"\s*\(.*\)\s*$", "", method)
+        if not owner or not re.fullmatch(r"[A-Za-z_]\w*", method):
+            return None
+        return owner, method
+
+    def resolve_class_name(self, class_name: str) -> Optional[str]:
+        if class_name in self.classes:
+            return class_name
+        simple = class_name.split(".")[-1]
+        fqns = self.simple_to_fqns.get(simple, set())
+        if "." in class_name:
+            candidates = [fqn for fqn in fqns if fqn.endswith("." + simple) and fqn == class_name]
+            if len(candidates) == 1:
+                return candidates[0]
+        if len(fqns) == 1:
+            return next(iter(fqns))
+        return None
+
+    def is_service_impl_class(self, cls: ClassInfo) -> bool:
+        annotation_names = {
+            name for name, _ in extract_annotation_invocations(cls.annotations_text)
+        }
+        return cls.kind == "class" and cls.name.lower().endswith("impl") and "Service" in annotation_names
+
+    def build_unused_mapper_file_plan(self, unused_mappers: Set[MethodKey]) -> Set[str]:
+        files: Set[str] = set()
+        unused_by_class: Dict[str, Set[MethodKey]] = defaultdict(set)
+        for key in unused_mappers:
+            unused_by_class[key.class_fqn].add(key)
+
+        for cls in self.classes.values():
+            if not self.is_mapper_class(cls):
+                continue
+            methods = [method for method in cls.methods if not self.deletion_guard_reason(method)]
+            if not methods:
+                continue
+            if any(method.key not in unused_by_class.get(cls.fqn, set()) for method in methods):
+                continue
+            if self.class_has_external_reference(cls):
+                continue
+            files.add(str(relpath(cls.path, self.root)))
+            for xml_path in self.xml_namespaces.get(cls.fqn, []):
+                files.add(str(relpath(xml_path, self.root)))
+        return files
+
+    def class_has_external_reference(self, cls: ClassInfo) -> bool:
+        simple_patterns = [
+            cls.fqn,
+            cls.name,
+            f'"{cls.fqn}"',
+            f"'{cls.fqn}'",
+            f'"{cls.name}"',
+            f"'{cls.name}'",
+        ]
+        for path, text in self.get_reference_texts():
+            if path == cls.path or path in self.xml_namespaces.get(cls.fqn, []):
+                continue
+            if any(pattern in text for pattern in simple_patterns):
+                return True
+        return False
 
     def reachable_closure(self, roots: Set[MethodKey]) -> Set[MethodKey]:
         closure: Set[MethodKey] = set(roots)
@@ -1525,11 +2080,17 @@ class JavaProjectAnalyzer:
 
     def delete_plan(self, plan: CleanupPlan) -> Dict[str, object]:
         java_edits: Dict[Path, List[Tuple[int, int, str]]] = defaultdict(list)
-        for key in plan.removable:
+        file_delete_paths = {
+            (self.root / path).resolve()
+            for path in plan.unused_mapper_files
+        }
+        for key in set(plan.removable) | set(plan.unused_mappers):
             method = self.methods.get(key)
             if not method:
                 continue
             if self.deletion_guard_reason(method):
+                continue
+            if method.path.resolve() in file_delete_paths:
                 continue
             java_edits[method.path].append(
                 (method.full_start, method.full_end, method.label)
@@ -1545,22 +2106,40 @@ class JavaProjectAnalyzer:
 
         touched_xml: List[str] = []
         if self.delete_xml:
-            touched_xml = self.delete_xml_removals(plan)
+            touched_xml = self.delete_xml_removals(plan, file_delete_paths)
+
+        deleted_files: List[str] = []
+        for path in sorted(file_delete_paths, key=lambda p: str(relpath(p, self.root))):
+            if not path.exists() or not self.is_safe_delete_file(path):
+                continue
+            path.unlink()
+            deleted_files.append(str(relpath(path, self.root)))
 
         return {
             "java_files": sorted(touched_java),
             "xml_files": sorted(touched_xml),
+            "deleted_files": deleted_files,
         }
 
-    def delete_xml_removals(self, plan: CleanupPlan) -> List[str]:
+    def is_safe_delete_file(self, path: Path) -> bool:
+        try:
+            resolved = path.resolve()
+            resolved.relative_to(self.root)
+        except ValueError:
+            return False
+        return resolved.suffix in (JAVA_SUFFIX, XML_SUFFIX)
+
+    def delete_xml_removals(self, plan: CleanupPlan, file_delete_paths: Set[Path]) -> List[str]:
         removals_by_xml: Dict[Path, Set[str]] = defaultdict(set)
-        for key in plan.removable:
+        for key in set(plan.removable) | set(plan.unused_mappers):
             method = self.methods.get(key)
             if not method:
                 continue
             if self.deletion_guard_reason(method):
                 continue
             for xml_path in self.xml_namespaces.get(method.class_fqn, []):
+                if xml_path.resolve() in file_delete_paths:
+                    continue
                 removals_by_xml[xml_path].add(method.name)
 
         touched: List[str] = []
@@ -1575,6 +2154,16 @@ class JavaProjectAnalyzer:
         return touched
 
     def report_dict(self, plan: CleanupPlan, deleted: Optional[Dict[str, object]] = None) -> Dict[str, object]:
+        retained_mappers = []
+        for text, reasons in sorted(plan.mapper_retain_reasons.items()):
+            key = self.method_key_from_text(text)
+            if key in self.methods:
+                retained_mappers.append(
+                    {
+                        **self.mapper_report(key),
+                        "reasons": reasons,
+                    }
+                )
         return {
             "root": str(self.root),
             "delete": deleted is not None,
@@ -1589,7 +2178,19 @@ class JavaProjectAnalyzer:
                 for match in plan.roots
             ],
             "apiTrees": self.api_tree_reports(plan),
+            "implMethods": [
+                {
+                    "requestedTarget": match.requested_target,
+                    "method": match.method.label,
+                    "file": str(relpath(match.method.path, self.root)),
+                    "line": match.method.line,
+                }
+                for match in plan.impl_roots
+            ],
+            "implScanAll": plan.impl_scan_all,
+            "implTrees": self.impl_tree_reports(plan),
             "unresolvedPaths": plan.unresolved_paths,
+            "unresolvedImplMethods": plan.unresolved_impl_methods,
             "unresolvedSuggestions": {
                 path: [
                     {
@@ -1606,6 +2207,12 @@ class JavaProjectAnalyzer:
                 "reachableMethods": len(plan.closure),
                 "removableMethods": len(plan.removable),
                 "retainedBoundaryMethods": len(plan.retained),
+                "implMethods": len(plan.impl_roots),
+                "implScanAll": plan.impl_scan_all,
+                "unresolvedImplMethods": len(plan.unresolved_impl_methods),
+                "unusedMapperMethods": len(plan.unused_mappers),
+                "retainedMapperMethods": len(plan.mapper_retain_reasons),
+                "unusedMapperFiles": len(plan.unused_mapper_files),
             },
             "removable": [self.method_report(key) for key in sorted(plan.removable, key=lambda k: k.text())],
             "retained": [
@@ -1615,9 +2222,36 @@ class JavaProjectAnalyzer:
                 }
                 for key in sorted(plan.retained, key=lambda k: k.text())
             ],
+            "unusedMappers": [
+                self.mapper_report(key)
+                for key in sorted(plan.unused_mappers, key=lambda k: k.text())
+            ],
+            "retainedMappers": retained_mappers,
+            "unusedMapperFiles": sorted(plan.unused_mapper_files),
             "rootWarnings": plan.root_warnings,
             "deletedFiles": deleted or {},
         }
+
+    def method_key_from_text(self, text: str) -> MethodKey:
+        class_and_name, start_text = text.rsplit("@", 1)
+        class_fqn, name = class_and_name.rsplit("#", 1)
+        return MethodKey(class_fqn, name, int(start_text))
+
+    def mapper_report(self, key: MethodKey) -> Dict[str, object]:
+        data = self.method_report(key)
+        method = self.methods[key]
+        statements = self.xml_statements.get((method.class_fqn, method.name), [])
+        data["xmlStatements"] = [
+            {
+                "tag": statement.tag,
+                "id": statement.statement_id,
+                "file": str(relpath(statement.path, self.root)),
+                "line": statement.line,
+            }
+            for statement in statements
+        ]
+        data["mapperClass"] = method.class_fqn
+        return data
 
     def api_tree_reports(self, plan: CleanupPlan) -> List[Dict[str, object]]:
         root_keys = {match.method.key for match in plan.roots}
@@ -1635,6 +2269,23 @@ class JavaProjectAnalyzer:
                 ),
             }
             for match in plan.roots
+        ]
+
+    def impl_tree_reports(self, plan: CleanupPlan) -> List[Dict[str, object]]:
+        root_keys = {match.method.key for match in plan.impl_roots}
+        return [
+            {
+                "requestedTarget": match.requested_target,
+                "root": self.method_report(match.method.key, include_code=True),
+                "tree": self.call_tree_node(
+                    match.method.key,
+                    plan,
+                    root_keys=root_keys,
+                    stack=[],
+                    depth=0,
+                ),
+            }
+            for match in plan.impl_roots
         ]
 
     def call_tree_node(
@@ -1731,6 +2382,43 @@ def remove_mybatis_statement(text: str, method_name: str) -> str:
     return text
 
 
+def iter_mybatis_statements(
+    text: str, namespace: str, path: Path
+) -> Iterable[MyBatisStatementInfo]:
+    for tag in STATEMENT_TAGS:
+        full_pattern = re.compile(
+            rf"<{tag}\b(?=[^>]*\bid\s*=\s*['\"]([^'\"]+)['\"])[^>]*>"
+            rf".*?</{tag}>",
+            flags=re.S,
+        )
+        for match in full_pattern.finditer(text):
+            statement_id = match.group(1)
+            yield MyBatisStatementInfo(
+                namespace=namespace,
+                statement_id=statement_id,
+                tag=tag,
+                path=path,
+                line=line_of(text, match.start()),
+                start=match.start(),
+                end=match.end(),
+            )
+        self_closing = re.compile(
+            rf"<{tag}\b(?=[^>]*\bid\s*=\s*['\"]([^'\"]+)['\"])[^>]*/>",
+            flags=re.S,
+        )
+        for match in self_closing.finditer(text):
+            statement_id = match.group(1)
+            yield MyBatisStatementInfo(
+                namespace=namespace,
+                statement_id=statement_id,
+                tag=tag,
+                path=path,
+                line=line_of(text, match.start()),
+                start=match.start(),
+                end=match.end(),
+            )
+
+
 def route_tokens(path: str) -> Set[str]:
     path = normalize_path(path).lower()
     pieces = [piece for piece in re.split(r"[/_.-]+", path) if piece]
@@ -1804,7 +2492,7 @@ def load_paths(args: argparse.Namespace) -> List[str]:
     deduped: List[str] = []
     seen: Set[str] = set()
     for path in paths:
-        norm = normalize_path(path)
+        norm = str(path).strip() if getattr(args, "impl_only", False) else normalize_path(path)
         if norm not in seen:
             deduped.append(norm)
             seen.add(norm)
@@ -1818,12 +2506,16 @@ class DeadApiCleanupService:
         self.options = options
 
     def run(self, paths: Sequence[str]) -> CleanupRunResult:
-        clean_paths = self.normalize_paths(paths)
+        clean_paths = (
+            self.normalize_impl_targets(paths)
+            if self.options.impl_only
+            else self.normalize_paths(paths)
+        )
         root = self.options.root.resolve()
         if not root.exists():
             raise FileNotFoundError(f"root does not exist: {root}")
-        if not clean_paths:
-            raise ValueError("provide at least one API path")
+        if not clean_paths and not self.options.mapper_only and not self.options.impl_only:
+            raise ValueError("provide at least one API path or implementation method")
 
         analyzer = JavaProjectAnalyzer(
             root=root,
@@ -1831,10 +2523,14 @@ class DeadApiCleanupService:
             exact_route_match=self.options.exact_route_match,
             max_depth=self.options.max_depth,
             delete_xml=self.options.delete_xml,
+            scan_unused_mappers=self.options.scan_unused_mappers,
             verbose=self.options.verbose,
         )
         analyzer.index()
-        plan = analyzer.build_plan(clean_paths)
+        if self.options.impl_only:
+            plan = analyzer.build_impl_method_plan(clean_paths)
+        else:
+            plan = analyzer.build_plan(clean_paths)
         deleted = analyzer.delete_plan(plan) if self.options.delete else None
         report = analyzer.report_dict(plan, deleted)
         report_path = self.write_report(root, report)
@@ -1857,6 +2553,17 @@ class DeadApiCleanupService:
                 seen.add(norm)
         return deduped
 
+    @staticmethod
+    def normalize_impl_targets(paths: Sequence[str]) -> List[str]:
+        deduped: List[str] = []
+        seen: Set[str] = set()
+        for path in paths:
+            target = str(path).strip()
+            if target and target not in seen:
+                deduped.append(target)
+                seen.add(target)
+        return deduped
+
     def write_report(self, root: Path, report: Dict[str, Any]) -> Optional[Path]:
         if self.options.no_report or not self.options.report:
             return None
@@ -1874,7 +2581,13 @@ def print_console_summary(
     limit: int,
 ) -> None:
     mode = "DELETE" if deleted is not None else "DRY-RUN"
-    print(f"[{mode}] API dead-code cleanup plan")
+    if plan.impl_roots or plan.unresolved_impl_methods:
+        plan_label = "implementation-method dead-code cleanup plan"
+    elif plan.roots or plan.unresolved_paths:
+        plan_label = "API dead-code cleanup plan"
+    else:
+        plan_label = "mapper dead-code cleanup plan"
+    print(f"[{mode}] {plan_label}")
     print(f"Root: {analyzer.root}")
     print()
     if plan.roots:
@@ -1898,12 +2611,32 @@ def print_console_summary(
                         f"      - {normalize_path(match.matched_route)} "
                         f"=> {method.label} ({relpath(method.path, analyzer.root)}:{method.line})"
                     )
+    if plan.impl_roots:
+        heading = (
+            "Unreferenced implementation methods:"
+            if plan.impl_scan_all
+            else "Matched implementation methods:"
+        )
+        print(heading)
+        for match in plan.impl_roots:
+            method = match.method
+            print(
+                f"  - {match.requested_target} => "
+                f"{method.label} ({relpath(method.path, analyzer.root)}:{method.line})"
+            )
+    if plan.unresolved_impl_methods:
+        print("Unresolved implementation methods:")
+        for target in plan.unresolved_impl_methods:
+            print(f"  - {target}")
     print()
     print(
         "Summary: "
         f"reachable={len(plan.closure)}, "
         f"removable={len(plan.removable)}, "
-        f"retainedBoundary={len(plan.retained)}"
+        f"retainedBoundary={len(plan.retained)}, "
+        f"implRoots={len(plan.impl_roots)}, "
+        f"unusedMappers={len(plan.unused_mappers)}, "
+        f"retainedMappers={len(plan.mapper_retain_reasons)}"
     )
     if plan.root_warnings:
         print()
@@ -1934,9 +2667,47 @@ def print_console_summary(
                 f"  - {method.label} ({relpath(method.path, analyzer.root)}:{method.line})"
                 f"{first_reason}"
             )
+    if plan.unused_mappers:
+        print()
+        print("Unused mapper methods:")
+        for idx, key in enumerate(sorted(plan.unused_mappers, key=lambda k: k.text())):
+            if idx >= limit:
+                print(f"  ... {len(plan.unused_mappers) - limit} more")
+                break
+            method = analyzer.methods[key]
+            statements = analyzer.xml_statements.get((method.class_fqn, method.name), [])
+            xml_info = ""
+            if statements:
+                first = statements[0]
+                xml_info = f" xml={relpath(first.path, analyzer.root)}:{first.line}"
+            print(f"  - {method.label} ({relpath(method.path, analyzer.root)}:{method.line}){xml_info}")
+    if plan.unused_mapper_files:
+        print()
+        print("Unused mapper file candidates:")
+        for idx, path in enumerate(sorted(plan.unused_mapper_files)):
+            if idx >= limit:
+                print(f"  ... {len(plan.unused_mapper_files) - limit} more")
+                break
+            print(f"  - {path}")
+    if plan.mapper_retain_reasons:
+        print()
+        print("Retained mapper methods:")
+        for idx, (key_text, reasons) in enumerate(sorted(plan.mapper_retain_reasons.items())):
+            if idx >= limit:
+                print(f"  ... {len(plan.mapper_retain_reasons) - limit} more")
+                break
+            key = analyzer.method_key_from_text(key_text)
+            method = analyzer.methods.get(key)
+            if not method:
+                continue
+            first_reason = f" [{reasons[0]}]" if reasons else ""
+            print(
+                f"  - {method.label} ({relpath(method.path, analyzer.root)}:{method.line})"
+                f"{first_reason}"
+            )
     if deleted is None:
         print()
-        print("No files changed. Re-run with the delete command to delete the removable methods.")
+        print("No files changed. Re-run with the delete command to delete removable methods and unused mapper methods.")
     else:
         print()
         print("Modified files:")
@@ -1981,6 +2752,21 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Do not remove MyBatis XML statements for deleted mapper methods",
     )
     parser.add_argument(
+        "--mapper-only",
+        action="store_true",
+        help="Analyze/delete unused mapper methods without requiring API paths",
+    )
+    parser.add_argument(
+        "--impl-only",
+        action="store_true",
+        help="Analyze/delete unused methods rooted at @Service implementation methods",
+    )
+    parser.add_argument(
+        "--no-unused-mapper-scan",
+        action="store_true",
+        help="Disable unused mapper analysis",
+    )
+    parser.add_argument(
         "--report",
         default="dead_api_cleanup_report.json",
         help="JSON report path. Use empty string to disable",
@@ -2002,7 +2788,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         args.positional_paths.insert(0, args.action)
         args.action = "analyze"
     paths = load_paths(args)
-    if not paths:
+    if not paths and not args.mapper_only and not args.impl_only:
         parser.error("provide API paths via positional args, --paths, or --paths-file")
 
     root = Path(args.root).resolve()
@@ -2018,6 +2804,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         exact_route_match=args.exact_route_match,
         max_depth=args.max_depth,
         delete_xml=not args.no_delete_xml,
+        scan_unused_mappers=not args.no_unused_mapper_scan,
+        mapper_only=args.mapper_only,
+        impl_only=args.impl_only,
         delete=args.action == "delete",
         report=args.report,
         no_report=args.no_report,
@@ -2026,7 +2815,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     result = DeadApiCleanupService(options).run(paths)
 
     print_console_summary(result.analyzer, result.plan, result.deleted, args.limit)
-    if result.plan.unresolved_paths:
+    if result.plan.unresolved_paths or result.plan.unresolved_impl_methods:
         return 2
     return 0
 
