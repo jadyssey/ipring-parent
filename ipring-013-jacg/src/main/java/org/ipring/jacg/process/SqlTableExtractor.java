@@ -3,12 +3,14 @@ package org.ipring.jacg.process;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.TablesNamesFinder;
+import org.ipring.jacg.mapper.po.JacgFormatedSqlVO;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -19,27 +21,30 @@ import java.util.regex.Pattern;
 public class SqlTableExtractor {
     // 匹配 MyBatis #{...} 和 ${...}
     private static final Pattern MYBATIS_PLACEHOLDER = Pattern.compile("[#$]\\{[^}]+\\}");
+    private static final Pattern IGNORE = Pattern.compile("");
 
     /**
      * 提取表名（支持MyBatis占位符，不抛解析异常）
      */
-    public static List<String> extractTableNamesV2(String sql) {
+    public static List<String> extractTableNamesV2(JacgFormatedSqlVO sqlVO) {
+        String sql = sqlVO.getFormatedSql();
         if (sql == null || sql.trim().isEmpty()) {
             return new ArrayList<>();
         }
 
         // 核心：把 #{xxx} / ${xxx} 替换成合法常量，让JSqlParser能正常解析
-        String cleanedSql = MYBATIS_PLACEHOLDER.matcher(sql).replaceAll("'REPLACED'");
+        String cleanedSql = sqlVO.getFormatedSql().replace("${params.dataScope}", "");
+        cleanedSql = MYBATIS_PLACEHOLDER.matcher(cleanedSql).replaceAll("'REPLACED'");
 
         // 解析SQL
         Statement statement = null;
         try {
             statement = CCJSqlParserUtil.parse(cleanedSql);
         } catch (JSQLParserException e) {
-            log.error("解析报错: {}, exp:", sql, e);
+            log.error("解析报错: {}, {}, exp:", sqlVO.getMapperSqlId(), cleanedSql, e);
         }
+        if (Objects.isNull(statement)) return Collections.emptyList();
         TablesNamesFinder finder = new TablesNamesFinder();
-
         // 返回表名列表
         return finder.getTableList(statement);
     }

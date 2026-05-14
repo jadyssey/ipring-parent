@@ -9,4 +9,13 @@
         FROM jacg_class_annotation_jacg
         WHERE simple_class_name = #{simpleClassName} and annotation_name = #{annotationName}
     </select>
+
+
+    <select id="selectAllFormatedSql" resultType="org.ipring.jacg.mapper.po.JacgFormatedSqlVO">
+        SELECT CONCAT(mapper_class_name, ':', sql_id) AS mapper_sql_id,
+               formated_sql
+        FROM jacg_mybatis_ms_formated_sql_jacg
+        where formated_sql IS NOT NULL
+          and formated_sql != ''
+    </select>
 </mapper>
