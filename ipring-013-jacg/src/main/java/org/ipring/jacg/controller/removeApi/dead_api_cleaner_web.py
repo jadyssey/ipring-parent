@@ -215,6 +215,12 @@ INDEX_HTML = r"""<!doctype html>
       padding: 14px;
       background: #fff;
     }
+    .preview-grid.is-expanded {
+      grid-template-columns: 1fr;
+    }
+    .preview-grid.is-expanded .preview-panel:not(.is-expanded) {
+      display: none;
+    }
     .preview-panel {
       min-width: 0;
       border: 1px solid var(--line);
@@ -222,12 +228,20 @@ INDEX_HTML = r"""<!doctype html>
       overflow: hidden;
       background: #fff;
     }
+    .preview-panel.is-expanded .content {
+      max-height: calc(100vh - 182px);
+    }
     .preview-panel-head {
       padding: 12px 14px;
       border-bottom: 1px solid var(--line);
       background: #f8fafc;
-      display: grid;
-      gap: 10px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .preview-panel-heading {
+      min-width: 0;
     }
     .preview-panel-title {
       font-size: 14px;
@@ -237,6 +251,28 @@ INDEX_HTML = r"""<!doctype html>
       margin-top: 4px;
       color: var(--muted);
       font-size: 12px;
+    }
+    .preview-panel-tools {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      min-width: 144px;
+    }
+    .preview-toggle {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #344054;
+      border-radius: 5px;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 650;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .preview-toggle:hover {
+      background: #f2f4f7;
     }
     .content {
       padding: 14px;
@@ -480,37 +516,46 @@ INDEX_HTML = r"""<!doctype html>
         <div class="summary" id="summary"></div>
       </div>
       <div class="preview-grid" id="previewRoot">
-        <article class="preview-panel">
+        <article class="preview-panel" data-preview-panel="api">
           <div class="preview-panel-head">
-            <div>
+            <div class="preview-panel-heading">
               <div class="preview-panel-title">接口预览</div>
               <div class="preview-panel-sub">对应左侧“接口管理”的分析与删除结果。</div>
             </div>
-            <div class="summary" id="apiSummary"></div>
+            <div class="preview-panel-tools">
+              <button type="button" class="preview-toggle" data-preview-toggle="api" aria-expanded="false">放大</button>
+              <div class="summary" id="apiSummary"></div>
+            </div>
           </div>
           <div class="content" id="apiPreview">
             <div class="empty">输入接口路径后点击“分析接口”。</div>
           </div>
         </article>
-        <article class="preview-panel">
+        <article class="preview-panel" data-preview-panel="mapper">
           <div class="preview-panel-head">
-            <div>
+            <div class="preview-panel-heading">
               <div class="preview-panel-title">Mapper预览</div>
               <div class="preview-panel-sub">对应左侧“Mapper管理”的分析与删除结果。</div>
             </div>
-            <div class="summary" id="mapperSummary"></div>
+            <div class="preview-panel-tools">
+              <button type="button" class="preview-toggle" data-preview-toggle="mapper" aria-expanded="false">放大</button>
+              <div class="summary" id="mapperSummary"></div>
+            </div>
           </div>
           <div class="content" id="mapperPreview">
             <div class="empty">点击“分析 Mapper”查看无引用 Mapper。</div>
           </div>
         </article>
-        <article class="preview-panel">
+        <article class="preview-panel" data-preview-panel="impl">
           <div class="preview-panel-head">
-            <div>
+            <div class="preview-panel-heading">
               <div class="preview-panel-title">实现类预览</div>
               <div class="preview-panel-sub">对应左侧“实现类管理”的分析与删除结果。</div>
             </div>
-            <div class="summary" id="implSummary"></div>
+            <div class="preview-panel-tools">
+              <button type="button" class="preview-toggle" data-preview-toggle="impl" aria-expanded="false">放大</button>
+              <div class="summary" id="implSummary"></div>
+            </div>
           </div>
           <div class="content" id="implPreview">
             <div class="empty">输入实现类方法或留空扫描全部，然后点击“分析实现类无用方法”。</div>
@@ -541,6 +586,7 @@ INDEX_HTML = r"""<!doctype html>
     let mapperReport = null;
     let implReport = null;
     let currentLimit = 1200;
+    let expandedPreview = null;
 
     clearBtn.addEventListener("click", () => {
       apiPreview.innerHTML = '<div class="empty">输入接口路径后点击“分析接口”。</div>';
@@ -868,6 +914,11 @@ INDEX_HTML = r"""<!doctype html>
     }
 
     previewRoot.addEventListener("click", (event) => {
+      const previewToggle = event.target.closest(".preview-toggle");
+      if (previewToggle) {
+        togglePreviewPanel(previewToggle.dataset.previewToggle);
+        return;
+      }
       const button = event.target.closest(".child-toggle");
       if (!button) {
         return;
@@ -881,6 +932,23 @@ INDEX_HTML = r"""<!doctype html>
       button.setAttribute("aria-expanded", String(!collapsed));
       button.textContent = collapsed ? "展开子调用" : "收起子调用";
     });
+
+    function togglePreviewPanel(target) {
+      if (!target) {
+        return;
+      }
+      expandedPreview = expandedPreview === target ? null : target;
+      previewRoot.classList.toggle("is-expanded", Boolean(expandedPreview));
+      previewRoot.querySelectorAll("[data-preview-panel]").forEach(panel => {
+        const active = panel.dataset.previewPanel === expandedPreview;
+        panel.classList.toggle("is-expanded", active);
+      });
+      previewRoot.querySelectorAll("[data-preview-toggle]").forEach(button => {
+        const active = button.dataset.previewToggle === expandedPreview;
+        button.textContent = active ? "还原" : "放大";
+        button.setAttribute("aria-expanded", String(active));
+      });
+    }
 
     function pill(name, value) {
       return '<span class="pill">' + escapeHtml(name) + ': ' + escapeHtml(String(value)) + '</span>';
