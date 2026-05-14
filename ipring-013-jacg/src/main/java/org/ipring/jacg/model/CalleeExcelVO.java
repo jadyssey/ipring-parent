@@ -54,6 +54,9 @@ public class CalleeExcelVO {
             resp.setSql(chainStr[1]);
         }
         String chainSource = Arrays.stream(chainStr).skip(2).collect(Collectors.joining(SimpleCallChainProcessor.SPLIT));
+        if (TargetTypeEnum.EXCLUDE_LIST.stream().anyMatch(chainSource::contains)) {
+            resp.setType("命中过滤条件");
+        }
         resp.setChain(chainSource);
         return resp;
     }

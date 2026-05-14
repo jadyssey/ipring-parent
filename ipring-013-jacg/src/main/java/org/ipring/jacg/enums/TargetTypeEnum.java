@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.ipring.enums.StrEnumType;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,6 +31,10 @@ public enum TargetTypeEnum implements StrEnumType {
     private final String type;
     private final String description;
     private final String regex;
+
+
+    // 排除调用链中含这些字符的
+    public static final List<String> EXCLUDE_LIST = Arrays.asList("RemoteWaybillFacadeImpl#");
 
     public static final Map<String, Pattern> ALL_ENUM_MAP =
             Arrays.stream(TargetTypeEnum.values()).collect(Collectors.toMap(TargetTypeEnum::getDescription, type -> Pattern.compile(type.regex, Pattern.CASE_INSENSITIVE)));
