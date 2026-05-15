@@ -34,7 +34,28 @@ public enum TargetTypeEnum implements StrEnumType {
 
 
     // 排除调用链中含这些字符的
-    public static final List<String> EXCLUDE_LIST = Arrays.asList("RemoteWaybillFacadeImpl#");
+    public static final List<String> EXCLUDE_LIST = Arrays.asList("RemoteWaybillFacadeImpl#", "RemoteWaybillProxyService#");
+    // 需要提取到remark上的MQ消费者
+    public static final List<String> MQ_REMARK_LIST = Arrays.asList("courierBatchHubAssignConsumer",
+            "awaitOutWarehouseConsumer",
+            "centerShelfDownConsumer",
+            "siteCheckInDeleteRecordConsumer",
+            "taskMergeOptimizationConsumer",
+            "deliveryUpdateConsumer",
+            "signService#consumerMQSignInfo",
+            "asyncWaybillScanService",
+            "routePlanTaskWaybillConsumer#handleSendAttentionFlag",
+            "waybillAccessControlConsumer#consumeMessage",
+            "appleReceivingSupplyTrackConsumer#consumeMessage",
+            "stdSortLogConsumer#consumeMessage",
+            "iMisWaybillInfoService#syncFormOrder",
+            "locationConsumer#consumeMessage",
+            "scanOperationLogConsumer#consumeMessage",
+            "pickupMsgConsumer#consume",
+            "receivePackageDeliveryTimeConsumer#consume",
+            "newScanTriggerDisconnectConsumer#consumeSingleMessage",
+            "deliveryCommonConsumer#consume",
+            "lostStolenSynchronizationConsumer#consumeMessage");
 
     public static final Map<String, Pattern> ALL_ENUM_MAP =
             Arrays.stream(TargetTypeEnum.values()).collect(Collectors.toMap(TargetTypeEnum::getDescription, type -> Pattern.compile(type.regex, Pattern.CASE_INSENSITIVE)));

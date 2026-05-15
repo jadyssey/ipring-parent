@@ -11,6 +11,8 @@ import org.ipring.jacg.process.SimpleCallChainProcessor;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import static org.ipring.jacg.enums.TargetTypeEnum.MQ_REMARK_LIST;
+
 /**
  * @author liuguangjin
  * @date 2025/1/9
@@ -53,8 +55,12 @@ public class CalleeExcelVO {
             resp.setType(TargetTypeEnum.checkType(resp.getTarget()));
             resp.setSql(chainStr[1]);
         }
+        if (TargetTypeEnum.MQ.getDescription().equalsIgnoreCase(resp.getType())) {
+            String remark = Arrays.stream(chainStr).filter(chain -> MQ_REMARK_LIST.stream().anyMatch(str -> chain.toLowerCase().contains(str.toLowerCase()))).collect(Collectors.joining(SimpleCallChainProcessor.SPLIT));
+            resp.setRemark(remark);
+        }
         String chainSource = Arrays.stream(chainStr).skip(2).collect(Collectors.joining(SimpleCallChainProcessor.SPLIT));
-        if (TargetTypeEnum.EXCLUDE_LIST.stream().anyMatch(chainSource::contains)) {
+        if (TargetTypeEnum.EXCLUDE_LIST.stream().anyMatch(str -> chainSource.toLowerCase().contains(str.toLowerCase()))) {
             resp.setType("命中过滤条件");
         }
         resp.setChain(chainSource);
