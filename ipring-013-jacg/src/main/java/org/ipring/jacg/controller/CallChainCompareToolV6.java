@@ -45,8 +45,8 @@ public class CallChainCompareToolV6 {
     private static final int MAX_EXPAND_LEVEL = 120;
     private static final int DIFF_CONTEXT_LINES = 2;
     private static final int SCAN_PROGRESS_INTERVAL = 200;
-    private static final String DEFAULT_TARGET_FOLDER = "D:\\Documents\\Desktop\\代码对比";
-    private static final String DEFAULT_TARGET_FUNC = "运单更新对比";
+    private static final String DEFAULT_TARGET_FOLDER = "D:\\Documents\\Desktop\\运单代码对比";
+    private static final String DEFAULT_TARGET_FUNC = "OmsOrderController#edit";
 
     /**
      * 返回默认需要比对的工程及其入口方法。
@@ -62,14 +62,14 @@ public class CallChainCompareToolV6 {
                 new ProjectConfig(
                         "waybill",
                         "D:\\git\\usCode\\dbu-mod-waybill",
-                        "MisWaybillInfoServiceImpl",
-                        "updateMisWaybillInfo"
+                        "OmsOrderController",
+                        "edit"
                 ),
                 new ProjectConfig(
                         "delivery",
                         "D:\\git\\usCode\\dbu-mod-delivery",
-                        "MisWaybillInfoServiceImpl",
-                        "updateMisWaybillInfo"
+                        "OmsOrderController",
+                        "edit"
                 )
         );
     }
