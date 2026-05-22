@@ -7,11 +7,9 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.ipring.jacg.mapper.po.JacgFormatedSqlVO;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * JSqlParser 解析 SQL 提取所有表名工具
@@ -19,6 +17,40 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public class SqlTableExtractor {
+
+    public static final List<String> waybillTableList = Arrays.asList("airwaybillno_detail",
+            "airwaybillno_info",
+            "airwaybillno_operate_log",
+            "airwaybillno_sync",
+            "mis_box_scan_record",
+            "mis_waybill_bagging_log",
+            "mis_waybill_error_address",
+            "mis_waybill_error_address_feedback",
+            "mis_waybill_error_address_log",
+            "mis_waybill_error_address_send_log",
+            "mis_waybill_expand",
+            "mis_waybill_goods",
+            "mis_waybill_hub_change_log",
+            "mis_waybill_info",
+            "mis_waybill_init_metrics",
+            "mis_waybill_item",
+            "mis_waybill_label",
+            "mis_waybill_label_print_record",
+            "mis_waybill_lifecycle_history",
+            "mis_waybill_operate_historial",
+            "mis_waybill_return",
+            "mis_waybill_return_structured_address",
+            "mis_waybill_sorting_no_ref_mapping",
+            "mis_waybill_structured_address",
+            "receive_waybill_info",
+            "route_location_log",
+            "third_barn_order_info",
+            "third_party_history",
+            "third_party_labels",
+            "third_party_waybills",
+            "waybill_check_against_items");
+
+
     // 匹配 MyBatis #{...} 和 ${...}
     private static final Pattern MYBATIS_PLACEHOLDER = Pattern.compile("[#$]\\{[^}]+\\}");
     private static final Pattern IGNORE = Pattern.compile("");
@@ -42,6 +74,7 @@ public class SqlTableExtractor {
             statement = CCJSqlParserUtil.parse(cleanedSql);
         } catch (JSQLParserException e) {
             log.error("解析报错: {}, {}, exp:", sqlVO.getMapperSqlId(), cleanedSql, e);
+            return SqlTableExtractor.waybillTableList.stream().filter(cleanedSql::contains).collect(Collectors.toList());
         }
         if (Objects.isNull(statement)) return Collections.emptyList();
         TablesNamesFinder finder = new TablesNamesFinder();
