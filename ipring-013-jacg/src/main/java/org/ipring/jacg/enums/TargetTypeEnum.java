@@ -36,7 +36,8 @@ public enum TargetTypeEnum implements StrEnumType {
     // 排除调用链中含这些字符的
     public static final List<String> EXCLUDE_LIST = Arrays.asList("RemoteWaybillFacadeImpl#", "RemoteWaybillProxyService#");
     // 需要提取到remark上的MQ消费者
-    public static final List<String> MQ_REMARK_LIST = Arrays.asList("courierBatchHubAssignConsumer",
+    public static final List<String> MQ_REMARK_LIST = Arrays.asList(
+            "courierBatchHubAssignConsumer",
             "awaitOutWarehouseConsumer",
             "centerShelfDownConsumer",
             "siteCheckInDeleteRecordConsumer",
@@ -55,7 +56,16 @@ public enum TargetTypeEnum implements StrEnumType {
             "receivePackageDeliveryTimeConsumer#consume",
             "newScanTriggerDisconnectConsumer#consumeSingleMessage",
             "deliveryCommonConsumer#consume",
-            "lostStolenSynchronizationConsumer#consumeMessage");
+            "lostStolenSynchronizationConsumer#consumeMessage"
+    );
+
+    public static final List<String> MQ_REMARK_MATCH_NOT = Arrays.asList(
+            "RocketMsgListener#consumemessage",
+            "RocketMsgListener#consumeMessage0",
+            "MsgConsumer#consume",
+            "MsgBatchConsumer#consume"
+    );
+
 
     public static final Map<String, Pattern> ALL_ENUM_MAP =
             Arrays.stream(TargetTypeEnum.values()).collect(Collectors.toMap(TargetTypeEnum::getDescription, type -> Pattern.compile(type.regex, Pattern.CASE_INSENSITIVE)));

@@ -10,8 +10,10 @@ import org.ipring.jacg.process.SimpleCallChainProcessor;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.ipring.jacg.enums.TargetTypeEnum.MQ_REMARK_LIST;
+import static org.ipring.jacg.enums.TargetTypeEnum.MQ_REMARK_MATCH_NOT;
 
 /**
  * @author liuguangjin
@@ -57,6 +59,16 @@ public class CalleeExcelVO {
         }
         if (TargetTypeEnum.MQ.getDescription().equalsIgnoreCase(resp.getType())) {
             String remark = Arrays.stream(chainStr).filter(chain -> MQ_REMARK_LIST.stream().anyMatch(str -> chain.toLowerCase().contains(str.toLowerCase()))).collect(Collectors.joining(SimpleCallChainProcessor.SPLIT));
+            if (StringUtils.isBlank(remark)) {
+                // 保留匹配元素的前一个
+                remark = IntStream.range(1, chainStr.length)
+                        .filter(i -> MQ_REMARK_MATCH_NOT.stream().anyMatch(str -> chainStr[i].toLowerCase().contains(str.toLowerCase())))
+                        .mapToObj(i -> chainStr[i - 1])
+                        .collect(Collectors.joining(SimpleCallChainProcessor.SPLIT));
+                if (StringUtils.isBlank(remark)) {
+                    // todo 取最后一个
+                }
+            }
             resp.setRemark(remark);
         }
         String chainSource = Arrays.stream(chainStr).skip(2).collect(Collectors.joining(SimpleCallChainProcessor.SPLIT));
