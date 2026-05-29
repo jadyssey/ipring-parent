@@ -2,7 +2,6 @@ package org.ipring.jacg.controller;
 
 import com.github.difflib.DiffUtils;
 import com.github.difflib.patch.AbstractDelta;
-import com.github.difflib.patch.DeltaType;
 import com.github.difflib.patch.Patch;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -37,7 +36,7 @@ import java.util.*;
 /**
  * 当前主用版本的调用链对比工具，负责扫描源码、展开调用链并输出差异结果。
  */
-public class CallChainCompareToolV7 {
+public class CallChainCompareToolV5 {
 
     private static final String JAVA_SUFFIX = ".java";
     private static final String XML_SUFFIX = ".xml";
@@ -45,9 +44,8 @@ public class CallChainCompareToolV7 {
     private static final int MAX_EXPAND_LEVEL = 120;
     private static final int DIFF_CONTEXT_LINES = 2;
     private static final int SCAN_PROGRESS_INTERVAL = 200;
-    private static final String DEFAULT_TARGET_FOLDER = "D:\\Documents\\Desktop\\运单代码对比";
-    private static final String DEFAULT_TARGET_FUNC = "OpenApiFormCallbackController#errorAddressFormCompletedCallback";
-
+    private static final String DEFAULT_TARGET_FOLDER = "D:\\Documents\\Desktop\\运单迁移";
+    private static final String DEFAULT_TARGET_FUNC = "客户修改运单";
     /**
      * 返回默认需要比对的工程及其入口方法。
      */
@@ -56,8 +54,8 @@ public class CallChainCompareToolV7 {
                 // new ProjectConfig(
                 //         "omswaybill-admin",
                 //         "D:\\project\\gfs-mod-omswaybill-admin",
-                //         "DownloadCenterController",
-                //         "getAddressErrorPageList"
+                //         "MisWaybillInfoController",
+                //         "getInfoByWaybillNo"
                 // ),
                 new ProjectConfig(
                         "waybill",
@@ -73,6 +71,7 @@ public class CallChainCompareToolV7 {
                 )
         );
     }
+
 
     /**
      * 描述单个待比对工程的入口配置。
@@ -136,13 +135,6 @@ public class CallChainCompareToolV7 {
     private static long scanStartMillis = 0L;
 
     /**
-     * 记录本次运行中已展开过的函数唯一标识（全类名.方法名(参数类型)），
-     * 用于在对比结果中去重：同一个底层函数在多处被调用时，只展开一次，
-     * 后续调用点标记为 [duplicate] 并跳过，避免 diff 结果中重复列出相同差异。
-     */
-    private static final Set<String> expandedMethodKeys = new HashSet<>();
-
-    /**
      * 扫描配置工程、展开调用链并生成对比产物。
      */
     public static void main(String[] args) throws Exception {
@@ -190,12 +182,7 @@ public class CallChainCompareToolV7 {
             generateDiffOnlyLog(outputFiles.get(0), outputFiles.get(1), diffOnlyLog, DIFF_CONTEXT_LINES);
             String diffOnlyHtml = new File(outputDir, "diff_only_" + date + ".html").getPath();
             JavaParseLogUtils.logInfo("Generating diff-only html: " + diffOnlyHtml);
-            generateDiffOnlyHtml(outputFiles.get(0), outputFiles.get(1),
-                    projectConfigs.get(0).name, projectConfigs.get(1).name, diffOnlyHtml, DIFF_CONTEXT_LINES);
-            String diffStats = new File(outputDir, "diff_stats_" + date + ".log").getPath();
-            JavaParseLogUtils.logInfo("Generating diff statistics: " + diffStats);
-            generateDiffStats(outputFiles.get(0), outputFiles.get(1),
-                    projectConfigs.get(0).name, projectConfigs.get(1).name, diffStats);
+            generateDiffOnlyHtml(outputFiles.get(0), outputFiles.get(1), diffOnlyHtml, DIFF_CONTEXT_LINES);
             JavaParseLogUtils.logInfo("Opening browser: " + diffOnlyHtml);
             openInBrowser(diffOnlyHtml);
             JavaParseLogUtils.logInfo("Diff generation done.");
@@ -204,7 +191,6 @@ public class CallChainCompareToolV7 {
         }
         JavaParseLogUtils.logInfo("Tool finished.");
     }
-
 
     /**
      * 为单个工程输出调用链日志。
@@ -244,7 +230,6 @@ public class CallChainCompareToolV7 {
         classImportOnDemandPackageMap.clear();
         simpleNameToFullClass.clear();
         mapperSqlMap.clear();
-        expandedMethodKeys.clear();
         scannedJavaFileCount = 0;
         scannedXmlFileCount = 0;
         scanStartMillis = System.currentTimeMillis();
@@ -495,8 +480,6 @@ public class CallChainCompareToolV7 {
 
     /**
      * 递归展开指定方法，输出方法签名、语句和下游调用。
-     * 基于函数唯一标识（全类名.方法名(参数类型)）实现去重：
-     * 同一底层函数在多处被调用时，第一次完整展开，后续仅输出 [duplicate] 标记。
      */
     static void expand(String className, String methodName, Integer argCount, List<String> argTypeHints, int level, PrintWriter writer) {
         String key = className + "." + methodName;
@@ -509,16 +492,6 @@ public class CallChainCompareToolV7 {
         if (method == null) {
             return;
         }
-
-        // 构建函数唯一标识：全类名.方法名(参数类型)
-        String methodIdentityKey = key + methodDisplay(method);
-
-        // 该函数已在此次运行中展开过 → 标记为重复，跳过展开
-        if (expandedMethodKeys.contains(methodIdentityKey)) {
-            write(writer, level, "[duplicate] " + shortName(className) + "." + methodDisplay(method));
-            return;
-        }
-        expandedMethodKeys.add(methodIdentityKey);
 
         write(writer, level, shortName(className) + "." + methodDisplay(method));
 
@@ -1109,26 +1082,18 @@ public class CallChainCompareToolV7 {
 
     /**
      * 只保留差异片段和上下文，输出 HTML 版 diff 页面。
-     * 在页面顶部插入差异统计报告面板（新增/删除/修改行数及百分比）。
      */
-    static void generateDiffOnlyHtml(String fileA, String fileB, String nameA, String nameB, String output, int contextLines) throws Exception {
+    static void generateDiffOnlyHtml(String fileA, String fileB, String output, int contextLines) throws Exception {
         List<String> left = Files.readAllLines(Paths.get(fileA));
         List<String> right = Files.readAllLines(Paths.get(fileB));
         Patch<String> patch = DiffUtils.diff(left, right);
         JavaParseLogUtils.logInfo(String.format(Locale.ROOT, "Diff-only html stats: left=%d, right=%d, deltas=%d, context=%d",
                 left.size(), right.size(), patch.getDeltas().size(), contextLines));
 
-        // 生成差异统计报告并转义为 HTML
-        String statsRaw = buildDiffStatsText(left, right, nameA, nameB);
-        String statsHtml = ProjectMethodCompareHtmlUtils.escape(statsRaw)
-                .replace("\r\n", "<br>");
-
         StringBuilder html = new StringBuilder();
         html.append("<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1'>")
                 .append("<style>")
                 .append("body{margin:0;font-family:Menlo,Consolas,monospace;background:#fff;}")
-                .append(".stats-panel{background:#f0f4ff;border-bottom:2px solid #89f;padding:16px 20px;font-size:13px;line-height:1.5;}")
-                .append(".stats-panel pre{margin:0;white-space:pre-wrap;overflow-wrap:break-word;}")
                 .append(".table-wrap{overflow:auto;max-height:100vh;}")
                 .append("table{border-collapse:collapse;width:100%;table-layout:fixed;}")
                 .append("col.ln-col{width:64px;}")
@@ -1142,9 +1107,7 @@ public class CallChainCompareToolV7 {
                 .append(".ctx{background:#fafafa;}")
                 .append(".sec{background:#f0f0f0;color:#444;font-weight:600;}")
                 .append("</style></head><body>")
-                .append("<div class='table-wrap'>")
-                .append("<div class='stats-panel'><pre>").append(statsHtml).append("</pre></div>")
-                .append("<table><colgroup>")
+                .append("<div class='table-wrap'><table><colgroup>")
                 .append("<col class='ln-col'><col class='left-code-col'><col class='ln-col'><col class='right-code-col'>")
                 .append("</colgroup>");
 
@@ -1205,122 +1168,6 @@ public class CallChainCompareToolV7 {
         html.append("</table></div></body></html>");
         CsvIOUtils.writeUtf8(Paths.get(output), html.toString());
         JavaParseLogUtils.logInfo("Diff-only html written: " + output);
-    }
-
-    /**
-     * 生成代码差异统计报告，包含新增/删除/修改的行数明细，
-     * 双边总代码量以及各类差异占总代码量的百分比。
-     */
-    static void generateDiffStats(String fileA, String fileB, String nameA, String nameB, String output) throws Exception {
-        List<String> left = Files.readAllLines(Paths.get(fileA));
-        List<String> right = Files.readAllLines(Paths.get(fileB));
-        String statsText = buildDiffStatsText(left, right, nameA, nameB);
-        CsvIOUtils.writeUtf8(Paths.get(output), statsText);
-        JavaParseLogUtils.logInfo("Diff statistics written: " + output);
-    }
-
-    /**
-     * 基于两侧文件的行列表计算差异统计文本，返回格式化报告字符串。
-     * 供 generateDiffOnlyLog 和 generateDiffStats 复用，避免重复计算。
-     */
-    static String buildDiffStatsText(List<String> left, List<String> right, String nameA, String nameB) {
-        Patch<String> patch = DiffUtils.diff(left, right);
-
-        int leftTotal = left.size();
-        int rightTotal = right.size();
-        int insertOps = 0, deleteOps = 0, changeOps = 0;
-        int insertLines = 0, deleteLines = 0;
-        int changeSrcLines = 0, changeTgtLines = 0;
-
-        for (AbstractDelta<String> delta : patch.getDeltas()) {
-            DeltaType type = delta.getType();
-            int srcSize = delta.getSource().size();
-            int tgtSize = delta.getTarget().size();
-            switch (type) {
-                case INSERT:
-                    insertOps++;
-                    insertLines += tgtSize;
-                    break;
-                case DELETE:
-                    deleteOps++;
-                    deleteLines += srcSize;
-                    break;
-                case CHANGE:
-                    changeOps++;
-                    changeSrcLines += srcSize;
-                    changeTgtLines += tgtSize;
-                    break;
-                default:
-                    // EQUAL and other types: no-op
-                    break;
-            }
-        }
-
-        int totalChangedLines = insertLines + deleteLines + changeSrcLines + changeTgtLines;
-        int totalOps = insertOps + deleteOps + changeOps;
-
-        StringBuilder sb = new StringBuilder(512);
-        sb.append("===== 代码差异统计报告 =====\r\n")
-                .append("对比项目: ").append(nameA).append(" ↔ ").append(nameB).append("\r\n\r\n")
-                .append("左侧文件行数: ").append(leftTotal).append("\r\n")
-                .append("右侧文件行数: ").append(rightTotal).append("\r\n\r\n")
-
-                .append("━━━ 一、差异操作次数 ━━━\r\n")
-                .append(String.format("  %-12s %6s\r\n", "Delta类型", "次数"))
-                .append("  ─────────────────────\r\n")
-                .append(String.format("  %-12s %6d  (新增)\r\n", "INSERT", insertOps))
-                .append(String.format("  %-12s %6d  (删除)\r\n", "DELETE", deleteOps))
-                .append(String.format("  %-12s %6d  (修改)\r\n", "CHANGE", changeOps))
-                .append("  ─────────────────────\r\n")
-                .append(String.format("  %-12s %6d\r\n", "合计", totalOps))
-                .append("\r\n")
-
-                .append("━━━ 二、差异影响行数 ━━━\r\n")
-                .append(String.format("  %-20s %6s\r\n", "分类", "行数"))
-                .append("  ───────────────────────────\r\n")
-                .append(String.format("  %-20s %6d  (INSERT 目标行)\r\n", "新增行", insertLines))
-                .append(String.format("  %-20s %6d  (DELETE 源行)\r\n", "删除行", deleteLines))
-                .append(String.format("  %-20s %6d  (CHANGE 旧版本)\r\n", "修改行(左)", changeSrcLines))
-                .append(String.format("  %-20s %6d  (CHANGE 新版本)\r\n", "修改行(右)", changeTgtLines))
-                .append("  ───────────────────────────\r\n")
-                .append(String.format("  %-20s %6d\r\n", "总差异行数", totalChangedLines))
-                .append("\r\n")
-
-                .append("━━━ 三、百分比统计 ━━━\r\n")
-                .append(String.format("  %-24s %8s  %8s\r\n", "指标", "行数", "占比"))
-                .append("  ─────────────────────────────────────\r\n")
-                .append(String.format("  %-24s %,8d  %7.1f%%\r\n", "左侧总代码量", leftTotal, 100.0));
-
-        if (leftTotal > 0) {
-            double delPct = deleteLines * 100.0 / leftTotal;
-            double chgSrcPct = changeSrcLines * 100.0 / leftTotal;
-            sb.append(String.format("  %-24s %,8d  %7.1f%%\r\n", "  ├─ 删除行", deleteLines, delPct));
-            sb.append(String.format("  %-24s %,8d  %7.1f%%\r\n", "  └─ 修改行(旧)", changeSrcLines, chgSrcPct));
-        }
-        sb.append("\r\n")
-                .append(String.format("  %-24s %,8d  %7.1f%%\r\n", "右侧总代码量", rightTotal, 100.0));
-
-        if (rightTotal > 0) {
-            double addPct = insertLines * 100.0 / rightTotal;
-            double chgTgtPct = changeTgtLines * 100.0 / rightTotal;
-            sb.append(String.format("  %-24s %,8d  %7.1f%%\r\n", "  ├─ 新增行", insertLines, addPct));
-            sb.append(String.format("  %-24s %,8d  %7.1f%%\r\n", "  └─ 修改行(新)", changeTgtLines, chgTgtPct));
-        }
-        sb.append("\r\n");
-
-        if (leftTotal > 0 && rightTotal > 0) {
-            sb.append("━━━ 四、综合指标 ━━━\r\n");
-            int totalAffectedLeft = deleteLines + changeSrcLines;
-            int totalAffectedRight = insertLines + changeTgtLines;
-            double leftAffectPct = totalAffectedLeft * 100.0 / leftTotal;
-            double rightAffectPct = totalAffectedRight * 100.0 / rightTotal;
-            sb.append(String.format("  %-24s %,8d  %7.1f%%  (相对于左侧)\r\n", "左侧受影响合计", totalAffectedLeft, leftAffectPct));
-            sb.append(String.format("  %-24s %,8d  %7.1f%%  (相对于右侧)\r\n", "右侧受影响合计", totalAffectedRight, rightAffectPct));
-            sb.append(String.format("  %-24s %8.1f%%  (受影响行/总代码行)\r\n", "双侧平均变动率",
-                    (leftAffectPct + rightAffectPct) / 2.0));
-        }
-
-        return sb.toString();
     }
 
     /**
