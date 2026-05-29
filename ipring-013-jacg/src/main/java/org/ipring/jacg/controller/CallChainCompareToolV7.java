@@ -37,7 +37,7 @@ import java.util.*;
 /**
  * 当前主用版本的调用链对比工具，负责扫描源码、展开调用链并输出差异结果。
  */
-public class CallChainCompareToolV6 {
+public class CallChainCompareToolV7 {
 
     private static final String JAVA_SUFFIX = ".java";
     private static final String XML_SUFFIX = ".xml";
