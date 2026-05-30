@@ -957,13 +957,14 @@ public class CallChainCompareToolV6 {
                 .append("<style>")
                 .append("body{margin:0;font-family:Menlo,Consolas,monospace;background:#fff;}")
                 .append(".table-wrap{overflow:auto;max-height:100vh;}")
-                .append("table{border-collapse:collapse;width:100%;table-layout:fixed;}")
+                .append("table{border-collapse:collapse;min-width:100%;table-layout:fixed;}")
                 .append("col.ln-col{width:64px;}")
-                .append("col.left-code-col{width:calc((100% - 64px - 64px) / 2);}")
-                .append("col.right-code-col{width:calc((100% - 64px - 64px) / 2);}")
+                .append("col.left-code-col{width:calc((100% - 128px) / 2);}")
+                .append("col.right-code-col{width:calc((100% - 128px) / 2);}")
                 .append("td{padding:2px 6px;vertical-align:top;}")
                 .append(".ln{color:#999;background:#f7f7f7;text-align:right;user-select:none;}")
-                .append(".code .line{display:block;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;padding-left:calc(var(--indent, 0) * 1ch);}")
+                .append(".code{overflow-x:auto;}")
+                .append(".code .line{display:block;white-space:pre;padding-left:calc(var(--indent, 0) * 1ch);}")
                 .append(".add{background:#e6ffed;}")
                 .append(".del{background:#ffeef0;}")
                 .append("</style></head><body>")
@@ -1094,26 +1095,29 @@ public class CallChainCompareToolV6 {
         html.append("<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1'>")
                 .append("<style>")
                 .append("body{margin:0;font-family:Menlo,Consolas,monospace;background:#fff;}")
-                .append(".table-wrap{overflow:auto;max-height:100vh;}")
-                .append("table{border-collapse:collapse;width:100%;table-layout:fixed;}")
+                .append(".table-wrap{max-height:100vh;overflow-y:auto;}")
+                .append(".chunk{overflow-x:auto;margin-bottom:8px;}")
+                .append(".chunk table{border-collapse:collapse;min-width:100%;}")
                 .append("col.ln-col{width:64px;}")
-                .append("col.left-code-col{width:calc((100% - 64px - 64px) / 2);}")
-                .append("col.right-code-col{width:calc((100% - 64px - 64px) / 2);}")
+                .append("col.left-code-col{width:calc((100% - 128px) / 2);}")
+                .append("col.right-code-col{width:calc((100% - 128px) / 2);}")
                 .append("td{padding:2px 6px;vertical-align:top;}")
                 .append(".ln{color:#999;background:#f7f7f7;text-align:right;user-select:none;}")
-                .append(".code .line{display:block;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;padding-left:calc(var(--indent, 0) * 1ch);}")
+                .append(".code .line{display:block;white-space:pre;padding-left:calc(var(--indent, 0) * 1ch);}")
                 .append(".add{background:#e6ffed;}")
                 .append(".del{background:#ffeef0;}")
                 .append(".ctx{background:#fafafa;}")
                 .append(".sec{background:#f0f0f0;color:#444;font-weight:600;}")
                 .append("</style></head><body>")
-                .append("<div class='table-wrap'><table><colgroup>")
-                .append("<col class='ln-col'><col class='left-code-col'><col class='ln-col'><col class='right-code-col'>")
-                .append("</colgroup>");
+                .append("<div class='table-wrap'>");
 
         if (patch.getDeltas().isEmpty()) {
-            html.append("<tr><td class='sec' colspan='4'>No differences.</td></tr>");
-            html.append("</table></div></body></html>");
+            html.append("<div class='chunk'><table><colgroup>")
+                    .append("<col class='ln-col'><col class='left-code-col'><col class='ln-col'><col class='right-code-col'>")
+                    .append("</colgroup>")
+                    .append("<tr><td class='sec' colspan='4'>No differences.</td></tr>")
+                    .append("</table></div>");
+            html.append("</div></body></html>");
             CsvIOUtils.writeUtf8(Paths.get(output), html.toString());
             return;
         }
@@ -1123,6 +1127,11 @@ public class CallChainCompareToolV6 {
             int sourceStart = delta.getSource().getPosition() + 1;
             int targetStart = delta.getTarget().getPosition() + 1;
             ContextRange ctx = calcContextRange(left, sourceStart, delta.getSource().size(), contextLines);
+
+            // 每个 CHANGE 块独立包裹，左右代码列固定 50% 宽度且各自独立滚动
+            html.append("<div class='chunk'><table><colgroup>")
+                    .append("<col class='ln-col'><col class='left-code-col'><col class='ln-col'><col class='right-code-col'>")
+                    .append("</colgroup>");
 
             html.append(sectionRow(String.format(
                     Locale.ROOT,
@@ -1163,9 +1172,11 @@ public class CallChainCompareToolV6 {
                 String rightText = rightNo <= right.size() ? right.get(rightNo - 1) : "";
                 html.append(ProjectMethodCompareHtmlUtils.codeRow(leftNo, rightNo <= right.size() ? rightNo : null, leftText, rightText, "ctx"));
             }
+
+            html.append("</table></div>");
         }
 
-        html.append("</table></div></body></html>");
+        html.append("</div></body></html>");
         CsvIOUtils.writeUtf8(Paths.get(output), html.toString());
         JavaParseLogUtils.logInfo("Diff-only html written: " + output);
     }
