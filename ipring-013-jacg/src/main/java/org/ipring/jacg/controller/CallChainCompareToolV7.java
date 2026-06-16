@@ -36,7 +36,7 @@ import java.util.*;
 /**
  * 当前主用版本的调用链对比工具，负责扫描源码、展开调用链并输出差异结果。
  */
-public class CallChainCompareToolV6 {
+public class CallChainCompareToolV7 {
 
     private static final String JAVA_SUFFIX = ".java";
     private static final String XML_SUFFIX = ".xml";
@@ -130,6 +130,8 @@ public class CallChainCompareToolV6 {
     private static final Map<String, List<String>> classImportOnDemandPackageMap = new HashMap<>();
     private static final Map<String, Set<String>> simpleNameToFullClass = new HashMap<>();
     private static final Map<String, String> mapperSqlMap = new HashMap<>();
+    /** 记录已完整展开过的方法（key = className.methodName(paramType1,paramType2,...)），避免重复输出内部实现。 */
+    private static final Set<String> expandedMethods = new HashSet<>();
     private static int scannedJavaFileCount = 0;
     private static int scannedXmlFileCount = 0;
     private static long scanStartMillis = 0L;
@@ -230,6 +232,7 @@ public class CallChainCompareToolV6 {
         classImportOnDemandPackageMap.clear();
         simpleNameToFullClass.clear();
         mapperSqlMap.clear();
+        expandedMethods.clear();
         scannedJavaFileCount = 0;
         scannedXmlFileCount = 0;
         scanStartMillis = System.currentTimeMillis();
@@ -482,7 +485,6 @@ public class CallChainCompareToolV6 {
      * 递归展开指定方法，输出方法签名、语句和下游调用。
      */
     static void expand(String className, String methodName, Integer argCount, List<String> argTypeHints, int level, PrintWriter writer) {
-        String key = className + "." + methodName;
         if (level > MAX_EXPAND_LEVEL) {
             write(writer, level, "[max-depth] " + shortName(className) + "." + methodName);
             return;
@@ -493,10 +495,18 @@ public class CallChainCompareToolV6 {
             return;
         }
 
+        String dedupKey = buildDedupKey(className, method);
+        if (expandedMethods.contains(dedupKey)) {
+            write(writer, level, shortName(className) + "." + methodDisplay(method) + " （已展开）");
+            return;
+        }
+
+        expandedMethods.add(dedupKey);
         write(writer, level, shortName(className) + "." + methodDisplay(method));
 
         if (!method.getBody().isPresent()) {
-            String sql = mapperSqlMap.get(key);
+            String mapperKey = className + "." + methodName;
+            String sql = mapperSqlMap.get(mapperKey);
             if (sql != null && !sql.isEmpty()) {
                 writeSqlBlock(writer, level + 1, sql);
             }
@@ -509,6 +519,21 @@ public class CallChainCompareToolV6 {
                 printStatement(stmt, level + 1, className, method, localVarTypeMap, writer);
             }
         });
+    }
+
+    /**
+     * 基于方法签名构造去重键（类名.方法名(入参类型1,入参类型2,...)），用于区分重载方法。
+     */
+    static String buildDedupKey(String className, MethodDeclaration method) {
+        StringBuilder sb = new StringBuilder(className).append(".").append(method.getNameAsString()).append("(");
+        for (int i = 0; i < method.getParameters().size(); i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            String type = normalizeTypeName(method.getParameter(i).getType().asString());
+            sb.append(type != null ? type : "?");
+        }
+        return sb.append(")").toString();
     }
 
     /**

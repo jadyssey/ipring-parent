@@ -34,7 +34,7 @@ public enum TargetTypeEnum implements StrEnumType {
 
 
     // 排除调用链中含这些字符的
-    public static final List<String> EXCLUDE_LIST = Arrays.asList("RemoteWaybillFacadeImpl#", "RemoteWaybillProxyService#");
+    public static final List<String> EXCLUDE_LIST = Arrays.asList("RemoteWaybillFacadeImpl#", "RemoteWaybillProxyService#", "TrackProxyService#");
     // 需要提取到remark上的MQ消费者
     public static final List<String> MQ_REMARK_LIST = Arrays.asList(
             "courierBatchHubAssignConsumer",
