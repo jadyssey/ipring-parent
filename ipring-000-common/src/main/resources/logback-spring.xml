@@ -10,7 +10,7 @@
     <!--获取配置属性信息-->
     <property name="appName" value="ipring-project"/>
     <!--定义日志文件的存储地址，根路径下logs目录-->
-    <property name="logDir" value="/logs/${appName}" />
+    <property name="logDir" value="/var/logs/${appName}" />
 
     <!-- 彩色日志格式 -->
     <property name="CONSOLE_LOG_PATTERN"
