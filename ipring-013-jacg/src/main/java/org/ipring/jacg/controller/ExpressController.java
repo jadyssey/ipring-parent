@@ -2,11 +2,14 @@ package org.ipring.jacg.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.RequiredArgsConstructor;
+import org.ehcache.core.util.CollectionUtil;
 import org.ipring.jacg.mapper.ClassAnnotationMapper;
 import org.ipring.jacg.mapper.po.JacgFormatedSqlVO;
 import org.ipring.jacg.model.ApiResult;
 import org.ipring.jacg.model.ExpressStatus;
 import org.ipring.jacg.process.SqlTableExtractor;
+import org.ipring.util.JsonUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,31 +66,33 @@ public class ExpressController {
      * @return
      */
     @PostMapping("/extract/table")
-    public HashMap<String, String> extractTable() {
-
+    public List<String> extractTable(@RequestBody List<String> tableList) {
+        if (CollectionUtils.isEmpty(tableList)) {
+            tableList = SqlTableExtractor.waybillTableList;
+        }
         List<JacgFormatedSqlVO> formattedSqlList;
         formattedSqlList = classAnnotationMapper.selectAllFormatedSql();
 
         Set<String> allTableList = new HashSet<>();
         HashMap<String, String> tableMap = new HashMap<>();
         for (JacgFormatedSqlVO sql : formattedSqlList) {
-            if (SqlTableExtractor.waybillTableList.stream().noneMatch(table -> sql.getFormatedSql().contains(table))) {
+            if (tableList.stream().noneMatch(table -> sql.getFormatedSql().toLowerCase().contains(table))) {
                 // 这条SQL没有需要梳理的表
                 continue;
             }
-            List<String> tableNameList = SqlTableExtractor.extractTableNamesV2(sql);
+            List<String> tableNameList = SqlTableExtractor.extractTableNamesV2(sql, tableList);
             allTableList.addAll(tableNameList);
             for (String table : tableNameList) {
-                if (SqlTableExtractor.waybillTableList.contains(table.toLowerCase())) {
+                if (tableList.contains(table.toLowerCase())) {
                     tableMap.put(sql.getMapperSqlId(), String.join(",", tableNameList));
                     break;
                 }
             }
         }
-        allTableList.forEach(System.out::println);
+
         System.out.println(" =================================================");
-        tableMap.keySet().forEach(System.out::println);
-        return tableMap;
+        tableMap.forEach((key,value) -> System.out.println("key = " + key + ", value = " + value));
+        return new ArrayList<>(tableMap.keySet());
     }
 
 

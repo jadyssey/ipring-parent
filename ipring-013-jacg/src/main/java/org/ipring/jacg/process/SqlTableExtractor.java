@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SqlTableExtractor {
 
-    public static final List<String> waybillTableList = Arrays.asList("airwaybillno_detail",
+    public static final List<String> waybillTableList = Arrays.asList(
+            "airwaybillno_detail",
             "airwaybillno_info",
             "airwaybillno_operate_log",
             "airwaybillno_sync",
@@ -58,7 +59,7 @@ public class SqlTableExtractor {
     /**
      * 提取表名（支持MyBatis占位符，不抛解析异常）
      */
-    public static List<String> extractTableNamesV2(JacgFormatedSqlVO sqlVO) {
+    public static List<String> extractTableNamesV2(JacgFormatedSqlVO sqlVO, List<String> tableList) {
         String sql = sqlVO.getFormatedSql();
         if (sql == null || sql.trim().isEmpty()) {
             return new ArrayList<>();
@@ -73,8 +74,9 @@ public class SqlTableExtractor {
         try {
             statement = CCJSqlParserUtil.parse(cleanedSql);
         } catch (JSQLParserException e) {
+            cleanedSql = cleanedSql.toLowerCase();
             log.error("解析报错: {}, {}, exp:", sqlVO.getMapperSqlId(), cleanedSql, e);
-            return SqlTableExtractor.waybillTableList.stream().filter(cleanedSql::contains).collect(Collectors.toList());
+            return tableList.stream().filter(cleanedSql::contains).collect(Collectors.toList());
         }
         if (Objects.isNull(statement)) return Collections.emptyList();
         TablesNamesFinder finder = new TablesNamesFinder();

@@ -55,6 +55,7 @@ public class AnalysisController {
 
     private final SimpleCallChainProcessor simpleCallChainProcessor;
     private final ClassAnnotationMapper classAnnotationMapper;
+    private final ExpressController expressController;
     // 注入数据源
     private final DataSource dataSource;
 
@@ -65,6 +66,14 @@ public class AnalysisController {
         JacgClassAnnotationPO jacgClassAnnotationPO = classAnnotationMapper.selectByClassAndAnno(tableName, SimpleCallChainProcessor.REQUEST_ANNO);
         return jacgClassAnnotationPO;
     }
+
+    @PostMapping("/runnerGenAllGraph4Callee/byTable")
+    @StlApiOperation(title = "向上调用链")
+    public Return<String> runnerGenAllGraph4CalleeByTable(@RequestParam String dbName, @RequestParam String excelName, @RequestBody Set<String> tableName, @RequestParam(required = false) String depthLimit) {
+        List<String> mapperNameList = expressController.extractTable(new ArrayList<>(tableName));
+        return this.similarity(dbName, excelName, new HashSet<>(mapperNameList), depthLimit);
+    }
+
 
     @PostMapping("/runnerGenAllGraph4Callee")
     @StlApiOperation(title = "向上调用链")
