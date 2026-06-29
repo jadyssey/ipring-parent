@@ -44,7 +44,7 @@ public class CallChainCompareToolV7 {
     private static final int MAX_EXPAND_LEVEL = 120;
     private static final int DIFF_CONTEXT_LINES = 2;
     private static final int SCAN_PROGRESS_INTERVAL = 200;
-    private static final String DEFAULT_TARGET_FOLDER = "D:\\Documents\\Desktop\\运单迁移";
+    private static final String DEFAULT_TARGET_FOLDER = "派送对比运单运单";
     private static final String DEFAULT_TARGET_FUNC = "下单运单";
     /**
      * 返回默认需要比对的工程及其入口方法。
@@ -59,15 +59,15 @@ public class CallChainCompareToolV7 {
                 // ),
                 new ProjectConfig(
                         "waybill",
-                        "D:\\git\\usCode\\dbu-mod-waybill",
-                        "LocationConsumer",
-                        "onMessage"
+                        "/home/liu/IdeaProjects/dbu-mod-waybill",
+                        "WaybillInfoServiceImpl",
+                        "batchUpdateStatusAndDelivery"
                 ),
                 new ProjectConfig(
                         "delivery",
-                        "D:\\git\\usCode\\dbu-mod-delivery",
-                        "LocationConsumer",
-                        "consumeMessage"
+                        "/home/liu/IdeaProjects/dbu-mod-delivery",
+                        "WaybillInfoServiceImpl",
+                        "batchUpdateStatusAndDelivery"
                 )
         );
     }

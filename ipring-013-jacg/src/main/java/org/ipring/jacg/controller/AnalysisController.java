@@ -134,29 +134,32 @@ public class AnalysisController {
     @PostMapping("/apmApi")
     @StlApiOperation(title = "apm解析")
     @SneakyThrows
-    public Return<String> apmApi(@RequestBody List<ApmUriVO> apm) {
+    public Return<List<String>> apmApi(@RequestBody List<ApmUriVO> apm) {
         // 解析JSON到List<ApiMetric>
         long now = System.currentTimeMillis();
         log.info("{} apm 解析接口如下", now);
-        apm.stream()
+        List<String> nameList = apm.stream()
                 .filter(metric -> !metric.getName().contains(".") && !metric.getName().startsWith("URI") && !metric.getName().startsWith("NormalizedUri"))
-                .forEach(metric -> {
-                    String name = metric.getName().replace("SpringController", "").replace(" (POST)", "").replace(" (PUT)", "").replace(" (DELETE)", "");
-                    System.out.println(name);
-                });
+                .map(metric -> {
+                    return metric.getName().replace("SpringController", "").replace(" (POST)", "").replace(" (PUT)", "").replace(" (DELETE)", "");
+                }).collect(Collectors.toList());
+        nameList.forEach(System.out::println);
         log.info("{} apm 解析接口如下", now);
-        return ReturnFactory.success();
+        return ReturnFactory.success(nameList);
     }
 
     @PostMapping("/apmDatabase")
     @StlApiOperation(title = "apm数据表响应解析")
-    public Return<String> apmDatabase(@RequestBody List<ApmUriVO> apm) {
+    public Return<List<String>> apmDatabase(@RequestBody List<ApmUriVO> apm) {
         // 解析JSON到List<ApiMetric>
         long now = System.currentTimeMillis();
         log.info("{} apm 解析如下", now);
-        apm.stream().map(ApmUriVO::getName).sorted().forEach(System.out::println);
+        List<String> list = apm.stream().map(ApmUriVO::getName).sorted().collect(Collectors.toList());
+        list.forEach(System.out::println);
         log.info("{} apm 解析如下", now);
-        return ReturnFactory.success();
+
+        List<String> tableNameList = list.stream().map(table -> table.split("/")[0]).distinct().collect(Collectors.toList());
+        return ReturnFactory.success(tableNameList);
     }
 
     /**
