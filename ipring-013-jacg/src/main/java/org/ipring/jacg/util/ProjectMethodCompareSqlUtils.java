@@ -73,6 +73,23 @@ public final class ProjectMethodCompareSqlUtils {
     }
 
     /**
+     * 计算所有非空行的最小前导空白宽度，用于跨工程统一对齐缩进。
+     */
+    public static int minLeadingWhitespace(List<String> lines) {
+        if (lines == null || lines.isEmpty()) {
+            return 0;
+        }
+        int min = Integer.MAX_VALUE;
+        for (String line : lines) {
+            if (line == null || line.trim().isEmpty()) {
+                continue;
+            }
+            min = Math.min(min, countLeadingWhitespace(line));
+        }
+        return min == Integer.MAX_VALUE ? 0 : min;
+    }
+
+    /**
      * 最多移除指定数量的前导空白，保持 SQL 对齐。
      */
     public static String stripLeadingWhitespace(String text, int maxCount) {

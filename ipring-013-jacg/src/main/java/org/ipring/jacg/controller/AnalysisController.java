@@ -142,7 +142,7 @@ public class AnalysisController {
                 .filter(metric -> !metric.getName().contains(".") && !metric.getName().startsWith("URI") && !metric.getName().startsWith("NormalizedUri"))
                 .map(metric -> {
                     return metric.getName().replace("SpringController", "").replace(" (POST)", "").replace(" (PUT)", "").replace(" (DELETE)", "");
-                }).collect(Collectors.toList());
+                }).sorted().collect(Collectors.toList());
         nameList.forEach(System.out::println);
         log.info("{} apm 解析接口如下", now);
         return ReturnFactory.success(nameList);

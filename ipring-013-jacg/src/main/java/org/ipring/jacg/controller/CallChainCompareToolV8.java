@@ -30,13 +30,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * 当前主用版本的调用链对比工具，负责扫描源码、展开调用链并输出差异结果。
+ * 1. 注释代码不比对
+ * 2. Mapper文件格式化
+ * 3. 生成时创建文件夹
  */
-public class CallChainCompareToolV7 {
+public class CallChainCompareToolV8 {
 
     private static final String JAVA_SUFFIX = ".java";
     private static final String XML_SUFFIX = ".xml";
@@ -60,14 +63,14 @@ public class CallChainCompareToolV7 {
                 new ProjectConfig(
                         "waybill",
                         "/home/liu/IdeaProjects/dbu-mod-waybill",
-                        "OmsOrderController",
-                        "edit"
+                        "LocationConsumer",
+                        "consumeMessage"
                 ),
                 new ProjectConfig(
                         "delivery",
                         "/home/liu/IdeaProjects/dbu-mod-delivery",
-                        "OmsOrderController",
-                        "edit"
+                        "LocationConsumer",
+                        "consumeMessage"
                 )
         );
     }
@@ -146,7 +149,7 @@ public class CallChainCompareToolV7 {
         JavaParseLogUtils.logInfo("Tool start. targetFolder=" + runtime.targetFolder + ", targetFunc=" + runtime.targetFunc
                 + ", projects=" + projectConfigs.size());
 
-        File outputDir = new File(runtime.targetFolder, runtime.targetFunc);
+        File outputDir = new File(new File(runtime.targetFolder, runtime.targetFunc), date);
         ensureDirectory(outputDir);
         JavaParseLogUtils.logInfo("Output directory ready: " + outputDir.getAbsolutePath());
 
@@ -547,6 +550,7 @@ public class CallChainCompareToolV7 {
             Map<String, String> localVarTypeMap,
             PrintWriter writer
     ) {
+        stmt = stripComments(stmt);
         if (stmt.isIfStmt()) {
             IfStmt s = stmt.asIfStmt();
             write(writer, level, "if (" + s.getCondition() + ")");
@@ -1305,7 +1309,7 @@ public class CallChainCompareToolV7 {
             return;
         }
 
-        int baseIndent = ProjectMethodCompareSqlUtils.countLeadingWhitespace(lines.get(0));
+        int baseIndent = ProjectMethodCompareSqlUtils.minLeadingWhitespace(lines);
         for (String line : lines) {
             write(writer, level, ProjectMethodCompareSqlUtils.stripLeadingWhitespace(line, baseIndent));
         }
@@ -1316,6 +1320,19 @@ public class CallChainCompareToolV7 {
      */
     static String clean(String s) {
         return JavaParseTextUtils.normalizeInlineWhitespace(s);
+    }
+
+    /**
+     * 返回剥离所有 Java 注释后的语句副本，避免注释干扰对比。
+     */
+    static Statement stripComments(Statement stmt) {
+        if (stmt == null) {
+            return null;
+        }
+        Statement copy = stmt.clone();
+        copy.getComment().ifPresent(com.github.javaparser.ast.Node::remove);
+        copy.getAllContainedComments().forEach(com.github.javaparser.ast.Node::remove);
+        return copy;
     }
 
     /**
