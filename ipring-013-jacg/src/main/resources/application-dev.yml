@@ -1,9 +1,12 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://10.100.12.227:63307/a_jacg_gofodelivery?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
-    username: rabee_dev
-    password: K5qHHrqF26qxmm2jLJ
+#    url: jdbc:mysql://10.100.12.227:63307/a_jacg_gofodelivery?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+#    username: rabee_dev
+#    password: K5qHHrqF26qxmm2jLJ
+    url: jdbc:mysql://10.80.17.181:3306/a_jacg_delivery?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+    username: root
+    password: root
 ipring:
   task-pool:
     core-size: 40

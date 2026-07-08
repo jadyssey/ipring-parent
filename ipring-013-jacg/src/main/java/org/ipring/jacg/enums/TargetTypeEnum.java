@@ -44,6 +44,7 @@ public enum TargetTypeEnum implements StrEnumType {
             "RoutePlanWaybillProxyService#",
             "RoutePlanWaybillStopProxyService#",
             "ProxyService#",
+            "WaybillClientServiceImpl#",
             "HubAssignTaskStopProxyService#");
     // 需要提取到remark上的MQ消费者
     public static final List<String> MQ_REMARK_LIST = Arrays.asList(

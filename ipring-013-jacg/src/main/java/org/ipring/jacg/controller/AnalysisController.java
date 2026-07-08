@@ -27,6 +27,7 @@ import org.ipring.jacg.model.*;
 import org.ipring.jacg.process.SimpleCallChainProcessor;
 import org.ipring.model.common.Return;
 import org.ipring.model.common.ReturnFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,6 +59,13 @@ public class AnalysisController {
     private final ExpressController expressController;
     // 注入数据源
     private final DataSource dataSource;
+
+    @Value("${spring.datasource.url}")
+    private String url;
+    @Value("${spring.datasource.username}")
+    private String dbUsername;
+    @Value("${spring.datasource.password}")
+    private String dbPassword;
 
     @PostMapping("/test")
     public JacgClassAnnotationPO test(@RequestParam String tableName) {
@@ -209,15 +217,15 @@ public class AnalysisController {
     }
 
 
-    public static ConfigureWrapper getConfigureWrapper(String dbName) {
+    public ConfigureWrapper getConfigureWrapper(String dbName) {
         ConfigureWrapper configureWrapper = new ConfigureWrapper();
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_DB_INSERT_BATCH_SIZE, "1000");
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_THREAD_NUM, "50");
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USE_H2, Boolean.FALSE.toString());
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_DRIVER_NAME, "com.mysql.cj.jdbc.Driver");
-        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_URL, "jdbc:mysql://10.100.12.227:63307/" + dbName + "?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true");
-        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USERNAME, "rabee_dev");
-        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_PASSWORD, "K5qHHrqF26qxmm2jLJ");
+        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_URL, url);
+        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USERNAME, dbUsername);
+        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_PASSWORD, dbPassword);
         // 排除非项目包路径的调用分析
         /*configureWrapper.setElConfigText(
                 ElConfigEnum.ECE_GEN_ALL_CALL_GRAPH_IGNORE_METHOD_CALL,
