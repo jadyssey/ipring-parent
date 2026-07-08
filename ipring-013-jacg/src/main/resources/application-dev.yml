@@ -17,3 +17,5 @@ logging:
   level:
     # your mapper 包路径 → 改成你自己的
     org.ipring.jacg.mapper: debug
+    com.adrninistrator.javacg2: info
+
