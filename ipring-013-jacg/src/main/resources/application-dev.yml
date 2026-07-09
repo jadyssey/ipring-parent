@@ -4,7 +4,7 @@ spring:
 #    url: jdbc:mysql://10.100.12.227:63307/a_jacg_gofodelivery?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
 #    username: rabee_dev
 #    password: K5qHHrqF26qxmm2jLJ
-    url: jdbc:mysql://10.80.17.181:3306/a_jacg_delivery?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+    url: jdbc:mysql://10.80.17.181:3306/a_jacg_delivery?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true&autoReconnect=true&socketTimeout=600000&connectTimeout=10000
     username: root
     password: root
 ipring:
@@ -18,4 +18,5 @@ logging:
     # your mapper 包路径 → 改成你自己的
     org.ipring.jacg.mapper: debug
     com.adrninistrator.javacg2: info
+#    com.adrninistrator.javacg2.handler: debug
 

@@ -11,7 +11,10 @@ import com.adrninistrator.jacg.dto.methodcall.MethodCallLineData4Ee;
 import com.adrninistrator.jacg.runner.RunnerGenAllGraph4Callee;
 import com.adrninistrator.jacg.runner.RunnerWriteDb;
 import com.adrninistrator.javacg2.conf.JavaCG2ConfigureWrapper;
+import com.adrninistrator.javacg2.conf.enums.JavaCG2ConfigKeyEnum;
 import com.adrninistrator.javacg2.conf.enums.JavaCG2OtherConfigFileUseListEnum;
+import com.adrninistrator.javacg2.el.enums.JavaCG2ElAllowedVariableEnum;
+import com.adrninistrator.javacg2.el.enums.JavaCG2ElConfigEnum;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -129,6 +132,12 @@ public class AnalysisController {
                 JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR,
                 Optional.ofNullable(jarPath).orElse("D:\\git\\usCode\\dbu-mod-waybill\\dbu-mod-waybill-provider\\target\\dbu-mod-waybill.jar")
         );
+        // 仅当类的包名以 'com.zt' 或 'com.cds' 开头时不跳过
+        javaCG2ConfigureWrapper.setElConfigText(JavaCG2ElConfigEnum.ECE_PARSE_IGNORE_CLASS,
+                "!string.startsWithAny(" + JavaCG2ElAllowedVariableEnum.EAVE_PARSE_PACKAGE_NAME.getVariableName() + ", 'com.zt', 'com.cds')"
+        );
+        javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE, Boolean.FALSE.toString());
+        javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_FIRST_PARSE_INIT_METHOD_TYPE, Boolean.FALSE.toString());
 
         ConfigureWrapper configureWrapper = getConfigureWrapper(dbName);
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_DETAIL, OutputDetailEnum.ODE_2.getDetail());
@@ -219,7 +228,8 @@ public class AnalysisController {
 
     public ConfigureWrapper getConfigureWrapper(String dbName) {
         ConfigureWrapper configureWrapper = new ConfigureWrapper();
-        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_DB_INSERT_BATCH_SIZE, "1000");
+        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_DB_INSERT_BATCH_SIZE, "200");
+        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_DROP_OR_TRUNCATE_TABLE,  Boolean.TRUE.toString());
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_THREAD_NUM, "50");
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USE_H2, Boolean.FALSE.toString());
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_DRIVER_NAME, "com.mysql.cj.jdbc.Driver");

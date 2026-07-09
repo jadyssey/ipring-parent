@@ -15,8 +15,13 @@
         <dependency>
             <groupId>com.github.adrninistrator</groupId>
             <artifactId>java-all-call-graph</artifactId>
-            <version>4.0.5</version>
+            <version>4.1.1</version>
         </dependency>
+        <!-- <dependency>
+            <groupId>com.github.adrninistrator</groupId>
+            <artifactId>java-callgraph2</artifactId>
+            <version>10.0.8</version>
+        </dependency>-->
         <!-- Apache Commons Lang3 核心依赖（至少3.5+） -->
         <dependency>
             <groupId>org.apache.commons</groupId>
