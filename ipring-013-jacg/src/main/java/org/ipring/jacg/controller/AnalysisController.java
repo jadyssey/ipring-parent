@@ -94,7 +94,7 @@ public class AnalysisController {
             // classAnnotationMapper需要和工具用的同一套数据源才能查到对应的数据
             return ReturnFactory.info(SystemServiceCode.SystemApi.PARAM_ERROR);
         }
-        ConfigureWrapper configureWrapper = getConfigureWrapper(dbName);
+        ConfigureWrapper configureWrapper = getConfigureWrapper();
         if (CollectionUtil.isNotEmpty(mapperName)) {
             configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLEE, mapperName);
         }
@@ -126,7 +126,11 @@ public class AnalysisController {
     @PostMapping("/runJar")
     @StlApiOperation(title = "分析jar包初始化到数据库")
     public Return<String> runJar(@RequestParam String dbName, @RequestParam(required = false) String jarPath) {
-        run();
+        String currentDatabase = getCurrentDatabase();
+        if (!StringUtils.equalsIgnoreCase(currentDatabase, dbName)) {
+            // classAnnotationMapper需要和工具用的同一套数据源才能查到对应的数据
+            return ReturnFactory.info(SystemServiceCode.SystemApi.PARAM_ERROR);
+        }
         JavaCG2ConfigureWrapper javaCG2ConfigureWrapper = new JavaCG2ConfigureWrapper();
         javaCG2ConfigureWrapper.setOtherConfigList(
                 JavaCG2OtherConfigFileUseListEnum.OCFULE_JAR_DIR,
@@ -139,7 +143,7 @@ public class AnalysisController {
         javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_PARSE_METHOD_CALL_TYPE_VALUE, Boolean.FALSE.toString());
         javaCG2ConfigureWrapper.setMainConfig(JavaCG2ConfigKeyEnum.CKE_FIRST_PARSE_INIT_METHOD_TYPE, Boolean.FALSE.toString());
 
-        ConfigureWrapper configureWrapper = getConfigureWrapper(dbName);
+        ConfigureWrapper configureWrapper = getConfigureWrapper();
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_DETAIL, OutputDetailEnum.ODE_2.getDetail());
         // configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_GEN_STACK_OTHER_FORMS,   Boolean.TRUE.toString());
 
@@ -226,7 +230,7 @@ public class AnalysisController {
     }
 
 
-    public ConfigureWrapper getConfigureWrapper(String dbName) {
+    public ConfigureWrapper getConfigureWrapper() {
         ConfigureWrapper configureWrapper = new ConfigureWrapper();
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_DB_INSERT_BATCH_SIZE, "200");
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_DROP_OR_TRUNCATE_TABLE,  Boolean.TRUE.toString());
