@@ -80,9 +80,10 @@ public class AnalysisController {
 
     @PostMapping("/runnerGenAllGraph4Callee/byTable")
     @StlApiOperation(title = "向上调用链")
-    public Return<String> runnerGenAllGraph4CalleeByTable(@RequestParam String dbName, @RequestParam String excelName, @RequestBody Set<String> tableName, @RequestParam(required = false) String depthLimit) {
-        List<String> mapperNameList = expressController.extractTable(new ArrayList<>(tableName));
-        return this.similarity(dbName, excelName, new HashSet<>(mapperNameList), depthLimit);
+    public Return<Map<String, String>> runnerGenAllGraph4CalleeByTable(@RequestParam String dbName, @RequestParam String excelName, @RequestBody Set<String> tableName, @RequestParam(required = false) String depthLimit) {
+        Map<String, String> tableMap = expressController.extractTable(new ArrayList<>(tableName));
+        this.similarity(dbName, excelName, tableMap.keySet(), depthLimit);
+        return ReturnFactory.success(tableMap);
     }
 
 
@@ -116,7 +117,7 @@ public class AnalysisController {
         if (CollectionUtil.isEmpty(calleeExcelList)) return ReturnFactory.error();
         SXSSFWorkbook sxssfWorkbook = ExcelOperateUtils.exportToBigDataFile(calleeExcelList);
         String fileNameResp = writeLocalPath("Callee_" + dbName + "&" + excelName, sxssfWorkbook);
-        log.info("runnerGenAllGraph4Callee.run = {}", run);
+        log.info("runnerGenAllGraph4Callee.run = {}, excelName = {}", run, fileNameResp);
         if (run) {
             return ReturnFactory.success(fileNameResp);
         }

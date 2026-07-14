@@ -66,7 +66,7 @@ public class ExpressController {
      * @return
      */
     @PostMapping("/extract/table")
-    public List<String> extractTable(@RequestBody List<String> tableList) {
+    public Map<String, String> extractTable(@RequestBody List<String> tableList) {
         if (CollectionUtils.isEmpty(tableList)) {
             tableList = SqlTableExtractor.waybillTableList;
         }
@@ -92,7 +92,7 @@ public class ExpressController {
 
         System.out.println(" =================================================");
         tableMap.forEach((key,value) -> System.out.println("key = " + key + ", value = " + value));
-        return new ArrayList<>(tableMap.keySet());
+        return tableMap;
     }
 
 
