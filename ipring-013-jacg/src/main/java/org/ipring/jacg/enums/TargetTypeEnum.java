@@ -36,9 +36,11 @@ public enum TargetTypeEnum implements StrEnumType {
     // 排除调用链中含这些字符的
     public static final List<String> EXCLUDE_LIST = Arrays.asList(
             "ProxyExternalMoveService#",
+            "ProxyExternalV2MoveService#",
             "ProxyExternalService#",
             "RemoteWaybillFacadeImpl#",
-            "RemoteWaybillProxyService#",
+//            梳理dbu-mod-waybill不能用这个类
+//            "RemoteWaybillProxyService#",
             "TrackProxyService#",
             "HubAssignTaskProxyService#",
             "SysScanHistoryProxyService#",

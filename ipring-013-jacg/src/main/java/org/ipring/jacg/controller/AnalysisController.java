@@ -35,6 +35,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.sql.DataSource;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
@@ -116,7 +117,7 @@ public class AnalysisController {
         });
         if (CollectionUtil.isEmpty(calleeExcelList)) return ReturnFactory.error();
         SXSSFWorkbook sxssfWorkbook = ExcelOperateUtils.exportToBigDataFile(calleeExcelList);
-        String fileNameResp = writeLocalPath("Callee_" + dbName + "&" + excelName, sxssfWorkbook);
+        String fileNameResp = writeLocalPath(dbName, "Callee_" + dbName + "&" + excelName, sxssfWorkbook);
         log.info("runnerGenAllGraph4Callee.run = {}, excelName = {}", run, fileNameResp);
         if (run) {
             return ReturnFactory.success(fileNameResp);
@@ -249,11 +250,16 @@ public class AnalysisController {
         return configureWrapper;
     }
 
-    public static String writeLocalPath(String namePrefix, SXSSFWorkbook workbook) {
+    public static String writeLocalPath(String dirName, String namePrefix, SXSSFWorkbook workbook) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-HH-mm-ss");
         String currentTime = dtf.format(LocalDateTime.now());
         String name = namePrefix + currentTime;
-        try (FileOutputStream outputStream = new FileOutputStream(name + ".xlsx")) {
+        File dir = new File(dirName);
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new RuntimeException("创建目录失败: " + dirName);
+        }
+        File file = new File(dir, name + ".xlsx");
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -265,7 +271,7 @@ public class AnalysisController {
                 throw new RuntimeException(e);
             }
         }
-        return name;
+        return file.getPath();
     }
 
     public static void run() {

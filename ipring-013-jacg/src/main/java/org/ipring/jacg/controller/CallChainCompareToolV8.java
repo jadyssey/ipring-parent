@@ -63,15 +63,18 @@ public class CallChainCompareToolV8 {
                 new ProjectConfig(
                         "waybill",
                         "/home/liu/IdeaProjects/dbu-mod-waybill",
-                        "LocationConsumer",
-                        "consumeMessage"
+                        "MisWaybillInfoServiceImpl",
+                        "syncFormOrder"
                 ),
                 new ProjectConfig(
                         "delivery",
                         "/home/liu/IdeaProjects/dbu-mod-delivery",
-                        "LocationConsumer",
-                        "consumeMessage"
+                        "MisWaybillInfoServiceImpl",
+                        "syncFormOrder"
                 )
+                // MisWaybillInfoServiceImpl#syncFormOrder
+                // LocationConsumer#consumeMessage
+                // OmsOrderController#add
         );
     }
 
