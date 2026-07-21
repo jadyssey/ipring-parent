@@ -47,7 +47,7 @@ public class CallChainCompareToolV8 {
     private static final int MAX_EXPAND_LEVEL = 120;
     private static final int DIFF_CONTEXT_LINES = 2;
     private static final int SCAN_PROGRESS_INTERVAL = 200;
-    private static final String DEFAULT_TARGET_FOLDER = "派送对比运单运单";
+    private static final String DEFAULT_TARGET_FOLDER = "代码对比";
     private static final String DEFAULT_TARGET_FUNC = "下单运单";
     /**
      * 返回默认需要比对的工程及其入口方法。
@@ -117,13 +117,9 @@ public class CallChainCompareToolV8 {
         /**
          * 使用命令行参数覆盖默认输出目录和目标功能名称。
          */
-        static RuntimeConfig fromArgs(String[] args) {
-            String folder = args.length > 0 && !JavaParseTextUtils.normalizeInlineWhitespace(args[0]).isEmpty()
-                    ? args[0]
-                    : DEFAULT_TARGET_FOLDER;
-            String function = args.length > 1 && !JavaParseTextUtils.normalizeInlineWhitespace(args[1]).isEmpty()
-                    ? args[1]
-                    : DEFAULT_TARGET_FUNC;
+        static RuntimeConfig fromArgs(ProjectConfig config) {
+            String folder = DEFAULT_TARGET_FOLDER + "/" + config.className;
+            String function = config.methodName;
             return new RuntimeConfig(folder, function);
         }
     }
@@ -146,9 +142,9 @@ public class CallChainCompareToolV8 {
      * 扫描配置工程、展开调用链并生成对比产物。
      */
     public static void main(String[] args) throws Exception {
-        RuntimeConfig runtime = RuntimeConfig.fromArgs(args);
-        String date = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
         List<ProjectConfig> projectConfigs = defaultProjectConfigs();
+        RuntimeConfig runtime = RuntimeConfig.fromArgs(projectConfigs.get(0));
+        String date = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
         JavaParseLogUtils.logInfo("Tool start. targetFolder=" + runtime.targetFolder + ", targetFunc=" + runtime.targetFunc
                 + ", projects=" + projectConfigs.size());
 
